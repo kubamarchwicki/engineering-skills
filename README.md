@@ -58,7 +58,7 @@ U = user-invoked (slash only) · M = model-invoked (fires on its own)
 | writing-great-skills | U | Meta: how to write skills | mattpocock `skills/productivity/writing-great-skills` | verbatim |
 | grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | verbatim |
 | tdd | M | Seams-based red-green loop | mattpocock `skills/engineering/tdd` | verbatim |
-| code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | verbatim |
+| code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup |
 | receiving-code-review | M | Rigor when subagent review feedback arrives | superpowers `skills/receiving-code-review` | description rescoped |
 | verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | verbatim |
 | systematic-debugging | M | 4-phase root-cause debugging | superpowers `skills/systematic-debugging` | refs → tdd, verification-before-completion |
