@@ -17,7 +17,6 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 **Context:** For heavy work an isolated worktree may have been created via the `using-git-worktrees` skill; small work runs inline on the current branch.
 
 **Save plans to:** `docs/plans/NNNN-<feature-name>.md` (next number in sequence)
-- (User preferences for plan location override this default)
 
 ## Scope Check
 

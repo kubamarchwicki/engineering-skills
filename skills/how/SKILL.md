@@ -20,7 +20,7 @@ Two tracks. The user picks the gear: every stage boundary is the user typing the
 1. `/grill-with-docs` — align, sharpening `CONTEXT.md` and ADRs as you go
 2. `/to-spec` — synthesize the conversation into `docs/specs/<feature>.md`
 3. `/using-git-worktrees` — optional: isolate the work in a worktree
-4. `/writing-plans` — exhaustive plan to `docs/plans/NNNN-<feature>.md`
+4. `/writing-plans` — exhaustive plan to `docs/plans/NNNN-<feature-name>.md`
 5. `/subagent-driven-development` — execute: fresh subagent per task with two-stage review; ends with a whole-branch code-review, then verification-before-completion, then STOPS. Merge, sanity testing, and worktree cleanup belong to the user.
 
 **Debugging:** describe the bug — systematic-debugging fires on its own (nudge it by name if it doesn't).
