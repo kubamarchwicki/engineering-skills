@@ -28,6 +28,85 @@ _Avoid_: Auto-chain, automatic handoff
 The state reached after the agreed work, review, and verification are complete but before merge, sanity testing, or cleanup. Those final actions remain with the user.
 _Avoid_: Done, merged
 
+## Model-Selection Language
+
+**Controller**:
+The main agent coordinating an already authorized Stage, including Work-Class assignment, profile selection, Dispatch Records, and gate enforcement. Unlike a Router, it executes within the selected Stage rather than choosing the next one.
+_Avoid_: Router, workflow runner
+
+**Correctness Bar**:
+The acceptance threshold requiring Branch Ready work to have no unresolved Critical or Important specification, standards, security, or regression defects, supported by the strongest applicable verification rather than test results alone.
+_Avoid_: Passing tests, good enough
+
+**Capability Floor**:
+The minimum model capability permitted for a subagent dispatch, set by the work's ambiguity, breadth, consequence, verification strength, novelty, and horizon. A controller may raise this floor when evidence warrants it but does not lower it to save cost.
+_Avoid_: Exact model, preferred model
+
+**Reasoning Floor**:
+The minimum deliberation level permitted for a subagent dispatch, selected independently of its Capability Floor. It increases when correctness depends on subtle reasoning even if the work is narrow.
+_Avoid_: Token budget, model tier
+
+**Role Floor**:
+The minimum capability and reasoning assigned to a subagent role independently of the work it receives.
+_Avoid_: Role default, preferred model
+
+**Effective Floor**:
+The minimum capability and reasoning permitted for a dispatch after independently taking the higher of the work's floors and the subagent role's floors.
+_Avoid_: Default model, role model
+
+**Floor Verification**:
+Evidence that the active dispatch surface explicitly selected or reported capability and reasoning at or above the Effective Floor. Prompt steering, assumed inheritance, and an unconfirmed request do not constitute verification.
+_Avoid_: Requested configuration, expected model
+
+**Dispatch Mode**:
+The execution topology selected independently of capability and reasoning: Single-Agent keeps the assigned work within one subagent, while Delegating permits that subagent to divide work among further agents.
+_Avoid_: Effort level, model tier
+
+**Provider Adapter**:
+The provider-specific mapping from Work Classes, floors, roles, and Dispatch Modes to pinned model identifiers and supported runtime controls.
+_Avoid_: Routing policy, model alias
+
+**Routing Policy**:
+The centrally governed, provider-neutral rules that establish Work Classes, role floors, Dispatch Modes, fallback behavior, and calibration triggers for the Skill Set.
+_Avoid_: Local preference, runtime heuristic
+
+**Policy Calibration**:
+The human-controlled adjustment of the Routing Policy, initiated whenever the user judges it necessary and without an evidence threshold. Dispatch Records may inform the decision, but a consuming workflow may only escalate one dispatch and never tunes or rewrites the global policy locally.
+_Avoid_: Self-tuning, local policy override
+
+**Dispatch Record**:
+The auditable account of an acceptance-relevant dispatch's role, Work Class, Escalation Signals, Effective Floor, Dispatch Mode, requested configuration, effective configuration, and Floor Verification status.
+_Avoid_: Prompt transcript, agent summary
+
+**Review Independence**:
+The separation created by fresh context, read-only authority, independent evidence, and an adversarial review contract. It does not require a different model family from the implementer.
+_Avoid_: Model diversity
+
+**Escalation Signal**:
+A qualitative condition—such as ambiguity, cross-module breadth, high consequence, weak verification, novelty, or long horizon—that raises a work floor regardless of apparent task size.
+_Avoid_: Complexity point, file-count score
+
+**Escalation Ladder**:
+The ordered response to an inadequate dispatch: repair context, raise reasoning, raise capability, split oversized work, then return contradictory requirements to the user.
+_Avoid_: Blind retry, immediate model upgrade
+
+**Work Class**:
+One of four qualitative classifications used to establish a work's Capability Floor and Reasoning Floor: Bounded, Integrated, Demanding, or Exceptional.
+_Avoid_: Risk score, complexity score
+
+**Bounded Work**:
+Work that is exact, local, reversible, and supported by strong verification.
+
+**Integrated Work**:
+Work requiring ordinary multi-file coordination or judgment about established repository patterns.
+
+**Demanding Work**:
+Work involving ambiguity, broad interactions, high consequence, weak verification, or substantial novelty.
+
+**Exceptional Work**:
+Unusually long-horizon work, the highest-consequence audit, or work that still fails after its context and reasoning have already been improved.
+_Avoid_: Default hard task
+
 ## Skill-Set Language
 
 **Skill Set**:

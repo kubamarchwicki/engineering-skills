@@ -1,0 +1,3 @@
+# Use centrally governed model routing with provider adapters
+
+Engineering Skills centralizes a versioned, provider-neutral Routing Policy in Subagent-Driven Development; Code Review consumes the same policy, while pinned Codex and Claude Provider Adapters are colocated with it and exposed through the linker. Controllers compute an Effective Floor from the work and role, permit unverified exploration or implementation, but fail closed when an acceptance reviewer cannot provide Floor Verification. Policy Calibration remains human-controlled through this repository, trading duplicated harness profiles and possible runtime stops for correctness, reproducibility, and protection against silent downgrades.
