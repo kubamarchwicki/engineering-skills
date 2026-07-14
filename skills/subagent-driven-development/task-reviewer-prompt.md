@@ -8,15 +8,27 @@ code quality.
 more, nothing less) and is well-built (clean, tested, maintainable)
 
 ```
-Subagent (general-purpose):
+Subagent ([PROFILE — select this named reviewer profile, never `general-purpose`]):
   description: "Review Task N (spec + quality)"
-  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
-         model silently inherits the session's most expensive one]
   prompt: |
     You are reviewing one task's implementation: first whether it matches its
     requirements, then whether it is well-built. This is a task-scoped gate,
     not a merge review — a broad whole-branch review happens separately after
     all tasks are complete.
+
+    ## Routing Contract
+
+    Policy version: 1
+    Role: task reviewer
+    Work Class: [WORK_CLASS]
+    Effective Floor: [CAPABILITY_FLOOR]/[REASONING_FLOOR]
+    Requested profile: [PROFILE]
+    Requested model and effort: [REQUESTED_MODEL]/[REQUESTED_EFFORT]
+    Floor Verification: verified — [FLOOR_VERIFICATION_EVIDENCE]
+
+    This is an independent read-only gate. Do not mutate files and do not
+    spawn subagents. If the runtime configuration does not match this verified
+    declaration, return only `FLOOR_UNVERIFIED` with the mismatch evidence.
 
     ## What Was Requested
 
@@ -166,7 +178,13 @@ Subagent (general-purpose):
 ```
 
 **Placeholders:**
-- `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection
+- `[PROFILE]` — REQUIRED named reviewer profile selected by `model-routing.md`
+- `[WORK_CLASS]` — REQUIRED classification: Bounded, Integrated, Demanding, or Exceptional
+- `[CAPABILITY_FLOOR]` — REQUIRED Effective Floor capability; at least Integrated
+- `[REASONING_FLOOR]` — REQUIRED Effective Floor reasoning; at least high
+- `[REQUESTED_MODEL]` — REQUIRED full model ID declared by the selected provider profile
+- `[REQUESTED_EFFORT]` — REQUIRED effort declared by the selected provider profile
+- `[FLOOR_VERIFICATION_EVIDENCE]` — REQUIRED trustworthy evidence that both axes meet the floor; prompt steering is insufficient
 - `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief PLAN N`
   prints the path; same file the implementer worked from)
 - `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from

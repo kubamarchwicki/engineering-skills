@@ -3,12 +3,23 @@
 Use this template when dispatching an implementer subagent.
 
 ```
-Subagent (general-purpose):
+Subagent ([PROFILE — select this named profile, never `general-purpose`]):
   description: "Implement Task N: [task name]"
-  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
-         model silently inherits the session's most expensive one]
   prompt: |
     You are implementing Task N: [task name]
+
+    ## Routing Contract
+
+    Policy version: 1
+    Role: implementer or fixer
+    Work Class: [WORK_CLASS]
+    Effective Floor: [CAPABILITY_FLOOR]/[REASONING_FLOOR]
+    Requested profile: [PROFILE]
+    Requested model and effort: [REQUESTED_MODEL]/[REQUESTED_EFFORT]
+    Floor Verification: [FLOOR_VERIFICATION]
+
+    Follow this routing declaration as scope metadata. Do not spawn subagents.
+    Your result remains a proposal until verified independent review passes.
 
     ## Task Description
 
@@ -74,7 +85,7 @@ Subagent (general-purpose):
 
     **How to escalate:** Report back with status BLOCKED or NEEDS_CONTEXT. Describe
     specifically what you're stuck on, what you've tried, and what kind of help you need.
-    The controller can provide more context, re-dispatch with a more capable model,
+    The controller can provide more context, re-dispatch with the next policy profile,
     or break the task into smaller pieces.
 
     ## Before Reporting Back: Self-Review
@@ -137,3 +148,12 @@ Subagent (general-purpose):
     Use BLOCKED if you cannot complete the task. Use NEEDS_CONTEXT if you need
     information that wasn't provided. Never silently produce work you're unsure about.
 ```
+
+**Routing template fields:**
+- `[PROFILE]` — REQUIRED named worker profile selected by `model-routing.md`
+- `[WORK_CLASS]` — REQUIRED classification: Bounded, Integrated, Demanding, or Exceptional
+- `[CAPABILITY_FLOOR]` — REQUIRED Effective Floor capability
+- `[REASONING_FLOOR]` — REQUIRED Effective Floor reasoning effort
+- `[REQUESTED_MODEL]` — REQUIRED full model ID declared by the selected provider profile
+- `[REQUESTED_EFFORT]` — REQUIRED effort declared by the selected provider profile
+- `[FLOOR_VERIFICATION]` — REQUIRED `verified — <evidence>` or `unverified — <reason>`; unverified workers remain proposals

@@ -122,6 +122,52 @@ if [ -d "$claude_dir" ]; then
   fi
 fi
 
+recorder="$repo_root/skills/subagent-driven-development/scripts/record-dispatch"
+
+require_file "$recorder"
+
+if [ -f "$recorder" ]; then
+  bash -n "$recorder" || fail 'record-dispatch failed bash -n'
+
+  record_tmp=$(mktemp -d "${TMPDIR:-/tmp}/model-routing-record.XXXXXX")
+  git -C "$record_tmp" init -q
+  sample_record='{"policy_version":2,"event":"started","dispatch_id":"check-1","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{"capability":"Bounded","reasoning":"medium"},"dispatch_mode":"Single-Agent","requested":{"profile":"engineering-worker-bounded-medium","model":"gpt-5.6-luna","effort":"medium"},"effective":{"model":null,"effort":null},"floor_verification":{"status":"unverified","evidence":"runtime did not report"},"outcome":{"first_pass":"pending","critical":0,"important":0,"retries":0,"escalation":"none","final_verification":"pending","elapsed":null,"usage":null}}'
+  (
+    cd "$record_tmp"
+    printf '%s\n' "$sample_record" | "$recorder" >/dev/null
+  )
+  record_file="$record_tmp/.superpowers/model-routing/dispatches.jsonl"
+  require_file "$record_file"
+  if [ -f "$record_file" ] && [ "$(wc -l < "$record_file" | tr -d ' ')" != 1 ]; then
+    fail 'record-dispatch did not append exactly one event'
+  fi
+  if [ "$(cat "$record_tmp/.superpowers/model-routing/.gitignore")" != '*' ]; then
+    fail 'record-dispatch did not self-ignore its workspace'
+  fi
+  if (
+    cd "$record_tmp"
+    printf '%s\n' '{"prompt":"secret"}' | "$recorder" >/dev/null 2>&1
+  ); then
+    fail 'record-dispatch accepted a forbidden prompt field'
+  fi
+  if (
+    cd "$record_tmp"
+    printf '%s\n' '{"policy_version":2,"event":"started","dispatch_id":"incomplete","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{},"dispatch_mode":"Single-Agent","requested":{},"effective":{},"floor_verification":{},"outcome":{}}' | "$recorder" >/dev/null 2>&1
+  ); then
+    fail 'record-dispatch accepted missing nested fields'
+  fi
+  if (
+    cd "$record_tmp"
+    printf '%s\n' "$sample_record" | sed 's/"policy_version":2/"policy_version":1/' | "$recorder" >/dev/null 2>&1
+  ); then
+    fail 'record-dispatch accepted the wrong policy version'
+  fi
+  if [ "$(wc -l < "$record_file" | tr -d ' ')" != 1 ]; then
+    fail 'record-dispatch appended a rejected event'
+  fi
+  rm -rf "$record_tmp"
+fi
+
 if [ "$status" -ne 0 ]; then
   exit 1
 fi

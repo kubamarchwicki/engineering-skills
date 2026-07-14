@@ -15,7 +15,7 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 **Narration:** between tool calls, narrate at most one short line — the
 ledger and the tool results carry the record.
 
-**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, inability of the active runtime to verify a required reviewer Effective Floor, an immediate hard-stop Policy Calibration Trigger, or all tasks complete. Pending policy debt from an escaped finding does not stop the current authorized branch's remediation and acceptance work. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
 ## When to Use
 
@@ -47,11 +47,11 @@ digraph process {
 
     subgraph cluster_per_task {
         label="Per Task";
-        "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
+        "Classify and dispatch routed implementer (./implementer-prompt.md)" [shape=box];
         "Implementer subagent asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
         "Implementer subagent implements, tests, commits, self-reviews" [shape=box];
-        "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [shape=box];
+        "Reclassify, verify floor, and dispatch read-only task reviewer (./task-reviewer-prompt.md)" [shape=box];
         "Task reviewer reports spec ✅ and quality approved?" [shape=diamond];
         "Dispatch fix subagent for Critical/Important findings" [shape=box];
         "Mark task complete in todo list and progress ledger" [shape=box];
@@ -59,23 +59,23 @@ digraph process {
 
     "Read plan, note context and global constraints, create todos" [shape=box];
     "More tasks remain?" [shape=diamond];
-    "Dispatch final whole-branch review subagent applying the code-review skill" [shape=box];
+    "Controller applies code-review: reclassify branch and dispatch verified Standards + Spec reviewers" [shape=box];
     "Run verification-before-completion, report branch ready, STOP - merge and cleanup belong to your human partner" [shape=box style=filled fillcolor=lightgreen];
 
-    "Read plan, note context and global constraints, create todos" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
+    "Read plan, note context and global constraints, create todos" -> "Classify and dispatch routed implementer (./implementer-prompt.md)";
+    "Classify and dispatch routed implementer (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
-    "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
+    "Answer questions, provide context" -> "Classify and dispatch routed implementer (./implementer-prompt.md)";
     "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)";
-    "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" -> "Task reviewer reports spec ✅ and quality approved?";
+    "Implementer subagent implements, tests, commits, self-reviews" -> "Reclassify, verify floor, and dispatch read-only task reviewer (./task-reviewer-prompt.md)";
+    "Reclassify, verify floor, and dispatch read-only task reviewer (./task-reviewer-prompt.md)" -> "Task reviewer reports spec ✅ and quality approved?";
     "Task reviewer reports spec ✅ and quality approved?" -> "Dispatch fix subagent for Critical/Important findings" [label="no"];
-    "Dispatch fix subagent for Critical/Important findings" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [label="re-review"];
+    "Dispatch fix subagent for Critical/Important findings" -> "Reclassify, verify floor, and dispatch read-only task reviewer (./task-reviewer-prompt.md)" [label="re-review"];
     "Task reviewer reports spec ✅ and quality approved?" -> "Mark task complete in todo list and progress ledger" [label="yes"];
     "Mark task complete in todo list and progress ledger" -> "More tasks remain?";
-    "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final whole-branch review subagent applying the code-review skill" [label="no"];
-    "Dispatch final whole-branch review subagent applying the code-review skill" -> "Run verification-before-completion, report branch ready, STOP - merge and cleanup belong to your human partner";
+    "More tasks remain?" -> "Classify and dispatch routed implementer (./implementer-prompt.md)" [label="yes"];
+    "More tasks remain?" -> "Controller applies code-review: reclassify branch and dispatch verified Standards + Spec reviewers" [label="no"];
+    "Controller applies code-review: reclassify branch and dispatch verified Standards + Spec reviewers" -> "Run verification-before-completion, report branch ready, STOP - merge and cleanup belong to your human partner";
 }
 ```
 
@@ -93,38 +93,41 @@ before execution begins, not one interrupt per discovery mid-plan. If the
 scan is clean, proceed without comment. The review loop remains the net for
 conflicts that only emerge from implementation.
 
-## Model Selection
+## Model Routing
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
+Before the first dispatch, read [model-routing.md](model-routing.md). Apply
+Routing Policy Version 2 to every implementer, fixer, task reviewer, and
+final-review axis dispatch. The SDD controller owns final-review orchestration;
+never delegate the `code-review` workflow to a reviewer subagent.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+For each dispatch:
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+1. Classify the Work Class from the brief, repository evidence, current diff,
+   and prior results. Mandatory signals and ambiguity resolve upward.
+2. Combine the Work Class floor with the role floor, taking the higher
+   capability and reasoning effort independently.
+3. Select the first named profile that meets both axes. Every shipped profile
+   is Single-Agent; never select Ultra automatically.
+4. Establish Floor Verification from explicit named-profile enforcement or a
+   trustworthy runtime report. Prompt steering alone is unverified.
+5. Write a redacted `started` Dispatch Record, dispatch, then write the matching
+   `completed` event.
 
-**Architecture and design tasks**: use the most capable available model.
-The final whole-branch review is one of these — dispatch it on the most
-capable available model, not the session default.
+An implementer or fixer may proceed with an unverified Effective Floor because
+its work remains a proposal. A task reviewer or either final-review axis
+reviewer requires a verified Effective Floor. If the active runtime cannot
+enforce or report that floor, stop before dispatch and name a compatible
+surface or configuration. Resume only there with verified capacity; this
+active-runtime stop does not itself require Policy Calibration. If no
+compatible surface or configuration can obtain the reviewer, emit the
+hard-stop `POLICY_CALIBRATION_REQUIRED`, provide the redacted calibration
+brief, name `$grill-with-docs` in `engineering-skills`, and wait. Never
+silently substitute downward.
 
-**Review tasks**: choose the model with the same judgment, scaled to the
-diff's size, complexity, and risk. A small mechanical diff does not need the
-most capable model; a subtle concurrency change does.
-
-**Always specify the model explicitly when dispatching a subagent.** An
-omitted model inherits your session's model — often the most capable and
-most expensive — which silently defeats this section.
-
-**Turn count beats token price.** Wall-clock and context cost scale with how
-many turns a subagent takes, and the cheapest models routinely take 2-3× the
-turns on multi-step work — costing more overall. Use a mid-tier model as the
-floor for reviewers and for implementers working from prose descriptions.
-When the task's plan text contains the complete code to write, the
-implementation is transcription plus testing: use the cheapest tier for
-that implementer. Single-file mechanical fixes also take the cheapest tier.
-
-**Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+Review independence means fresh context, read-only authority, and adversarial
+instructions. It does not require a different provider or model family from
+the implementer. Recompute classification when new evidence appears; never
+lower either axis silently.
 
 ## Handling Implementer Status
 
@@ -137,10 +140,11 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 **NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
 
 **BLOCKED:** The implementer cannot complete the task. Assess the blocker:
-1. If it's a context problem, provide more context and re-dispatch with the same model
-2. If the task requires more reasoning, re-dispatch with a more capable model
-3. If the task is too large, break it into smaller pieces
-4. If the plan itself is wrong, escalate to the human
+1. Repair missing or noisy context.
+2. Raise reasoning effort to the next shipped profile that meets both axes.
+3. Raise capability to the next shipped profile that meets both axes.
+4. Split the task only when the split preserves correctness.
+5. Ask the human when the preceding steps cannot produce a trustworthy result.
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -152,6 +156,34 @@ review, but you must resolve each one yourself before marking the task
 complete: you hold the plan and cross-task context the reviewer
 lacks. If you confirm an item is a real gap, treat it as a failed spec
 review — send it back to the implementer and re-review.
+
+## Fix and Re-Review Routing
+
+For every Critical or Important finding, compute Fix Work Class as the higher
+of the original task's Work Class and the finding's Work Class. Route the fixer
+from that result. Re-review at a floor no lower than the reviewer that found
+the issue. Never repeat an unchanged failed dispatch.
+
+If a task reviewer or either final-review axis reviewer returns
+`FLOOR_UNVERIFIED`, discard the result as a gate, finish any already-running
+peer, stop before another reviewer dispatch, and name a compatible surface or
+configuration. Resume only there with verified capacity. If none can obtain
+the reviewer, emit the hard-stop `POLICY_CALIBRATION_REQUIRED`, provide the
+redacted brief, name `$grill-with-docs` in `engineering-skills`, and wait.
+
+If a Critical or Important finding escaped a verified task review, emit
+`POLICY_CALIBRATION_REQUIRED` as pending policy debt and provide a redacted brief
+with record identifiers. Recompute final review as Exceptional/xhigh, finish
+in-flight work, and complete current-branch fixes, re-review, both final axes,
+and verification. If all gates pass, report Branch Ready together with the
+pending calibration requirement. Begin no future SDD work until the human
+resolves it through `$grill-with-docs` in `engineering-skills`.
+
+If work was incorrectly declared Branch Ready, finish already-running
+dispatches, preserve their results, emit the hard-stop
+`POLICY_CALIBRATION_REQUIRED`, provide the redacted brief and next manual gear,
+and start no new dispatch or readiness claim. The human owns global policy
+changes; do not patch the policy opportunistically inside this workflow.
 
 ## Constructing Reviewer Prompts
 
@@ -197,11 +229,12 @@ final whole-branch review. When you fill a reviewer template:
   contradiction: present the finding and the plan text, ask which governs.
   Do not dismiss the finding because the plan mandates it, and do not
   dispatch a fix that contradicts the plan without asking.
-- The final whole-branch review gets a package too: run
+- The SDD controller owns the final whole-branch review. Run
   `scripts/review-package MERGE_BASE HEAD` (MERGE_BASE = the commit the
-  branch started from, e.g. `git merge-base main HEAD`) and include the
-  printed path in the final review dispatch, so the final reviewer reads
-  one file instead of re-deriving the branch diff with git commands.
+  branch started from, e.g. `git merge-base main HEAD`) and give the printed
+  path to the controller-owned `code-review` workflow for its Standards and
+  Spec axis dispatches. Do not delegate `code-review` orchestration to a
+  reviewer profile.
 - Every fix dispatch carries the implementer contract: the fix subagent
   re-runs the tests covering its change and reports the results. Name the
   covering test files in the dispatch — a one-line fix does not need the
@@ -259,12 +292,21 @@ a ledger file, not only in todos.
   trust the ledger and `git log` over your own recollection.
 - `git clean -fdx` will destroy the ledger (it's git-ignored scratch); if
   that happens, recover from `git log`.
+- Dispatch records are separate from the progress ledger. Pipe one redacted
+  JSON object per event through `scripts/record-dispatch`; it appends to
+  `.superpowers/model-routing/dispatches.jsonl` and self-ignores the directory.
+- Record `started` before every actual dispatch and `completed` when it returns,
+  using the same dispatch ID. Never place prompts, diffs, source code, secrets,
+  credentials, or personal data in a Dispatch Record.
+- After compaction, reconstruct routing state from the plan, progress ledger,
+  git history, and Dispatch Records. Recompute the next dispatch rather than
+  trusting an unstated prior classification.
 
 ## Prompt Templates
 
 - [implementer-prompt.md](implementer-prompt.md) - Dispatch implementer subagent
 - [task-reviewer-prompt.md](task-reviewer-prompt.md) - Dispatch task reviewer subagent (spec compliance + code quality)
-- Final whole-branch review: dispatch a reviewer subagent that applies the code-review skill (Standards + Spec axes) to the whole branch diff
+- Final whole-branch review: the SDD controller recomputes branch Work Class and invokes the code-review workflow directly. The controller dispatches its fresh read-only Standards and Spec reviewers in parallel at verified Effective Floors. Never ask either Single-Agent reviewer to apply code-review or spawn the other axis.
 
 ## Example Workflow
 
@@ -323,7 +365,7 @@ Task reviewer: Spec ✅. Task quality: Approved.
 ...
 
 [After all tasks]
-[Dispatch final whole-branch reviewer applying the code-review skill (Standards + Spec)]
+[SDD controller invokes code-review and dispatches verified Standards + Spec reviewers]
 Final reviewer: Standards ✅. Spec ✅. No blocking findings.
 
 [Run verification-before-completion]
@@ -385,6 +427,13 @@ Final reviewer: Standards ✅. Spec ✅. No blocking findings.
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check
   the ledger (and `git log`) after any compaction or resume
+- Treat prompt steering as verified model or reasoning enforcement
+- Dispatch a task reviewer or either final-review axis reviewer without a verified Effective Floor
+- Delegate the code-review workflow to a Single-Agent reviewer profile
+- Let an unverified implementer or fixer make work Branch Ready
+- Silently substitute a profile below either Effective Floor axis
+- Select Ultra automatically or give a Delegating agent write authority
+- Begin future SDD work while calibration is pending, or continue after an immediate hard-stop `POLICY_CALIBRATION_REQUIRED`
 
 **If subagent asks questions:**
 - Answer clearly and completely

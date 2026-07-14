@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  printf 'usage: printf %%s\\n JSON_OBJECT | %s\n' "$(basename "$0")" >&2
+  exit 2
+}
+
+if [ "$#" -ne 0 ]; then
+  usage
+fi
+
+record=''
+if ! IFS= read -r record; then
+  printf 'record-dispatch: expected one JSON object on stdin\n' >&2
+  exit 2
+fi
+
+if IFS= read -r extra; then
+  printf 'record-dispatch: record must occupy exactly one line\n' >&2
+  exit 2
+fi
+
+case "$record" in
+  \{*\}) ;;
+  *)
+    printf 'record-dispatch: record must be a JSON object\n' >&2
+    exit 2
+    ;;
+esac
+
+for key in \
+  policy_version \
+  event \
+  dispatch_id \
+  role \
+  work_class \
+  escalation_signals \
+  effective_floor \
+  dispatch_mode \
+  requested \
+  effective \
+  floor_verification \
+  outcome \
+  capability \
+  reasoning \
+  profile \
+  model \
+  effort \
+  status \
+  evidence \
+  first_pass \
+  critical \
+  important \
+  retries \
+  escalation \
+  final_verification \
+  elapsed \
+  usage; do
+  needle="\"$key\":"
+  case "$record" in
+    *"$needle"*) ;;
+    *)
+      printf 'record-dispatch: missing required key: %s\n' "$key" >&2
+      exit 2
+      ;;
+  esac
+done
+
+case "$record" in
+  *'"policy_version":2'*) ;;
+  *)
+    printf 'record-dispatch: policy_version must be 2\n' >&2
+    exit 2
+    ;;
+esac
+
+case "$record" in
+  *'"event":"started"'*|*'"event":"completed"'*) ;;
+  *)
+    printf 'record-dispatch: event must be started or completed\n' >&2
+    exit 2
+    ;;
+esac
+
+for forbidden in prompt diff source_code secret credential; do
+  needle="\"$forbidden\":"
+  case "$record" in
+    *"$needle"*)
+      printf 'record-dispatch: forbidden key: %s\n' "$forbidden" >&2
+      exit 2
+      ;;
+  esac
+done
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  printf 'record-dispatch: run inside a git worktree\n' >&2
+  exit 2
+}
+record_dir="$repo_root/.superpowers/model-routing"
+record_file="$record_dir/dispatches.jsonl"
+
+mkdir -p "$record_dir"
+printf '*\n' > "$record_dir/.gitignore"
+printf '%s\n' "$record" >> "$record_file"
+printf '%s\n' "$record_file"
