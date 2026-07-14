@@ -506,7 +506,11 @@ check_codex_profile() {
     require_text "$file" "model = \"$model\""
     require_text "$file" "model_reasoning_effort = \"$effort\""
     require_text "$file" "sandbox_mode = \"$sandbox\""
-    require_text "$file" 'Do not spawn subagents.'
+    if [ "$sandbox" = workspace-write ]; then
+      require_text "$file" 'Do not spawn subagents.'
+    else
+      require_text "$file" 'Do not mutate files and do not spawn subagents.'
+    fi
   fi
 }
 
