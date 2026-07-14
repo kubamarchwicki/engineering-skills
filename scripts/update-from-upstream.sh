@@ -66,6 +66,7 @@ total_attention=0
 total_candidates=0
 total_errors=0
 active_tmp=""
+materialization_error=""
 
 cleanup_active_tmp() {
   if [ -n "$active_tmp" ]; then
@@ -109,6 +110,7 @@ apply_regular_mode() {
 materialize_entry() {
   local sub="$1" commit="$2" src="$3" dest="$4" mode="$5" type="$6"
   local link_target
+  materialization_error=""
   mkdir -p "$(dirname "$dest")"
 
   if [ "$type" = "tree" ]; then
@@ -129,14 +131,22 @@ materialize_entry() {
       apply_regular_mode "$active_tmp/entry" "$mode"
       ;;
     *)
-      echo "unsupported tree entry: $type $mode" > "$active_tmp/error"
-      return 1
+      materialization_error="unsupported tree entry: $type $mode"
+      cleanup_active_tmp
+      return
       ;;
   esac
 
   remove_local_path "$dest"
   mv "$active_tmp/entry" "$dest"
   cleanup_active_tmp
+}
+
+report_materialization_error() {
+  local path="$1"
+  echo "   ERROR: $path: $materialization_error - KEPT; operational error must be resolved before walk-through"
+  total_attention=$((total_attention+1))
+  total_errors=$((total_errors+1))
 }
 
 is_regular_entry() {
@@ -242,6 +252,11 @@ merge_skill() {
         continue
       fi
       materialize_entry "$submodule_path" "$target_commit" "$upstream_path" "$local_path" "$target_mode" "$target_type"
+      if [ -n "$materialization_error" ]; then
+        report_materialization_error "$local_path"
+        kept=$((kept+1))
+        continue
+      fi
       echo "   + $local_path (new upstream file)"
       added=$((added+1))
     elif [ -z "$target_entry" ]; then                 # deleted upstream
@@ -273,6 +288,14 @@ merge_skill() {
       fi
       if [ "$local_entry" = "$base_entry" ]; then       # locally unchanged: safe whole-entry fast-forward
         materialize_entry "$submodule_path" "$target_commit" "$upstream_path" "$local_path" "$target_mode" "$target_type"
+        if [ -n "$materialization_error" ]; then
+          report_materialization_error "$local_path"
+          kept=$((kept+1))
+          if [ "$base_type" = "tree" ] && [ "$target_type" != "tree" ]; then
+            collapsed_prefixes="${collapsed_prefixes}${upstream_path}/"$'\n'
+          fi
+          continue
+        fi
         if [ "$base_type" = "tree" ] && [ "$target_type" != "tree" ]; then
           collapsed_prefixes="${collapsed_prefixes}${upstream_path}/"$'\n'
         elif [ "$base_type" != "tree" ] && [ "$target_type" = "tree" ]; then
@@ -312,6 +335,11 @@ merge_skill() {
 
       if [ "$local_blob" = "$base_blob" ]; then           # only local mode changed
         materialize_entry "$submodule_path" "$target_commit" "$upstream_path" "$local_path" "$target_mode" "$target_type"
+        if [ -n "$materialization_error" ]; then
+          report_materialization_error "$local_path"
+          kept=$((kept+1))
+          continue
+        fi
         apply_regular_mode "$local_path" "$result_mode"
         changed=$((changed+1))
         continue
