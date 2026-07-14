@@ -38,6 +38,12 @@ scripts/link-skills.sh
 
 Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`. Edits in this repo are live immediately; re-run after adding, removing, or renaming a skill.
 
+## Maintenance
+
+`provenance.tsv` is the single source of truth for the skill ↔ upstream mapping. The Reference table below is generated from it by `scripts/gen-readme-table.sh` (between the provenance markers) — edit the tsv, never the table.
+
+Upstream sync: `/update-from-upstream`, a repo-local skill (`.claude/skills/`, loads only in this workspace). It runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through conflicts, new upstream skills, and deletions as grilled decisions, regenerates this README, runs `scripts/check-refs.sh`, bumps the submodule pins, and stops. The commit is mine.
+
 ## Reference
 
 U = user-invoked (slash only) · M = model-invoked (fires on its own)
