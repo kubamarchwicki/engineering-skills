@@ -33,7 +33,7 @@ When a decision is genuinely needed, investigate facts first, then ask in plain 
 - `skills/` is a flat directory: one directory per distributed skill.
 - `mattpocock-skills/` and `superpowers/` are pinned upstream source submodules. Treat them as read-only inputs. Do not put local product changes in them.
 - Copy an imported skill's entire directory, including `agents/`, scripts, and reference files. Do not prune files.
-- `.claude/skills/update-from-upstream/` is repo-local maintenance automation. It must not be copied into `skills/` or globally linked.
+- `skills-internal/update-from-upstream/` is the canonical repo-local maintenance automation. `.claude/skills/update-from-upstream` and `.agents/skills/update-from-upstream` are discovery symlinks to it for Claude and Codex respectively. Preserve `disable-model-invocation: true` in `SKILL.md` for Claude and `policy.allow_implicit_invocation: false` in `agents/openai.yaml` for Codex. The canonical directory must not be copied into `skills/` or globally linked.
 - `provenance.tsv`, once introduced by plan 0002, is the single source of truth for skill membership, upstream paths, invocation type, role, and local changes.
 - The README provenance table between `<!-- provenance:begin -->` and `<!-- provenance:end -->` is generated. Change `provenance.tsv` and run `scripts/gen-readme-table.sh`; never hand-edit that table.
 
@@ -73,9 +73,9 @@ Repository scripts target macOS `/bin/bash` 3.2:
 
 ## Upstream maintenance
 
-Use `/update-from-upstream` for an upstream sync after plan 0002 exists. Its workflow is intentionally split:
+Use `/update-from-upstream` in Claude or `$update-from-upstream` in Codex for an upstream sync after plan 0002 exists. Its workflow is intentionally split:
 
-1. Run the workflow only from a linked Git worktree. The primary checkout may be live through global skill symlinks, so `/update-from-upstream` must recommend `/using-git-worktrees` and stop when isolation is absent; the merge engine enforces the same guard before dirty checks, fetches, or merges.
+1. Run the workflow only from a linked Git worktree. The primary checkout may be live through global skill symlinks, so the maintenance skill must recommend `/using-git-worktrees` then `/update-from-upstream` in Claude, or `$using-git-worktrees` then `$update-from-upstream` in Codex, and stop when isolation is absent; the merge engine enforces the same guard before dirty checks, fetches, or merges.
 2. `scripts/update-from-upstream.sh` performs a three-way merge: base is the submodule SHA pinned in the repository's `HEAD`, ours is `skills/<name>`, and theirs is the selected upstream commit.
 3. Inspect upstream commit history to understand intent, then narrate clean merges and resolve conflicts, attention items, new candidates, deletions, or renames with the user one decision at a time.
 4. Record every membership or divergence decision in `provenance.tsv`, regenerate the README, run all applicable verification, and bump only the relevant submodule pins.

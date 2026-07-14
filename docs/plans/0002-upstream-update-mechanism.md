@@ -6,7 +6,7 @@
 
 **Architecture:** `provenance.tsv` (repo root) maps every skill to its submodule and source path and drives everything: the README Reference table is *generated* from it, and `scripts/update-from-upstream.sh` merges per file with base = the submodule SHA pinned in HEAD, ours = the `skills/` copy (carrying our rewirings), theirs = the new upstream commit. Judgment stays human: the repo-local `update-from-upstream` skill narrates clean merges, grills conflicts / new skills / deletions one question at a time, and stops before the commit.
 
-**Tech Stack:** bash (macOS /bin/bash 3.2-compatible), awk, git (`merge-file`, `ls-tree`, `rev-parse`), Markdown skill files (Claude Code Agent Skills format).
+**Tech Stack:** bash (macOS /bin/bash 3.2-compatible), awk, git (`merge-file`, `ls-tree`, `rev-parse`), Markdown skill files (Agent Skills format, with repository discovery for Claude and Codex).
 
 ## Global Constraints
 
@@ -419,17 +419,20 @@ git commit -m "feat: update-from-upstream.sh three-way merge engine (base = subm
 
 ---
 
-### Task 3: The repo-local `update-from-upstream` skill + README Maintenance section
+### Task 3: The canonical repo-local `update-from-upstream` skill + dual-harness discovery + README Maintenance section
 
 **Files:**
-- Create: `.claude/skills/update-from-upstream/SKILL.md` (repo-local — deliberately NOT under `skills/`, so it is never symlinked into the global set; it loads only in this workspace)
+- Create: `skills-internal/update-from-upstream/SKILL.md` (canonical repo-local source — deliberately NOT under distributed `skills/`)
+- Create: `skills-internal/update-from-upstream/agents/openai.yaml` (Codex explicit-invocation policy)
+- Create: `.claude/skills/update-from-upstream` -> `../../skills-internal/update-from-upstream` (Claude repository discovery symlink)
+- Create: `.agents/skills/update-from-upstream` -> `../../skills-internal/update-from-upstream` (Codex repository discovery symlink)
 - Modify: `README.md` (insert Maintenance section)
 
 **Interfaces:**
 - Consumes: `scripts/update-from-upstream.sh` (Task 2), `scripts/gen-readme-table.sh` (Task 1), `scripts/check-refs.sh` and `scripts/link-skills.sh` (plan 0001), `provenance.tsv` (Task 1).
-- Produces: the `/update-from-upstream` command, available when working in this repo.
+- Produces: `/update-from-upstream` in Claude and `$update-from-upstream` in Codex, available only when working in this repo and never added to the globally distributed set.
 
-- [ ] **Step 1: Create `.claude/skills/update-from-upstream/SKILL.md` with exactly this content**
+- [ ] **Step 1: Create `skills-internal/update-from-upstream/SKILL.md` with exactly this content**
 
 ```markdown
 ---
@@ -444,6 +447,7 @@ You are running the upstream sync for this repo. The mechanical merge is a scrip
 - Ask in plain prose, one question at a time, always leading with your recommended answer. Never use the AskUserQuestion widget.
 - Never commit, never push, never do more than the close-out lists. The commit belongs to the user.
 - Report, never act, on set membership: adopting or dropping a skill happens only on the user's explicit say-so.
+- Name user-invoked skills in the active harness's form: `/skill-name` for Claude and `$skill-name` for Codex.
 
 ## 1. Mechanical merge
 
@@ -483,14 +487,57 @@ Only after every item above is resolved:
 Present a summary of everything staged, suggest the commit message `chore: sync upstream (<submodule> <old-short>..<new-short>)`, and end by saying the commit is the user's. Do not commit.
 ```
 
-- [ ] **Step 2: Verify frontmatter**
+- [ ] **Step 2: Create the Codex explicit-invocation policy**
+
+Create `skills-internal/update-from-upstream/agents/openai.yaml` with exactly this content:
+
+```yaml
+policy:
+  allow_implicit_invocation: false
+```
+
+Keep `disable-model-invocation: true` in the canonical `SKILL.md` for Claude. In the canonical skill's linked-worktree isolation handoff, name `/using-git-worktrees` then `/update-from-upstream` for Claude, and `$using-git-worktrees` then `$update-from-upstream` for Codex (the Codex skills are also available from its `/skills` picker).
+
+- [ ] **Step 3: Create both repository discovery symlinks**
 
 ```bash
-head -5 .claude/skills/update-from-upstream/SKILL.md | grep -c "name: update-from-upstream\|disable-model-invocation: true"
+mkdir -p .claude/skills .agents/skills
+ln -s ../../skills-internal/update-from-upstream .claude/skills/update-from-upstream
+ln -s ../../skills-internal/update-from-upstream .agents/skills/update-from-upstream
 ```
-Expected: `2`
 
-- [ ] **Step 3: Insert the Maintenance section into `README.md`**
+The canonical directory remains repo-local automation. Neither it nor either discovery link belongs under distributed `skills/` or in the global installs created by `scripts/link-skills.sh`.
+
+- [ ] **Step 4: Verify both discovery links, frontmatter, and Codex policy**
+
+```bash
+test -L .claude/skills/update-from-upstream
+test -L .agents/skills/update-from-upstream
+test "$(readlink .claude/skills/update-from-upstream)" = "../../skills-internal/update-from-upstream"
+test "$(readlink .agents/skills/update-from-upstream)" = "../../skills-internal/update-from-upstream"
+test -f .claude/skills/update-from-upstream/SKILL.md
+test -f .agents/skills/update-from-upstream/SKILL.md
+test -f .claude/skills/update-from-upstream/agents/openai.yaml
+test -f .agents/skills/update-from-upstream/agents/openai.yaml
+test "$(realpath .claude/skills/update-from-upstream)" = "$(realpath skills-internal/update-from-upstream)"
+test "$(realpath .agents/skills/update-from-upstream)" = "$(realpath skills-internal/update-from-upstream)"
+head -5 .claude/skills/update-from-upstream/SKILL.md | grep -c "name: update-from-upstream\|disable-model-invocation: true"
+head -5 .agents/skills/update-from-upstream/SKILL.md | grep -c "name: update-from-upstream\|disable-model-invocation: true"
+printf 'policy:\n  allow_implicit_invocation: false\n' | cmp - .claude/skills/update-from-upstream/agents/openai.yaml
+printf 'policy:\n  allow_implicit_invocation: false\n' | cmp - .agents/skills/update-from-upstream/agents/openai.yaml
+set +e
+primary_output="$(scripts/update-from-upstream.sh 2>&1)"
+primary_rc=$?
+set -e
+test "$primary_rc" -eq 2
+printf '%s\n' "$primary_output" | grep -F '/using-git-worktrees'
+printf '%s\n' "$primary_output" | grep -F '/update-from-upstream'
+printf '%s\n' "$primary_output" | grep -F '$using-git-worktrees'
+printf '%s\n' "$primary_output" | grep -F '$update-from-upstream'
+```
+Expected: both frontmatter `grep` commands print `2`; every `test` and `cmp` succeeds; the updater exits `2` before fetching and its diagnostic names both Claude slash commands and both Codex dollar commands.
+
+- [ ] **Step 5: Insert the Maintenance section into `README.md`**
 
 Edit `README.md` — insert between the Install section and `## Reference`:
 
@@ -508,12 +555,12 @@ Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`
 
 `provenance.tsv` is the single source of truth for the skill ↔ upstream mapping. The Reference table below is generated from it by `scripts/gen-readme-table.sh` (between the provenance markers) — edit the tsv, never the table.
 
-Upstream sync: `/update-from-upstream`, a repo-local skill (`.claude/skills/`, loads only in this workspace). It runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through conflicts, new upstream skills, and deletions as grilled decisions, regenerates this README, runs `scripts/check-refs.sh`, bumps the submodule pins, and stops. The commit is mine.
+Upstream sync: `/update-from-upstream` in Claude or `$update-from-upstream` in Codex, backed by one canonical repo-local source (`skills-internal/update-from-upstream/`) exposed through `.claude/skills/` and `.agents/skills/` discovery symlinks. Claude's frontmatter and Codex's `agents/openai.yaml` both disable implicit invocation. It loads only in this workspace and is never part of the globally linked set. If isolation is absent, it names `/using-git-worktrees` then `/update-from-upstream` for Claude, or `$using-git-worktrees` then `$update-from-upstream` for Codex, and stops. It runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through conflicts, new upstream skills, and deletions as grilled decisions, regenerates this README, runs `scripts/check-refs.sh`, bumps the submodule pins, and stops. The commit is mine.
 
 ## Reference
 ```
 
-- [ ] **Step 4: Verify the README survived intact**
+- [ ] **Step 6: Verify the README survived intact**
 
 ```bash
 grep -c "provenance:begin\|provenance:end" README.md
@@ -523,18 +570,18 @@ scripts/check-refs.sh
 ```
 Expected: `2`; regeneration message; diff stat shows only the Maintenance insertion (the generated table region unchanged); `check-refs: clean`.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add .claude/skills/update-from-upstream/SKILL.md README.md
-git commit -m "feat: repo-local update-from-upstream skill + README maintenance docs"
+git add skills-internal/update-from-upstream/SKILL.md skills-internal/update-from-upstream/agents/openai.yaml .claude/skills/update-from-upstream .agents/skills/update-from-upstream scripts/update-from-upstream.sh AGENTS.md README.md docs/plans/0002-upstream-update-mechanism.md
+git commit -m "feat: expose upstream maintenance skill to codex"
 ```
 
 ---
 
 ## Self-Review
 
-- **Decision coverage (vs. the grilled design):** 3-way merge with pinned-SHA base → Task 2 `merge_skill`; whole-submodule atomicity → script merges every imported row per submodule, pins bumped only at skill close-out; TSV as single source with generated README table → Task 1; dropped rows + base-presence check so membership reporting stays quiet on never-considered skills → Task 1 Step 1 note + Task 2 membership block; report-never-act on membership → script only prints `NEW-CANDIDATE`/`ATTENTION`, skill acts only on user say-so; stop-and-report on renames → `ATTENTION` path, no auto-repair; merge-first-review-after with uncommitted working tree → script guard + no commits; two-tier walk-through with mandated upstream-log reading → SKILL.md §2–3; close-out with regenerate/check-refs/bump/STOP → SKILL.md §4; repo-local packaging → `.claude/skills/`, confirmed not gitignored. ✓
+- **Decision coverage (vs. the grilled design):** 3-way merge with pinned-SHA base → Task 2 `merge_skill`; whole-submodule atomicity → script merges every imported row per submodule, pins bumped only at skill close-out; TSV as single source with generated README table → Task 1; dropped rows + base-presence check so membership reporting stays quiet on never-considered skills → Task 1 Step 1 note + Task 2 membership block; report-never-act on membership → script only prints `NEW-CANDIDATE`/`ATTENTION`, skill acts only on user say-so; stop-and-report on renames → `ATTENTION` path, no auto-repair; merge-first-review-after with uncommitted working tree → script guard + no commits; two-tier walk-through with mandated upstream-log reading → SKILL.md §2–3; close-out with regenerate/check-refs/bump/STOP → SKILL.md §4; repo-local packaging → one canonical `skills-internal/` body with exact Claude and Codex discovery symlinks, Claude and Codex implicit invocation disabled separately, and no inclusion in distributed `skills/` or global installs. ✓
 - **Placeholder scan:** every file carries complete content; every verification has exact commands and expected output; no "handle appropriately" steps. The one deliberately loose expectation (Task 2 Step 5's "among unchanged lines") states exactly which lines are load-bearing. ✓
 - **Consistency:** `provenance.tsv` name/columns identical across Task 1 heredoc, generator awk (`$1..$7`), update-script awk (`$2,$4`), and SKILL.md references; pinned SHAs `66898f60e…`/`d884ae04e…` match the committed gitlinks; script/skill names match across README, SKILL.md, and commit messages; TSV row order matches 0001's README table order, proven byte-for-byte by Task 1 Step 6. ✓
 - **Prerequisite honesty:** Task 1 Step 6 requires 0001's README (with markers, per the 0001 amendment); Task 2 Step 3 requires committed `skills/` and gitlinks; both are stated in Global Constraints. ✓

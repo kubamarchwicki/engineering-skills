@@ -10,6 +10,7 @@ You are running the upstream sync for this repo. The mechanical merge is a scrip
 - Ask in plain prose, one question at a time, always leading with your recommended answer. Never use the AskUserQuestion widget.
 - Never commit, never push, never do more than the close-out lists. The commit belongs to the user.
 - Report, never act, on set membership: adopting or dropping a skill happens only on the user's explicit say-so.
+- Name user-invoked skills in the active harness's form: `/skill-name` for Claude and `$skill-name` for Codex.
 
 ## 1. Prove worktree isolation
 
@@ -17,7 +18,7 @@ This maintenance workflow may run only in a linked Git worktree. The primary che
 
 Resolve `git rev-parse --git-dir` and `git rev-parse --git-common-dir` to canonical paths, and also run `git rev-parse --show-superproject-working-tree`. A non-empty superproject path means this is a submodule, not an isolated root worktree. Only a root checkout whose canonical Git dir differs from its canonical common dir is isolated.
 
-If this is the primary checkout or a submodule, recommend creating an isolated worktree. Name `/using-git-worktrees` as the next manual command and **STOP**. Do not create or auto-chain the worktree. The user must run `/using-git-worktrees`, enter that linked worktree, and invoke `/update-from-upstream` again.
+If this is the primary checkout or a submodule, recommend creating an isolated worktree and **STOP**. For Claude, name `/using-git-worktrees` as the next manual command, then `/update-from-upstream` after entering the linked worktree. For Codex, name `$using-git-worktrees` (also available from the `/skills` picker), then `$update-from-upstream` after entering the linked worktree. Do not create or auto-chain the worktree.
 
 Once isolation is confirmed, initialize this worktree's pinned submodules before invoking the updater:
 
