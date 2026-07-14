@@ -144,7 +144,7 @@ committed_nondirectory_ancestor() {
   return 1
 }
 
-is_collapsed_descendant() {
+is_descendant_of_prefixes() {
   local candidate="$1" prefixes="$2" prefix
   [ -n "$prefixes" ] || return 1
   while IFS= read -r prefix; do
@@ -173,10 +173,11 @@ merge_skill() {
 
   local changed=0 added=0 deleted=0 kept=0 nconf=0
   local f rel ours bentry tentry oentry bmode btype bsha tmode ttype tsha omode otype osha
-  local result_mode merge_status tmpo tmpb tmpt tmpe collapsed_prefixes="" local_ancestor ancestor_rel
+  local result_mode merge_status tmpo tmpb tmpt tmpe collapsed_prefixes="" expanded_prefixes=""
+  local local_ancestor ancestor_rel
   while IFS= read -r f; do
     [ -n "$f" ] || continue
-    if is_collapsed_descendant "$f" "$collapsed_prefixes"; then continue; fi
+    if is_descendant_of_prefixes "$f" "$collapsed_prefixes"; then continue; fi
     rel="${f#"$srcpath"/}"
     ours="$ours_dir/$rel"
     bentry="$(entry_info "$sub" "$base" "$f")"
@@ -190,13 +191,15 @@ merge_skill() {
     if [ -n "$oentry" ]; then IFS=$'\t' read -r omode otype osha <<< "$oentry"; fi
 
     if [ -z "$bentry" ] && [ -n "$tentry" ]; then
-      local_ancestor="$(committed_nondirectory_ancestor "$ours_dir" "$rel" || true)"
-      if [ -n "$local_ancestor" ]; then
-        ancestor_rel="${local_ancestor#"$ours_dir"/}"
-        echo "   ! $local_ancestor: upstream added descendants beneath this committed local non-directory - KEPT, resolve in walk-through"
-        kept=$((kept+1)); total_attention=$((total_attention+1))
-        collapsed_prefixes="${collapsed_prefixes}${srcpath}/${ancestor_rel}/"$'\n'
-        continue
+      if ! is_descendant_of_prefixes "$f" "$expanded_prefixes"; then
+        local_ancestor="$(committed_nondirectory_ancestor "$ours_dir" "$rel" || true)"
+        if [ -n "$local_ancestor" ]; then
+          ancestor_rel="${local_ancestor#"$ours_dir"/}"
+          echo "   ! $local_ancestor: upstream added descendants beneath this committed local non-directory - KEPT, resolve in walk-through"
+          kept=$((kept+1)); total_attention=$((total_attention+1))
+          collapsed_prefixes="${collapsed_prefixes}${srcpath}/${ancestor_rel}/"$'\n'
+          continue
+        fi
       fi
     fi
 
@@ -241,6 +244,8 @@ merge_skill() {
         materialize_entry "$sub" "$target" "$f" "$ours" "$tmode" "$ttype"
         if [ "$btype" = "tree" ] && [ "$ttype" != "tree" ]; then
           collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        elif [ "$btype" != "tree" ] && [ "$ttype" = "tree" ]; then
+          expanded_prefixes="${expanded_prefixes}${f}/"$'\n'
         fi
         changed=$((changed+1))
         continue
