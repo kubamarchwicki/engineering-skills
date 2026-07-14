@@ -50,8 +50,15 @@ trap cleanup_active_tmp EXIT
 
 entry_info() {
   local repo="$1" commit="$2" path="$3"
-  git -C "$repo" ls-tree "$commit" -- "$path" \
-    | awk 'NR==1 {print $1 "\t" $2 "\t" $3}'
+  local entry
+  entry="$(git -C "$repo" ls-tree -d "$commit" -- "$path" \
+    | awk 'NR==1 {print $1 "\t" $2 "\t" $3}')"
+  if [ -n "$entry" ]; then
+    printf '%s\n' "$entry"
+  else
+    git -C "$repo" ls-tree "$commit" -- "$path" \
+      | awk 'NR==1 {print $1 "\t" $2 "\t" $3}'
+  fi
 }
 
 remove_local_path() {
@@ -110,6 +117,33 @@ is_regular_entry() {
   [ "$type" = "blob" ] && { [ "$mode" = "100644" ] || [ "$mode" = "100755" ]; }
 }
 
+is_tree_transition() {
+  local base_type="$1" target_type="$2"
+  if [ "$base_type" = "tree" ]; then
+    [ "$target_type" != "tree" ]
+  else
+    [ "$target_type" = "tree" ]
+  fi
+}
+
+committed_nondirectory_ancestor() {
+  local root="$1" relative="$2" current="$1" component entry mode type oid
+  while [ "${relative#*/}" != "$relative" ]; do
+    component="${relative%%/*}"
+    relative="${relative#*/}"
+    current="$current/$component"
+    entry="$(entry_info . HEAD "$current")"
+    if [ -n "$entry" ]; then
+      IFS=$'\t' read -r mode type oid <<< "$entry"
+      if [ "$type" != "tree" ]; then
+        printf '%s\n' "$current"
+        return 0
+      fi
+    fi
+  done
+  return 1
+}
+
 is_collapsed_descendant() {
   local candidate="$1" prefixes="$2" prefix
   [ -n "$prefixes" ] || return 1
@@ -139,7 +173,7 @@ merge_skill() {
 
   local changed=0 added=0 deleted=0 kept=0 nconf=0
   local f rel ours bentry tentry oentry bmode btype bsha tmode ttype tsha omode otype osha
-  local result_mode merge_status tmpo tmpb tmpt tmpe collapsed_prefixes=""
+  local result_mode merge_status tmpo tmpb tmpt tmpe collapsed_prefixes="" local_ancestor ancestor_rel
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     if is_collapsed_descendant "$f" "$collapsed_prefixes"; then continue; fi
@@ -154,6 +188,17 @@ merge_skill() {
     if [ -n "$bentry" ]; then IFS=$'\t' read -r bmode btype bsha <<< "$bentry"; fi
     if [ -n "$tentry" ]; then IFS=$'\t' read -r tmode ttype tsha <<< "$tentry"; fi
     if [ -n "$oentry" ]; then IFS=$'\t' read -r omode otype osha <<< "$oentry"; fi
+
+    if [ -z "$bentry" ] && [ -n "$tentry" ]; then
+      local_ancestor="$(committed_nondirectory_ancestor "$ours_dir" "$rel" || true)"
+      if [ -n "$local_ancestor" ]; then
+        ancestor_rel="${local_ancestor#"$ours_dir"/}"
+        echo "   ! $local_ancestor: upstream added descendants beneath this committed local non-directory - KEPT, resolve in walk-through"
+        kept=$((kept+1)); total_attention=$((total_attention+1))
+        collapsed_prefixes="${collapsed_prefixes}${srcpath}/${ancestor_rel}/"$'\n'
+        continue
+      fi
+    fi
 
     [ "$bentry" = "$tentry" ] && continue       # unchanged upstream, including mode/type
     if [ -z "$bentry" ]; then                    # added upstream
@@ -180,10 +225,16 @@ merge_skill() {
       if [ -z "$oentry" ]; then
         echo "   ! $ours: modified upstream but locally deleted - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
+        if is_tree_transition "$btype" "$ttype"; then
+          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        fi
         continue
       fi
 
       if [ "$oentry" = "$tentry" ]; then       # already matches upstream exactly
+        if is_tree_transition "$btype" "$ttype"; then
+          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        fi
         continue
       fi
       if [ "$oentry" = "$bentry" ]; then       # locally unchanged: safe whole-entry fast-forward
@@ -198,6 +249,9 @@ merge_skill() {
       if [ "$omode" != "$bmode" ] && [ "$tmode" != "$bmode" ] && [ "$omode" != "$tmode" ]; then
         echo "   ! $ours: upstream type/mode $bmode->$tmode conflicts with local $bmode->$omode - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
+        if is_tree_transition "$btype" "$ttype"; then
+          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        fi
         continue
       fi
       if ! is_regular_entry "$bmode" "$btype" \
@@ -205,6 +259,9 @@ merge_skill() {
           || ! is_regular_entry "$tmode" "$ttype"; then
         echo "   ! $ours: upstream changed a non-regular/type-transition entry with local changes - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
+        if is_tree_transition "$btype" "$ttype"; then
+          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        fi
         continue
       fi
 
@@ -246,11 +303,11 @@ merge_skill() {
       merge_status=0
       git merge-file -L "ours ($name)" -L "base" -L "upstream" "$tmpo" "$tmpb" "$tmpt" 2> "$tmpe" \
         || merge_status=$?
-      if [ "$merge_status" -eq 0 ] || [ "$merge_status" -eq 1 ]; then
+      if [ "$merge_status" -le 127 ]; then
         apply_regular_mode "$tmpo" "$result_mode"
         remove_local_path "$ours"
         mv "$tmpo" "$ours"
-        if [ "$merge_status" -eq 1 ]; then
+        if [ "$merge_status" -gt 0 ]; then
           echo "   CONFLICT: $ours (markers left in file)"
           nconf=$((nconf+1)); total_conflicts=$((total_conflicts+1))
         fi
