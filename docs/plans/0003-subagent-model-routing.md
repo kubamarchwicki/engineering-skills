@@ -12,13 +12,13 @@
 
 - Preserve both manual tracks and every manual stage boundary. This plan changes dispatches inside `subagent-driven-development` and `code-review`; it does not auto-chain stages, merge, push, clean worktrees, or touch unrelated skills.
 - Treat `docs/specs/subagent-model-routing.md` and `docs/adr/0004-use-centrally-governed-model-routing.md` as requirements. If this plan conflicts with either, stop and repair the plan before implementation.
-- Keep Routing Policy Version `1` and only the provider mappings explicitly approved in the spec.
+- Keep Routing Policy Version `2` and only the provider mappings explicitly approved in the spec.
 - Correctness is the primary objective. Cost and latency choose only among configurations that meet the Effective Floor.
 - Keep the two axes independent: capability is `Bounded < Integrated < Demanding < Exceptional`; reasoning is `low < medium < high < xhigh < max`.
 - Use `Demanding` for both `code-review` axes. Review independence requires fresh context, read-only authority, and adversarial instructions; it does not require a different provider or model family.
-- `Ultra` is a delegating Dispatch Mode, not a reasoning-effort rung. Version 1 must not select it automatically and must never use it for write-capable SDD workers. `max` is the strongest Single-Agent reasoning profile.
+- `Ultra` is a delegating Dispatch Mode, not a reasoning-effort rung. Version 2 must not select it automatically and must never use it for write-capable SDD workers. `max` is the strongest Single-Agent reasoning profile.
 - Explorers and implementers may proceed with an unverified Effective Floor because their output remains gated. Task reviewers and both final-review axis reviewers require a verified Effective Floor and fail closed when it cannot be verified. An unverified implementer can never make work Branch Ready without verified independent review.
-- A Policy Calibration Trigger is a hard human-in-the-loop stop. Finish already-running dispatches, emit `POLICY_CALIBRATION_REQUIRED`, give a redacted brief and the next gear `$grill-with-docs` in this repository, then wait. Never patch the policy locally from inside a review.
+- A Critical or Important finding that escaped verified task review emits `POLICY_CALIBRATION_REQUIRED` as pending policy debt but does not hard-stop the current authorized branch. Recompute Exceptional/xhigh, complete its remediation and acceptance gates, and if they pass report Branch Ready with calibration still pending; begin no future SDD work until the user resolves it. An incorrect Branch Ready result or the absence of any compatible verified-review surface is an immediate hard-stop trigger after in-flight work. Inability of only the active runtime to verify a reviewer stops before dispatch and names compatible capacity without itself forcing calibration. Never patch policy opportunistically from inside a consuming workflow.
 - Keep raw dispatch records local to each worktree at `.superpowers/model-routing/dispatches.jsonl`. Never record prompts, diffs, source code, secrets, or credentials. There is no global aggregate and no minimum dispatch-count threshold for human calibration.
 - Do not create a generator or shared provider manifest. The Codex and Claude profiles intentionally repeat their configuration.
 - Do not edit either upstream submodule. Record every local rewire in `provenance.tsv` and regenerate the README table.
@@ -66,7 +66,7 @@ Give a fresh read-only Controller only the current pre-change `skills/subagent-d
 
 - `Bounded task-review role floor`
 - `Code Review axes baseline`
-- `Unverified reviewer fails closed and calibrates`
+- `Unverified reviewer fails closed`
 
 Use this evaluation instruction:
 
@@ -85,7 +85,7 @@ Create `skills/subagent-driven-development/model-routing.md` with this exact con
 ````markdown
 # Subagent Model Routing Policy
 
-**Routing Policy Version: 1**
+**Routing Policy Version: 2**
 
 This policy chooses the minimum configuration that can meet the correctness bar for an engineering dispatch. Cost and latency break ties only after the Effective Floor is satisfied. Any change to floors, mappings, role baselines, fallback rules, calibration triggers, or the named profile set increments the integer policy version.
 
@@ -175,7 +175,7 @@ When an exact pair is absent, select the next available profile that meets or ex
 
 Every shipped profile is `Single-Agent`. `max` is Single-Agent reasoning. `Ultra` is a separate `Delegating` Dispatch Mode and is not a reasoning rung.
 
-Version 1 never selects Ultra automatically. An explicit user instruction may allow Delegating only for read-only, safely decomposable work. Never give a Delegating profile write authority and never use it for an SDD implementer or fixer. Code Review may launch its two Single-Agent axes in parallel; that controller-owned parallelism is not Ultra or nested delegation.
+Version 2 never selects Ultra automatically. An explicit user instruction may allow Delegating only for read-only, safely decomposable work. Never give a Delegating profile write authority and never use it for an SDD implementer or fixer. Code Review may launch its two Single-Agent axes in parallel; that controller-owned parallelism is not Ultra or nested delegation.
 
 ## Floor Verification and fallback
 
@@ -186,7 +186,7 @@ A floor is `verified` only when either:
 
 Profile existence without selection, prompt steering, an agent's self-description, and a requested-but-unreported configuration are `unverified`.
 
-Explorers, implementers, and fixers may run unverified because their output remains a proposal behind verified gates. Mark their record `unverified`. A task reviewer or either final-review axis reviewer must be verified before dispatch. If the active surface cannot enforce or report the floor, stop and name a compatible surface or configuration. Never silently substitute downward. A reported substitute is acceptable only when it meets or exceeds both axes.
+Explorers, implementers, and fixers may run unverified because their output remains a proposal behind verified gates. Mark their record `unverified`. A task reviewer or either final-review axis reviewer must be verified before dispatch. If the active surface cannot enforce or report the floor, stop before dispatch and name a compatible surface or configuration. This active-surface stop does not itself require Policy Calibration; resume only on compatible verified capacity. If no compatible surface or configuration can obtain the required reviewer, emit the hard-stop calibration trigger below. Never silently substitute downward. A reported substitute is acceptable only when it meets or exceeds both axes.
 
 Provider-wide or invocation-wide overrides take precedence over profile declarations. Inspect them when visible. Parent permissions remain authoritative: a profile never widens the Stage's authority. A repository-local override may raise a gate to compliance; it may never lower a global floor. A downward request may run only as unverified exploration or implementation and cannot satisfy task review, final review, or Branch Ready.
 
@@ -227,20 +227,22 @@ Use `null` when elapsed time or usage is unavailable. Do not include prompts, di
 Example started event:
 
 ```json
-{"policy_version":1,"event":"started","dispatch_id":"task-3-review-1","role":"task-reviewer","work_class":"Integrated","escalation_signals":[],"effective_floor":{"capability":"Integrated","reasoning":"high"},"dispatch_mode":"Single-Agent","requested":{"profile":"engineering-reviewer-integrated-high","model":"gpt-5.6-terra","effort":"high"},"effective":{"model":"gpt-5.6-terra","effort":"high"},"floor_verification":{"status":"verified","evidence":"named profile selected with no lowering override"},"outcome":{"first_pass":"pending","critical":0,"important":0,"retries":0,"escalation":"none","final_verification":"pending","elapsed":null,"usage":null}}
+{"policy_version":2,"event":"started","dispatch_id":"task-3-review-1","role":"task-reviewer","work_class":"Integrated","escalation_signals":[],"effective_floor":{"capability":"Integrated","reasoning":"high"},"dispatch_mode":"Single-Agent","requested":{"profile":"engineering-reviewer-integrated-high","model":"gpt-5.6-terra","effort":"high"},"effective":{"model":"gpt-5.6-terra","effort":"high"},"floor_verification":{"status":"verified","evidence":"named profile selected with no lowering override"},"outcome":{"first_pass":"pending","critical":0,"important":0,"retries":0,"escalation":"none","final_verification":"pending","elapsed":null,"usage":null}}
 ```
 
 ## Policy Calibration
 
 Only a human changes policy-wide floors, mappings, profiles, or classification signals. The operator may calibrate at any time and does not need a minimum sample or additional evidence.
 
-The following safety events require calibration: a Critical or Important finding escaped task review; work was incorrectly declared Branch Ready; or no compatible surface can provide a verified required reviewer. Finish already-running dispatches, do not start another dispatch or declare Branch Ready, and emit:
+A Critical or Important finding that escaped verified task review is pending policy debt. Emit:
 
 ```text
 POLICY_CALIBRATION_REQUIRED
 ```
 
-Then give a redacted brief with policy version, trigger, outcome counts, relevant record identifiers, observed failure, current policy decision, and proposed question. Name `$grill-with-docs` in the `engineering-skills` repository as the next manual gear and wait for the human. Do not adjust the policy locally inside the active implementation or review.
+Preserve the relevant record identifiers and give a redacted brief with policy version, trigger, outcome counts, observed failure, current policy decision, and proposed question. Do not hard-stop the current authorized branch: recompute final review as Exceptional/xhigh, finish in-flight work, and complete its fixes, re-review, both final axes, and verification. If all gates pass, Branch Ready may be reported together with the still-pending calibration requirement. Do not begin future SDD work until the human resolves calibration through `$grill-with-docs` in the `engineering-skills` repository. Do not adjust the policy opportunistically inside the consuming workflow.
+
+A previously declared Branch Ready result later shown incorrect, or the absence of any compatible surface or configuration that can obtain a verified required reviewer, is an immediate hard-stop calibration trigger. Finish already-running dispatches, preserve their results, emit `POLICY_CALIBRATION_REQUIRED` with the same redacted brief and next manual gear, start no new dispatch, make no Branch Ready declaration, and wait for the human.
 ````
 
 ### Step 4: Add black-box policy evaluations
@@ -336,7 +338,7 @@ Expected: raise Work Class to `Exceptional`; Effective Floor `Exceptional/xhigh`
 
 Input: Final review begins after a Critical finding escaped a verified task review.
 
-Expected: final Work Class `Exceptional`; Effective Floor `Exceptional/xhigh`; verified Exceptional reviewer; after collecting the review result, emit `POLICY_CALIBRATION_REQUIRED` and stop at the safe boundary.
+Expected: emit `POLICY_CALIBRATION_REQUIRED` and preserve the escaped-review record IDs, but treat it as pending policy debt rather than a hard stop for this branch. Recompute final Work Class `Exceptional`; use verified Exceptional/xhigh reviewers; finish in-flight review, fixes, re-review, both final axes, and verification. If every gate passes, report Branch Ready together with the pending calibration requirement. Start no future SDD work until the human resolves calibration through `$grill-with-docs`; never patch policy opportunistically in this workflow.
 
 ## Final review recomputes branch risk
 
@@ -356,11 +358,11 @@ Input: A Bounded implementer can be prompted with the requested model but the ru
 
 Expected: Effective Floor `Bounded/medium`; request `engineering-worker-bounded-medium`; Floor Verification `unverified`; dispatch may proceed as a proposal and record unverified status, but cannot satisfy an acceptance gate or make work Branch Ready.
 
-## Unverified reviewer fails closed and calibrates
+## Unverified reviewer fails closed
 
 Input: A task reviewer is required, but the runtime cannot enforce or report its model and effort.
 
-Expected: Effective Floor at least `Integrated/high`; no reviewer dispatch; name a compatible surface or configuration; emit `POLICY_CALIBRATION_REQUIRED` for inability to obtain a verified acceptance reviewer; stop and wait.
+Expected: Effective Floor at least `Integrated/high`; no reviewer dispatch; name a compatible surface or configuration and resume only there with verified capacity. Do not emit `POLICY_CALIBRATION_REQUIRED` merely because the active runtime is limited. Emit the hard-stop calibration trigger only if no compatible surface or configuration can obtain the verified reviewer.
 
 ## Prompt steering differs from named selection
 
@@ -402,7 +404,7 @@ Expected: append matching started and completed JSONL events with policy version
 
 Input: One parallel review axis is still running when its peer reports a Critical finding that escaped verified task review.
 
-Expected: let the in-flight peer finish and preserve its result; start no new dispatch; emit `POLICY_CALIBRATION_REQUIRED`; provide a redacted brief with policy version, trigger, outcome counts, and relevant record IDs; name `$grill-with-docs`; stop before Branch Ready.
+Expected: let the in-flight peer finish and preserve its result; emit `POLICY_CALIBRATION_REQUIRED` with a redacted brief containing policy version, trigger, outcome counts, and relevant record IDs. Treat the escape as pending policy debt: recompute Exceptional/xhigh, complete current-branch fixes, re-review, both final axes, and verification. If all gates pass, report Branch Ready together with the pending calibration requirement. Name `$grill-with-docs` and start no future SDD work until calibration is resolved.
 
 ## Incorrect Branch Ready calibrates
 
@@ -564,7 +566,7 @@ Create each file with the exact content shown.
 
 ```toml
 name = "engineering-worker-bounded-medium"
-description = "Write-capable engineering worker for a Bounded/medium Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Write-capable engineering worker for a Bounded/medium Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
@@ -577,7 +579,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 
 ```toml
 name = "engineering-worker-bounded-high"
-description = "Write-capable engineering worker for a Bounded/high Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Write-capable engineering worker for a Bounded/high Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-luna"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
@@ -590,7 +592,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 
 ```toml
 name = "engineering-worker-integrated-medium"
-description = "Write-capable engineering worker for an Integrated/medium Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Write-capable engineering worker for an Integrated/medium Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
@@ -603,7 +605,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 
 ```toml
 name = "engineering-worker-integrated-high"
-description = "Write-capable engineering worker for an Integrated/high Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Write-capable engineering worker for an Integrated/high Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
@@ -616,7 +618,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 
 ```toml
 name = "engineering-worker-demanding-high"
-description = "Write-capable engineering worker for a Demanding/high Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Write-capable engineering worker for a Demanding/high Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
@@ -629,7 +631,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 
 ```toml
 name = "engineering-worker-demanding-xhigh"
-description = "Write-capable engineering worker for a Demanding/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Write-capable engineering worker for a Demanding/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
@@ -642,7 +644,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 
 ```toml
 name = "engineering-worker-exceptional-xhigh"
-description = "Write-capable engineering worker for an Exceptional/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Write-capable engineering worker for an Exceptional/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
@@ -670,7 +672,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 
 ```toml
 name = "engineering-reviewer-integrated-high"
-description = "Read-only independent engineering reviewer for an Integrated/high Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Read-only independent engineering reviewer for an Integrated/high Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
@@ -683,7 +685,7 @@ Review only the supplied brief, repository evidence, and diff. Do not mutate fil
 
 ```toml
 name = "engineering-reviewer-integrated-xhigh"
-description = "Read-only independent engineering reviewer for an Integrated/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Read-only independent engineering reviewer for an Integrated/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-terra"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "read-only"
@@ -709,7 +711,7 @@ Review only the supplied brief, repository evidence, and diff. Do not mutate fil
 
 ```toml
 name = "engineering-reviewer-demanding-xhigh"
-description = "Read-only independent engineering reviewer for a Demanding/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Read-only independent engineering reviewer for a Demanding/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "read-only"
@@ -722,7 +724,7 @@ Review only the supplied brief, repository evidence, and diff. Do not mutate fil
 
 ```toml
 name = "engineering-reviewer-exceptional-xhigh"
-description = "Read-only independent engineering reviewer for an Exceptional/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile."
+description = "Read-only independent engineering reviewer for an Exceptional/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile."
 model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "read-only"
@@ -860,7 +862,7 @@ Create each file with the exact content shown.
 ```markdown
 ---
 name: engineering-worker-bounded-medium
-description: Write-capable engineering worker for a Bounded/medium Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Write-capable engineering worker for a Bounded/medium Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-sonnet-5
 effort: medium
 disallowedTools: Agent
@@ -874,7 +876,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 ```markdown
 ---
 name: engineering-worker-bounded-high
-description: Write-capable engineering worker for a Bounded/high Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Write-capable engineering worker for a Bounded/high Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-sonnet-5
 effort: high
 disallowedTools: Agent
@@ -888,7 +890,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 ```markdown
 ---
 name: engineering-worker-integrated-medium
-description: Write-capable engineering worker for an Integrated/medium Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Write-capable engineering worker for an Integrated/medium Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-sonnet-5
 effort: medium
 disallowedTools: Agent
@@ -902,7 +904,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 ```markdown
 ---
 name: engineering-worker-integrated-high
-description: Write-capable engineering worker for an Integrated/high Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Write-capable engineering worker for an Integrated/high Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-sonnet-5
 effort: high
 disallowedTools: Agent
@@ -916,7 +918,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 ```markdown
 ---
 name: engineering-worker-demanding-high
-description: Write-capable engineering worker for a Demanding/high Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Write-capable engineering worker for a Demanding/high Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-opus-4-8
 effort: high
 disallowedTools: Agent
@@ -930,7 +932,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 ```markdown
 ---
 name: engineering-worker-demanding-xhigh
-description: Write-capable engineering worker for a Demanding/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Write-capable engineering worker for a Demanding/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-opus-4-8
 effort: xhigh
 disallowedTools: Agent
@@ -944,7 +946,7 @@ Implement only the supplied task or fix brief. Do not spawn subagents. Follow re
 ```markdown
 ---
 name: engineering-worker-exceptional-xhigh
-description: Write-capable engineering worker for an Exceptional/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Write-capable engineering worker for an Exceptional/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-fable-5
 effort: xhigh
 disallowedTools: Agent
@@ -976,7 +978,7 @@ The reviewer allowlist intentionally omits `Write`, `Edit`, `Bash`, and `Agent`.
 ```markdown
 ---
 name: engineering-reviewer-integrated-high
-description: Read-only independent engineering reviewer for an Integrated/high Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Read-only independent engineering reviewer for an Integrated/high Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-sonnet-5
 effort: high
 tools: Read, Grep, Glob
@@ -990,7 +992,7 @@ Review only the supplied brief, repository evidence, and diff. Do not mutate fil
 ```markdown
 ---
 name: engineering-reviewer-integrated-xhigh
-description: Read-only independent engineering reviewer for an Integrated/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Read-only independent engineering reviewer for an Integrated/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-sonnet-5
 effort: xhigh
 tools: Read, Grep, Glob
@@ -1018,7 +1020,7 @@ Review only the supplied brief, repository evidence, and diff. Do not mutate fil
 ```markdown
 ---
 name: engineering-reviewer-demanding-xhigh
-description: Read-only independent engineering reviewer for a Demanding/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Read-only independent engineering reviewer for a Demanding/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-opus-4-8
 effort: xhigh
 tools: Read, Grep, Glob
@@ -1032,7 +1034,7 @@ Review only the supplied brief, repository evidence, and diff. Do not mutate fil
 ```markdown
 ---
 name: engineering-reviewer-exceptional-xhigh
-description: Read-only independent engineering reviewer for an Exceptional/xhigh Effective Floor. Use only when Routing Policy Version 1 selects this profile.
+description: Read-only independent engineering reviewer for an Exceptional/xhigh Effective Floor. Use only when Routing Policy Version 2 selects this profile.
 model: claude-fable-5
 effort: xhigh
 tools: Read, Grep, Glob
@@ -1111,7 +1113,7 @@ if [ -f "$recorder" ]; then
 
   record_tmp=$(mktemp -d "${TMPDIR:-/tmp}/model-routing-record.XXXXXX")
   git -C "$record_tmp" init -q
-  sample_record='{"policy_version":1,"event":"started","dispatch_id":"check-1","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{"capability":"Bounded","reasoning":"medium"},"dispatch_mode":"Single-Agent","requested":{"profile":"engineering-worker-bounded-medium","model":"gpt-5.6-luna","effort":"medium"},"effective":{"model":null,"effort":null},"floor_verification":{"status":"unverified","evidence":"runtime did not report"},"outcome":{"first_pass":"pending","critical":0,"important":0,"retries":0,"escalation":"none","final_verification":"pending","elapsed":null,"usage":null}}'
+  sample_record='{"policy_version":2,"event":"started","dispatch_id":"check-1","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{"capability":"Bounded","reasoning":"medium"},"dispatch_mode":"Single-Agent","requested":{"profile":"engineering-worker-bounded-medium","model":"gpt-5.6-luna","effort":"medium"},"effective":{"model":null,"effort":null},"floor_verification":{"status":"unverified","evidence":"runtime did not report"},"outcome":{"first_pass":"pending","critical":0,"important":0,"retries":0,"escalation":"none","final_verification":"pending","elapsed":null,"usage":null}}'
   (
     cd "$record_tmp"
     printf '%s\n' "$sample_record" | "$recorder" >/dev/null
@@ -1132,13 +1134,13 @@ if [ -f "$recorder" ]; then
   fi
   if (
     cd "$record_tmp"
-    printf '%s\n' '{"policy_version":1,"event":"started","dispatch_id":"incomplete","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{},"dispatch_mode":"Single-Agent","requested":{},"effective":{},"floor_verification":{},"outcome":{}}' | "$recorder" >/dev/null 2>&1
+    printf '%s\n' '{"policy_version":2,"event":"started","dispatch_id":"incomplete","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{},"dispatch_mode":"Single-Agent","requested":{},"effective":{},"floor_verification":{},"outcome":{}}' | "$recorder" >/dev/null 2>&1
   ); then
     fail 'record-dispatch accepted missing nested fields'
   fi
   if (
     cd "$record_tmp"
-    printf '%s\n' "$sample_record" | sed 's/"policy_version":1/"policy_version":2/' | "$recorder" >/dev/null 2>&1
+    printf '%s\n' "$sample_record" | sed 's/"policy_version":2/"policy_version":1/' | "$recorder" >/dev/null 2>&1
   ); then
     fail 'record-dispatch accepted the wrong policy version'
   fi
@@ -1232,9 +1234,9 @@ for key in \
 done
 
 case "$record" in
-  *'"policy_version":1'*) ;;
+  *'"policy_version":2'*) ;;
   *)
-    printf 'record-dispatch: policy_version must be 1\n' >&2
+    printf 'record-dispatch: policy_version must be 2\n' >&2
     exit 2
     ;;
 esac
@@ -1288,7 +1290,7 @@ In `skills/subagent-driven-development/SKILL.md`, replace the complete `## Model
 ## Model Routing
 
 Before the first dispatch, read [model-routing.md](model-routing.md). Apply
-Routing Policy Version 1 to every implementer, fixer, task reviewer, and
+Routing Policy Version 2 to every implementer, fixer, task reviewer, and
 final-review axis dispatch. The SDD controller owns final-review orchestration;
 never delegate the `code-review` workflow to a reviewer subagent.
 
@@ -1308,11 +1310,13 @@ For each dispatch:
 An implementer or fixer may proceed with an unverified Effective Floor because
 its work remains a proposal. A task reviewer or either final-review axis
 reviewer requires a verified Effective Floor. If the active runtime cannot
-enforce or report that floor, stop before dispatch, emit
-`POLICY_CALIBRATION_REQUIRED`, name a
-compatible surface or configuration, provide the redacted calibration brief,
-name `$grill-with-docs` in `engineering-skills`, and wait. Never silently
-substitute downward.
+enforce or report that floor, stop before dispatch and name a compatible
+surface or configuration. Resume only there with verified capacity; this
+active-runtime stop does not itself require Policy Calibration. If no
+compatible surface or configuration can obtain the reviewer, emit the
+hard-stop `POLICY_CALIBRATION_REQUIRED`, provide the redacted calibration
+brief, name `$grill-with-docs` in `engineering-skills`, and wait. Never
+silently substitute downward.
 
 Review independence means fresh context, read-only authority, and adversarial
 instructions. It does not require a different provider or model family from
@@ -1327,7 +1331,7 @@ Make these exact replacements in `skills/subagent-driven-development/SKILL.md`.
 Replace the `Continuous execution` paragraph at current line 18 with:
 
 ```markdown
-**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, inability to verify a required reviewer Effective Floor, a Policy Calibration Trigger, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, inability of the active runtime to verify a required reviewer Effective Floor, an immediate hard-stop Policy Calibration Trigger, or all tasks complete. Pending policy debt from an escaped finding does not stop the current authorized branch's remediation and acceptance work. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 ```
 
 In the process diagram, replace these three node labels everywhere they occur:
@@ -1388,16 +1392,24 @@ the issue. Never repeat an unchanged failed dispatch.
 
 If a task reviewer or either final-review axis reviewer returns
 `FLOOR_UNVERIFIED`, discard the result as a gate, finish any already-running
-peer, emit `POLICY_CALIBRATION_REQUIRED`,
-name the compatible surface or configuration that is missing, provide the
+peer, stop before another reviewer dispatch, and name a compatible surface or
+configuration. Resume only there with verified capacity. If none can obtain
+the reviewer, emit the hard-stop `POLICY_CALIBRATION_REQUIRED`, provide the
 redacted brief, name `$grill-with-docs` in `engineering-skills`, and wait.
 
-If a Critical or Important finding escaped a verified task review, or work was
-incorrectly declared Branch Ready, finish already-running dispatches and emit
-`POLICY_CALIBRATION_REQUIRED`. Provide a redacted brief with record identifiers,
-name `$grill-with-docs` in the `engineering-skills` repository as the next gear,
-and stop before the next dispatch or Branch Ready. The human owns global policy
-changes; do not patch the policy inside this workflow.
+If a Critical or Important finding escaped a verified task review, emit
+`POLICY_CALIBRATION_REQUIRED` as pending policy debt and provide a redacted brief
+with record identifiers. Recompute final review as Exceptional/xhigh, finish
+in-flight work, and complete current-branch fixes, re-review, both final axes,
+and verification. If all gates pass, report Branch Ready together with the
+pending calibration requirement. Begin no future SDD work until the human
+resolves it through `$grill-with-docs` in `engineering-skills`.
+
+If work was incorrectly declared Branch Ready, finish already-running
+dispatches, preserve their results, emit the hard-stop
+`POLICY_CALIBRATION_REQUIRED`, provide the redacted brief and next manual gear,
+and start no new dispatch or readiness claim. The human owns global policy
+changes; do not patch the policy opportunistically inside this workflow.
 ```
 
 Add these bullets at the end of `## Durable Progress`, immediately before `## Prompt Templates`:
@@ -1452,7 +1464,7 @@ Add these items to the `Never:` list under `## Red Flags`:
 - Let an unverified implementer or fixer make work Branch Ready
 - Silently substitute a profile below either Effective Floor axis
 - Select Ultra automatically or give a Delegating agent write authority
-- Continue after `POLICY_CALIBRATION_REQUIRED` without a human policy decision
+- Begin future SDD work while calibration is pending, or continue after an immediate hard-stop `POLICY_CALIBRATION_REQUIRED`
 ```
 
 ### Step 5: Pass routing facts to implementers
@@ -1559,7 +1571,7 @@ Expected:
 Then use a fresh read-only subagent as an evaluation runner. Give it `skills/subagent-driven-development/SKILL.md`, the linked `model-routing.md`, and one Input paragraph from `model-routing-evals.md`, but not the Expected paragraph. Use this instruction:
 
 ```text
-Apply Routing Policy Version 1. Return only Work Class, Effective Floor,
+Apply Routing Policy Version 2. Return only Work Class, Effective Floor,
 Profile, Floor Verification, and Action. Do not read the Expected paragraph.
 Do not mutate files and do not spawn another agent.
 ```
@@ -1604,7 +1616,7 @@ In `skills/code-review/SKILL.md`, replace the complete section from `### 4. Spaw
 
 Read the [Subagent Model Routing Policy](../subagent-driven-development/model-routing.md)
 before dispatching.
-Apply Routing Policy Version 1 independently to the Standards and Spec axes.
+Apply Routing Policy Version 2 independently to the Standards and Spec axes.
 Both axes have a Demanding/high role floor. Recompute branch Work Class from
 the complete diff; raise either axis to Exceptional when the policy's signals
 apply. Do not lower an axis because the diff is small.
@@ -1615,7 +1627,10 @@ reviewer only when classification or the Escalation Ladder requires it.
 Establish a verified Effective Floor for each axis before dispatch. Named
 profile enforcement or a trustworthy effective model-and-effort report counts;
 prompt steering alone does not. If either required reviewer cannot be verified,
-stop before all dispatches, name a compatible surface or configuration, emit
+stop before all dispatches and name a compatible surface or configuration.
+Resume only there with verified capacity. Do not emit calibration merely
+because the active runtime is limited. If no compatible surface or
+configuration can obtain the reviewer, emit the hard-stop
 `POLICY_CALIBRATION_REQUIRED`, provide the redacted calibration brief, name
 `$grill-with-docs` in `engineering-skills`, and wait. Never silently substitute
 downward.
@@ -1672,14 +1687,23 @@ At the end of the Aggregate section, immediately after its one-line-summary rule
 ```markdown
 
 If a reviewer reports `FLOOR_UNVERIFIED`, discard that axis as a gate result and
-finish the parallel peer if it is already running, then handle inability to
-obtain a verified reviewer as the Policy Calibration Trigger from step 4; do
-not report a pass. If a Critical or Important finding escaped an earlier
-verified task review, or the branch was already incorrectly described as
-Branch Ready, finish the parallel peer if it is already running, emit
-`POLICY_CALIBRATION_REQUIRED`, provide a redacted brief with Dispatch Record
-identifiers, name `$grill-with-docs` in the `engineering-skills` repository,
-and stop. Never change the global routing policy from inside this review.
+finish the parallel peer if it is already running, stop before another review
+dispatch, and name compatible verified capacity; do not report a pass. Emit the
+hard-stop calibration trigger only if no compatible surface or configuration
+can obtain the reviewer.
+
+If a Critical or Important finding escaped an earlier verified task review,
+finish the parallel peer, emit `POLICY_CALIBRATION_REQUIRED` as pending policy
+debt, and preserve the Dispatch Record identifiers. Continue only this branch's
+Exceptional/xhigh fixes, re-review, both final axes, and verification. A passing
+branch may be reported Branch Ready with calibration still pending; begin no
+future SDD work until the human resolves it through `$grill-with-docs`.
+
+If the branch was already incorrectly described as Branch Ready, finish the
+parallel peer, emit the hard-stop `POLICY_CALIBRATION_REQUIRED`, provide the
+redacted brief and next manual gear, and stop before another dispatch or
+readiness claim. Never change the global routing policy opportunistically from
+inside this review.
 ```
 
 ### Step 3: Run focused checks
@@ -1948,7 +1972,7 @@ git commit -m "feat: link model routing profiles"
 In `provenance.tsv`, replace the complete `subagent-driven-development` row with this exact tab-separated row:
 
 ```text
-subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; code-review axes; verification gate; stop-before-merge; v1 model-routing policy/profiles; local dispatch records
+subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; code-review axes; verification gate; stop-before-merge; v2 model-routing policy/profiles; local dispatch records
 ```
 
 Replace the complete `code-review` row with this exact tab-separated row:
@@ -2104,7 +2128,7 @@ Report the branch as ready only if the loaded workflow's independent final revie
 3. Restart Codex and Claude harness sessions.
 4. Run every black-box case from `model-routing-evals.md` on the activated surfaces and confirm gate reviewers report a verified Effective Floor.
 
-If activation reveals a schema mismatch, downward substitution, inability to verify a reviewer, escaped Critical/Important finding, or incorrect Branch Ready result, emit `POLICY_CALIBRATION_REQUIRED`, name `$grill-with-docs` in this repository, and wait for the human.
+If activation reveals a schema mismatch or downward substitution, preserve the evidence and stop activation. If the active runtime cannot verify a reviewer, name compatible verified capacity; emit the hard-stop `POLICY_CALIBRATION_REQUIRED` only when none exists. If a Critical/Important finding escaped verified review, emit the flag as pending policy debt and complete only the current branch's Exceptional/xhigh acceptance work before blocking future SDD. An incorrect Branch Ready result emits the immediate hard-stop flag. Every calibration handoff names `$grill-with-docs` in this repository.
 
 ---
 
@@ -2118,7 +2142,7 @@ If activation reveals a schema mismatch, downward substitution, inability to ver
 | Stories 39-41: harness-specific, idempotent, collision-safe distribution | Task 6 | Twice-run throwaway-HOME test, target checks, real-entry refusal, and ownership-scoped pruning |
 | Stories 42-52: verification, fallback, overrides, independence, escalation | Tasks 1, 4, and 5 | Unsupported-runtime, prompt-only, substitution, override, independence, and ordered-escalation cases |
 | Stories 53-58: complete redacted local Dispatch Records without aggregation | Tasks 1 and 4 | Recorder acceptance/rejection tests and the complete-record black-box case |
-| Stories 59-66: human calibration, hard safety stops, versioning | Tasks 1, 4, and 5 | Three safety-trigger cases, in-flight wait, no-threshold case, and version validation |
+| Stories 59-66: human calibration, pending policy debt, hard safety stops, versioning | Tasks 1, 4, and 5 | Escape-continuation, hard-stop, active-runtime fallback, no-threshold, and version-validation cases |
 | Stories 67-70: provenance, Stage containment, verification, actionable fail-closed stop | Tasks 4, 5, and 7 | Provenance regeneration, reference sweep, final gates, accurate status, and manual activation handoff |
 | Testing Decisions: provider adapters and shell portability | Tasks 2, 3, 4, and 7 | Exact field/count checks, authority checks, official-schema review, and `bash -n` |
 | Testing Decisions: imported divergence and generated docs | Task 7 | Upstream directory comparison, seven-column/membership/path validation, and twice-run README generation |
@@ -2137,7 +2161,7 @@ Before handing this plan off, verify:
 - Final whole-branch review is orchestrated by the SDD controller through two terminal Single-Agent review axes; no reviewer profile is asked to spawn another reviewer.
 - Ultra remains outside the Single-Agent reasoning ladder and is never selected automatically.
 - Dispatch records are redacted, worktree-local, self-ignored, and not globally aggregated.
-- Calibration is human-owned, has no evidence-count prerequisite, and always stops the workflow.
+- Calibration is human-owned and has no evidence-count prerequisite; escape debt permits only the current branch's remediation and acceptance, while hard-stop triggers start no new dispatch or readiness claim.
 - No task changes an upstream submodule, real global installation, merge state, remote branch, or unrelated working-tree content.
 - The final handoff names `/subagent-driven-development` and stops.
 

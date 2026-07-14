@@ -12,11 +12,11 @@ The user needs one globally governed policy for the acceptance path, explicit pr
 
 Introduce a versioned, provider-neutral Routing Policy owned by Subagent-Driven Development and consumed by Code Review. For every acceptance-relevant dispatch, the Controller assigns a qualitative Work Class, combines the work's floors with the subagent role's floors to obtain the Effective Floor, selects a pinned Provider Adapter profile that meets or exceeds both capability and reasoning, and writes a Dispatch Record.
 
-The first version covers SDD implementers, fixers, task reviewers, and final review, plus Code Review's Standards and Spec axes. It uses pinned Codex and Claude model identifiers, explicit reasoning levels, read-only reviewer profiles, a finite set of named profiles, and Single-Agent dispatches by default. Provider profiles remain colocated with the owning Skill and are additionally exposed in each harness's custom-agent discovery location by the existing linker.
+The current version covers SDD implementers, fixers, task reviewers, and final review, plus Code Review's Standards and Spec axes. It uses pinned Codex and Claude model identifiers, explicit reasoning levels, read-only reviewer profiles, a finite set of named profiles, and Single-Agent dispatches by default. Provider profiles remain colocated with the owning Skill and are additionally exposed in each harness's custom-agent discovery location by the existing linker.
 
 Explorers and implementers may proceed when their Effective Floor is unverified because they produce evidence or proposed changes. Acceptance reviewers fail closed unless their Effective Floor is verified. No runtime may silently substitute a configuration below the floor, prompt steering alone does not prove selection, and no local workflow may tune the global Routing Policy.
 
-Policy Calibration is initiated by the user without an evidence threshold. Concrete correctness failures or the inability to obtain a verified reviewer emit an explicit calibration flag, preserve local evidence, stop at a safe acceptance boundary, and hand control back to the user. Manual Gear Shifts, final verification, stop-before-merge behavior, and the user's ownership of merge, sanity testing, and cleanup remain unchanged.
+Policy Calibration is initiated by the user without an evidence threshold. A Critical or Important finding that escaped verified task review emits an explicit pending-calibration flag and preserves local evidence, but the current authorized branch continues through Exceptional/xhigh remediation, re-review, both final axes, and verification. An incorrect Branch Ready result or the absence of any compatible surface that can obtain a verified reviewer is an immediate hard stop. Inability of only the active runtime to verify a required reviewer fails closed before dispatch and names a compatible surface or configuration without itself forcing calibration. Manual Gear Shifts, final verification, stop-before-merge behavior, and the user's ownership of merge, sanity testing, and cleanup remain unchanged.
 
 ## User Stories
 
@@ -80,7 +80,7 @@ Policy Calibration is initiated by the user without an evidence threshold. Concr
 
 30. As an SDD user, I want implementers and fixers to remain Single-Agent, so that parallel writers cannot violate sequential task ownership.
 
-31. As a Code Review user, I want v1 reviewer profiles to remain Single-Agent, so that the existing two-axis orchestration stays explicit and auditable.
+31. As a Code Review user, I want v2 reviewer profiles to remain Single-Agent, so that the existing two-axis orchestration stays explicit and auditable.
 
 32. As a user, I want Delegating mode allowed only for explicitly decomposable, read-only work, so that nested delegation cannot expand write authority or bypass workflow structure.
 
@@ -138,9 +138,9 @@ Policy Calibration is initiated by the user without an evidence threshold. Concr
 
 59. As a user, I want to initiate Policy Calibration whenever I judge it necessary, so that global policy changes do not require a prescribed amount of evidence.
 
-60. As a user, I want a Critical or Important escape, an incorrect Branch Ready result, or inability to obtain a verified reviewer to emit `POLICY_CALIBRATION_REQUIRED`, so that concrete safety failures are impossible to miss.
+60. As a user, I want a Critical or Important escape to emit `POLICY_CALIBRATION_REQUIRED`, preserve its record identifiers, and force Exceptional/xhigh acceptance for the current branch without blocking its remediation, so that policy debt is visible without abandoning the authorized work.
 
-61. As a user, I want calibration stops to wait for in-flight subagents and pause before the next dispatch or Branch Ready declaration, so that HITL occurs at a safe acceptance boundary.
+61. As a user, I want an incorrect Branch Ready result or the absence of any compatible verified-review surface to hard-stop after in-flight work, so that unsafe acceptance cannot continue.
 
 62. As a user, I want a calibration flag to produce a redacted handoff with relevant Dispatch Record identifiers, so that I can review the failure without copying prompts or code.
 
@@ -168,7 +168,7 @@ Policy Calibration is initiated by the user without an evidence threshold. Concr
 
 - Subagent-Driven Development owns the canonical Routing Policy reference. Code Review consumes the same reference rather than maintaining a second policy copy. No new Original Skill is introduced; `how` remains the only Original Skill in the Distributed Skill Set.
 
-- V1 modifies only the acceptance path: SDD implementers, fixers, task reviewers, final review, and Code Review's Standards and Spec axes. Other active subagent sites remain unchanged.
+- V2 modifies only the acceptance path: SDD implementers, fixers, task reviewers, final review, and Code Review's Standards and Spec axes. Other active subagent sites remain unchanged.
 
 - Work Class is qualitative rather than numeric. File count, line count, and a point score never determine the class by themselves.
 
@@ -204,9 +204,9 @@ Policy Calibration is initiated by the user without an evidence threshold. Concr
 
 - Reasoning mapping starts at low for Bounded, medium for Integrated, high for Demanding, and xhigh for Exceptional. Max is an explicit Single-Agent escalation above xhigh, not a default Work-Class floor.
 
-- Ultra is modeled as Delegating Dispatch Mode because it changes execution topology in addition to reasoning. V1 automatically selects no Ultra profile. An explicit user request may use Delegating only for independently decomposable, read-only work; SDD implementers and fixers may never use it.
+- Ultra is modeled as Delegating Dispatch Mode because it changes execution topology in addition to reasoning. V2 automatically selects no Ultra profile. An explicit user request may use Delegating only for independently decomposable, read-only work; SDD implementers and fixers may never use it.
 
-- Every v1 named profile is Single-Agent. Code Review retains its existing explicit parallelism between Standards and Spec; nested reviewer delegation is not automatic.
+- Every v2 named profile is Single-Agent. Code Review retains its existing explicit parallelism between Standards and Spec; nested reviewer delegation is not automatic.
 
 - Provider Adapters use full pinned model identifiers. Moving provider aliases are not used.
 
@@ -226,6 +226,8 @@ Policy Calibration is initiated by the user without an evidence threshold. Concr
 
 - Explorers and implementers may run with an unverified Effective Floor, but their output remains evidence or a proposed change. Task review and final review fail closed without Floor Verification. An unverified implementer can never make work Branch Ready without verified independent review.
 
+- If the active runtime cannot enforce or report a required reviewer floor, the workflow stops before dispatch and names a compatible surface or configuration. This active-runtime stop does not itself require Policy Calibration; the workflow may resume on compatible verified capacity. If no compatible surface or configuration can obtain the reviewer, the stop becomes a hard Policy Calibration Trigger.
+
 - A local user override may raise capability, reasoning, or an allowlisted Dispatch Mode. A request below the Effective Floor may run only as unverified exploration or implementation and cannot satisfy an acceptance gate. Lowering a global floor requires Policy Calibration in Engineering Skills.
 
 - Review Independence comes from fresh context, read-only authority, independent evidence, and an adversarial review contract. A reviewer need not use a different model family from the implementer.
@@ -238,9 +240,11 @@ Policy Calibration is initiated by the user without an evidence threshold. Concr
 
 - Policy Calibration is always human-controlled and may be initiated without an evidence threshold. Dispatch Records are optional evidence rather than authority to self-tune.
 
-- A Critical or Important defect that escaped an earlier task reviewer, a previously declared Branch Ready result later shown incorrect, or inability to obtain a verified acceptance reviewer emits `POLICY_CALIBRATION_REQUIRED`.
+- A Critical or Important defect that escaped a verified task reviewer emits `POLICY_CALIBRATION_REQUIRED` as pending policy debt and preserves the relevant Dispatch Record identifiers. It does not hard-stop the current authorized branch. The Controller recomputes final review as Exceptional/xhigh, completes in-flight work, fixes, re-review, both final axes, and verification. If every gate passes, it may report Branch Ready together with the still-pending calibration requirement. No future SDD work may begin until the user resolves that calibration.
 
-- A calibration stop waits for any in-flight subagent, preserves its result, then stops before the next implementer, fixer, reviewer, or Branch Ready declaration. It supplies a redacted brief with policy version, trigger, outcome counts, and relevant Dispatch Record identifiers, names `$grill-with-docs` in the Engineering Skills repository as the next manual Gear Shift, and waits for the user.
+- A previously declared Branch Ready result later shown incorrect, or the absence of any compatible surface or configuration that can obtain a verified acceptance reviewer, is an immediate hard-stop Policy Calibration Trigger. The workflow waits for any in-flight subagent, preserves its result, then starts no new dispatch and makes no Branch Ready declaration.
+
+- Every calibration flag supplies a redacted brief with policy version, trigger, outcome counts, and relevant Dispatch Record identifiers and names `$grill-with-docs` in the Engineering Skills repository as the next manual Gear Shift. A hard-stop trigger waits for the user immediately; pending escape debt waits before future SDD work after the current branch reaches its acceptance boundary.
 
 - Consuming workflows may use the Escalation Ladder for the current task but never rewrite floors, mappings, thresholds, or profiles locally.
 
@@ -286,15 +290,15 @@ Policy Calibration is initiated by the user without an evidence threshold. Concr
 
 - Escalation scenarios must prove the order context, reasoning, capability, split, human; an unchanged retry must be rejected.
 
-- Max scenarios must require explicit escalation. No ordinary Work Class or role baseline selects Max, and no v1 scenario automatically selects Ultra.
+- Max scenarios must require explicit escalation. No ordinary Work Class or role baseline selects Max, and no v2 scenario automatically selects Ultra.
 
 - Dispatch Record tests validate required fields, policy version, requested/effective distinction, correctness outcomes, and omission of prompts, diffs, and source code.
 
-- Calibration tests cover each concrete safety trigger. They verify that an in-flight result is collected, no next dispatch or Branch Ready declaration occurs, the redacted brief identifies relevant records, the Engineering Skills `$grill-with-docs` handoff is named, and the workflow waits for the user.
+- Calibration tests cover each boundary. Escape tests verify that in-flight results are collected, current-branch remediation and acceptance continue at Exceptional/xhigh, a passing branch may be reported Branch Ready with calibration still pending, and no future SDD work begins before calibration. Hard-stop tests verify that no next dispatch or Branch Ready declaration occurs. Every case verifies that the redacted brief identifies relevant records and names the Engineering Skills `$grill-with-docs` handoff.
 
 - Calibration tests verify that no dispatch-count threshold, cross-repository aggregate, or self-tuning behavior exists.
 
-- Provider-profile validation checks the exact pinned model identifiers, allowed reasoning values, read-only reviewer authority, Single-Agent v1 behavior, Engineering Skills namespace, and absence of GPT-5.5.
+- Provider-profile validation checks the exact pinned model identifiers, allowed reasoning values, read-only reviewer authority, Single-Agent v2 behavior, Engineering Skills namespace, and absence of GPT-5.5.
 
 - Every changed shell script is syntax-checked under the repository's macOS Bash 3.2 portability rules.
 

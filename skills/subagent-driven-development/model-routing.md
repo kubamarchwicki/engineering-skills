@@ -1,6 +1,6 @@
 # Subagent Model Routing Policy
 
-**Routing Policy Version: 1**
+**Routing Policy Version: 2**
 
 This policy chooses the minimum configuration that can meet the correctness bar for an engineering dispatch. Cost and latency break ties only after the Effective Floor is satisfied. Any change to floors, mappings, role baselines, fallback rules, calibration triggers, or the named profile set increments the integer policy version.
 
@@ -90,7 +90,7 @@ When an exact pair is absent, select the next available profile that meets or ex
 
 Every shipped profile is `Single-Agent`. `max` is Single-Agent reasoning. `Ultra` is a separate `Delegating` Dispatch Mode and is not a reasoning rung.
 
-Version 1 never selects Ultra automatically. An explicit user instruction may allow Delegating only for read-only, safely decomposable work. Never give a Delegating profile write authority and never use it for an SDD implementer or fixer. Code Review may launch its two Single-Agent axes in parallel; that controller-owned parallelism is not Ultra or nested delegation.
+Version 2 never selects Ultra automatically. An explicit user instruction may allow Delegating only for read-only, safely decomposable work. Never give a Delegating profile write authority and never use it for an SDD implementer or fixer. Code Review may launch its two Single-Agent axes in parallel; that controller-owned parallelism is not Ultra or nested delegation.
 
 ## Floor Verification and fallback
 
@@ -101,7 +101,7 @@ A floor is `verified` only when either:
 
 Profile existence without selection, prompt steering, an agent's self-description, and a requested-but-unreported configuration are `unverified`.
 
-Explorers, implementers, and fixers may run unverified because their output remains a proposal behind verified gates. Mark their record `unverified`. A task reviewer or either final-review axis reviewer must be verified before dispatch. If the active surface cannot enforce or report the floor, stop and name a compatible surface or configuration. Never silently substitute downward. A reported substitute is acceptable only when it meets or exceeds both axes.
+Explorers, implementers, and fixers may run unverified because their output remains a proposal behind verified gates. Mark their record `unverified`. A task reviewer or either final-review axis reviewer must be verified before dispatch. If the active surface cannot enforce or report the floor, stop before dispatch and name a compatible surface or configuration. This active-surface stop does not itself require Policy Calibration; resume only on compatible verified capacity. If no compatible surface or configuration can obtain the required reviewer, emit the hard-stop calibration trigger below. Never silently substitute downward. A reported substitute is acceptable only when it meets or exceeds both axes.
 
 Provider-wide or invocation-wide overrides take precedence over profile declarations. Inspect them when visible. Parent permissions remain authoritative: a profile never widens the Stage's authority. A repository-local override may raise a gate to compliance; it may never lower a global floor. A downward request may run only as unverified exploration or implementation and cannot satisfy task review, final review, or Branch Ready.
 
@@ -142,17 +142,19 @@ Use `null` when elapsed time or usage is unavailable. Do not include prompts, di
 Example started event:
 
 ```json
-{"policy_version":1,"event":"started","dispatch_id":"task-3-review-1","role":"task-reviewer","work_class":"Integrated","escalation_signals":[],"effective_floor":{"capability":"Integrated","reasoning":"high"},"dispatch_mode":"Single-Agent","requested":{"profile":"engineering-reviewer-integrated-high","model":"gpt-5.6-terra","effort":"high"},"effective":{"model":"gpt-5.6-terra","effort":"high"},"floor_verification":{"status":"verified","evidence":"named profile selected with no lowering override"},"outcome":{"first_pass":"pending","critical":0,"important":0,"retries":0,"escalation":"none","final_verification":"pending","elapsed":null,"usage":null}}
+{"policy_version":2,"event":"started","dispatch_id":"task-3-review-1","role":"task-reviewer","work_class":"Integrated","escalation_signals":[],"effective_floor":{"capability":"Integrated","reasoning":"high"},"dispatch_mode":"Single-Agent","requested":{"profile":"engineering-reviewer-integrated-high","model":"gpt-5.6-terra","effort":"high"},"effective":{"model":"gpt-5.6-terra","effort":"high"},"floor_verification":{"status":"verified","evidence":"named profile selected with no lowering override"},"outcome":{"first_pass":"pending","critical":0,"important":0,"retries":0,"escalation":"none","final_verification":"pending","elapsed":null,"usage":null}}
 ```
 
 ## Policy Calibration
 
 Only a human changes policy-wide floors, mappings, profiles, or classification signals. The operator may calibrate at any time and does not need a minimum sample or additional evidence.
 
-The following safety events require calibration: a Critical or Important finding escaped task review; work was incorrectly declared Branch Ready; or no compatible surface can provide a verified required reviewer. Finish already-running dispatches, do not start another dispatch or declare Branch Ready, and emit:
+A Critical or Important finding that escaped verified task review is pending policy debt. Emit:
 
 ```text
 POLICY_CALIBRATION_REQUIRED
 ```
 
-Then give a redacted brief with policy version, trigger, outcome counts, relevant record identifiers, observed failure, current policy decision, and proposed question. Name `$grill-with-docs` in the `engineering-skills` repository as the next manual gear and wait for the human. Do not adjust the policy locally inside the active implementation or review.
+Preserve the relevant record identifiers and give a redacted brief with policy version, trigger, outcome counts, observed failure, current policy decision, and proposed question. Do not hard-stop the current authorized branch: recompute final review as Exceptional/xhigh, finish in-flight work, and complete its fixes, re-review, both final axes, and verification. If all gates pass, Branch Ready may be reported together with the still-pending calibration requirement. Do not begin future SDD work until the human resolves calibration through `$grill-with-docs` in the `engineering-skills` repository. Do not adjust the policy opportunistically inside the consuming workflow.
+
+A previously declared Branch Ready result later shown incorrect, or the absence of any compatible surface or configuration that can obtain a verified required reviewer, is an immediate hard-stop calibration trigger. Finish already-running dispatches, preserve their results, emit `POLICY_CALIBRATION_REQUIRED` with the same redacted brief and next manual gear, start no new dispatch, make no Branch Ready declaration, and wait for the human.

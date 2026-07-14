@@ -86,7 +86,7 @@ Expected: raise Work Class to `Exceptional`; Effective Floor `Exceptional/xhigh`
 
 Input: Final review begins after a Critical finding escaped a verified task review.
 
-Expected: final Work Class `Exceptional`; Effective Floor `Exceptional/xhigh`; verified Exceptional reviewer; after collecting the review result, emit `POLICY_CALIBRATION_REQUIRED` and stop at the safe boundary.
+Expected: emit `POLICY_CALIBRATION_REQUIRED` and preserve the escaped-review record IDs, but treat it as pending policy debt rather than a hard stop for this branch. Recompute final Work Class `Exceptional`; use verified Exceptional/xhigh reviewers; finish in-flight review, fixes, re-review, both final axes, and verification. If every gate passes, report Branch Ready together with the pending calibration requirement. Start no future SDD work until the human resolves calibration through `$grill-with-docs`; never patch policy opportunistically in this workflow.
 
 ## Final review recomputes branch risk
 
@@ -106,11 +106,11 @@ Input: A Bounded implementer can be prompted with the requested model but the ru
 
 Expected: Effective Floor `Bounded/medium`; request `engineering-worker-bounded-medium`; Floor Verification `unverified`; dispatch may proceed as a proposal and record unverified status, but cannot satisfy an acceptance gate or make work Branch Ready.
 
-## Unverified reviewer fails closed and calibrates
+## Unverified reviewer fails closed
 
 Input: A task reviewer is required, but the runtime cannot enforce or report its model and effort.
 
-Expected: Effective Floor at least `Integrated/high`; no reviewer dispatch; name a compatible surface or configuration; emit `POLICY_CALIBRATION_REQUIRED` for inability to obtain a verified acceptance reviewer; stop and wait.
+Expected: Effective Floor at least `Integrated/high`; no reviewer dispatch; name a compatible surface or configuration and resume only there with verified capacity. Do not emit `POLICY_CALIBRATION_REQUIRED` merely because the active runtime is limited. Emit the hard-stop calibration trigger only if no compatible surface or configuration can obtain the verified reviewer.
 
 ## Prompt steering differs from named selection
 
@@ -152,7 +152,7 @@ Expected: append matching started and completed JSONL events with policy version
 
 Input: One parallel review axis is still running when its peer reports a Critical finding that escaped verified task review.
 
-Expected: let the in-flight peer finish and preserve its result; start no new dispatch; emit `POLICY_CALIBRATION_REQUIRED`; provide a redacted brief with policy version, trigger, outcome counts, and relevant record IDs; name `$grill-with-docs`; stop before Branch Ready.
+Expected: let the in-flight peer finish and preserve its result; emit `POLICY_CALIBRATION_REQUIRED` with a redacted brief containing policy version, trigger, outcome counts, and relevant record IDs. Treat the escape as pending policy debt: recompute Exceptional/xhigh, complete current-branch fixes, re-review, both final axes, and verification. If all gates pass, report Branch Ready together with the pending calibration requirement. Name `$grill-with-docs` and start no future SDD work until calibration is resolved.
 
 ## Incorrect Branch Ready calibrates
 
