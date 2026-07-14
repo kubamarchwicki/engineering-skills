@@ -72,6 +72,56 @@ if [ -d "$codex_dir" ]; then
   fi
 fi
 
+claude_dir="$repo_root/skills/subagent-driven-development/agents/claude"
+
+check_claude_profile() {
+  name=$1
+  model=$2
+  effort=$3
+  authority=$4
+  file="$claude_dir/$name.md"
+  require_file "$file"
+  if [ -f "$file" ]; then
+    require_text "$file" "name: $name"
+    require_text "$file" "model: $model"
+    require_text "$file" "effort: $effort"
+    if [ "$authority" = worker ]; then
+      require_text "$file" 'disallowedTools: Agent'
+      require_text "$file" 'Do not spawn subagents.'
+    else
+      require_text "$file" 'tools: Read, Grep, Glob'
+      require_text "$file" 'Do not mutate files and do not spawn subagents.'
+    fi
+  fi
+}
+
+check_claude_profile engineering-worker-bounded-medium claude-sonnet-5 medium worker
+check_claude_profile engineering-worker-bounded-high claude-sonnet-5 high worker
+check_claude_profile engineering-worker-integrated-medium claude-sonnet-5 medium worker
+check_claude_profile engineering-worker-integrated-high claude-sonnet-5 high worker
+check_claude_profile engineering-worker-demanding-high claude-opus-4-8 high worker
+check_claude_profile engineering-worker-demanding-xhigh claude-opus-4-8 xhigh worker
+check_claude_profile engineering-worker-exceptional-xhigh claude-fable-5 xhigh worker
+check_claude_profile engineering-worker-exceptional-max claude-fable-5 max worker
+check_claude_profile engineering-reviewer-integrated-high claude-sonnet-5 high reviewer
+check_claude_profile engineering-reviewer-integrated-xhigh claude-sonnet-5 xhigh reviewer
+check_claude_profile engineering-reviewer-demanding-high claude-opus-4-8 high reviewer
+check_claude_profile engineering-reviewer-demanding-xhigh claude-opus-4-8 xhigh reviewer
+check_claude_profile engineering-reviewer-exceptional-xhigh claude-fable-5 xhigh reviewer
+check_claude_profile engineering-reviewer-exceptional-max claude-fable-5 max reviewer
+
+if [ -d "$claude_dir" ]; then
+  claude_count=$(find "$claude_dir" -type f -name '*.md' | wc -l | tr -d ' ')
+  if [ "$claude_count" != 14 ]; then
+    fail "expected 14 Claude profiles, found $claude_count"
+  fi
+  claude_model_count=$(grep -h '^model: ' "$claude_dir"/*.md | wc -l | tr -d ' ')
+  claude_effort_count=$(grep -h '^effort: ' "$claude_dir"/*.md | wc -l | tr -d ' ')
+  if [ "$claude_model_count" != 14 ] || [ "$claude_effort_count" != 14 ]; then
+    fail 'each Claude profile must declare exactly one pinned model and effort'
+  fi
+fi
+
 if [ "$status" -ne 0 ]; then
   exit 1
 fi
