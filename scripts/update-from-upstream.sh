@@ -37,6 +37,90 @@ fi
 total_conflicts=0
 total_attention=0
 total_candidates=0
+total_errors=0
+active_tmp=""
+
+cleanup_active_tmp() {
+  if [ -n "$active_tmp" ]; then
+    rm -rf "$active_tmp"
+    active_tmp=""
+  fi
+}
+trap cleanup_active_tmp EXIT
+
+entry_info() {
+  local repo="$1" commit="$2" path="$3"
+  git -C "$repo" ls-tree "$commit" -- "$path" \
+    | awk 'NR==1 {print $1 "\t" $2 "\t" $3}'
+}
+
+remove_local_path() {
+  local path="$1"
+  if [ -d "$path" ] && [ ! -L "$path" ]; then
+    rm -rf "$path"
+  else
+    rm -f "$path"
+  fi
+}
+
+apply_regular_mode() {
+  local path="$1" mode="$2"
+  if [ "$mode" = "100755" ]; then
+    chmod 755 "$path"
+  else
+    chmod 644 "$path"
+  fi
+}
+
+materialize_entry() {
+  local sub="$1" commit="$2" src="$3" dest="$4" mode="$5" type="$6"
+  local link_target
+  mkdir -p "$(dirname "$dest")"
+
+  if [ "$type" = "tree" ]; then
+    remove_local_path "$dest"
+    mkdir -p "$dest"
+    return
+  fi
+
+  active_tmp="$(mktemp -d "${TMPDIR:-/tmp}/update-from-upstream.XXXXXX")"
+  case "$type:$mode" in
+    blob:120000)
+      link_target="$(git -C "$sub" show "$commit:$src"; printf x)"
+      link_target="${link_target%x}"
+      ln -s "$link_target" "$active_tmp/entry"
+      ;;
+    blob:100644|blob:100755)
+      git -C "$sub" show "$commit:$src" > "$active_tmp/entry"
+      apply_regular_mode "$active_tmp/entry" "$mode"
+      ;;
+    *)
+      echo "unsupported tree entry: $type $mode" > "$active_tmp/error"
+      return 1
+      ;;
+  esac
+
+  remove_local_path "$dest"
+  mv "$active_tmp/entry" "$dest"
+  cleanup_active_tmp
+}
+
+is_regular_entry() {
+  local mode="$1" type="$2"
+  [ "$type" = "blob" ] && { [ "$mode" = "100644" ] || [ "$mode" = "100755" ]; }
+}
+
+is_collapsed_descendant() {
+  local candidate="$1" prefixes="$2" prefix
+  [ -n "$prefixes" ] || return 1
+  while IFS= read -r prefix; do
+    [ -n "$prefix" ] || continue
+    case "$candidate" in
+      "$prefix"*) return 0 ;;
+    esac
+  done < <(printf '%s' "$prefixes")
+  return 1
+}
 
 merge_skill() {
   local sub="$1" base="$2" target="$3" name="$4" srcpath="$5"
@@ -54,52 +138,129 @@ merge_skill() {
   fi
 
   local changed=0 added=0 deleted=0 kept=0 nconf=0
-  local f rel ours bsha tsha tmpb tmpt
+  local f rel ours bentry tentry oentry bmode btype bsha tmode ttype tsha omode otype osha
+  local result_mode merge_status tmpo tmpb tmpt tmpe collapsed_prefixes=""
   while IFS= read -r f; do
     [ -n "$f" ] || continue
+    if is_collapsed_descendant "$f" "$collapsed_prefixes"; then continue; fi
     rel="${f#"$srcpath"/}"
     ours="$ours_dir/$rel"
-    bsha="$(git -C "$sub" rev-parse --verify --quiet "$base:$f" || true)"
-    tsha="$(git -C "$sub" rev-parse --verify --quiet "$target:$f" || true)"
-    [ "$bsha" = "$tsha" ] && continue           # unchanged upstream
-    if [ -z "$bsha" ]; then                     # added upstream
-      if [ -e "$ours" ] || [ -L "$ours" ]; then
+    bentry="$(entry_info "$sub" "$base" "$f")"
+    tentry="$(entry_info "$sub" "$target" "$f")"
+    oentry="$(entry_info . HEAD "$ours")"
+    bmode=""; btype=""; bsha=""
+    tmode=""; ttype=""; tsha=""
+    omode=""; otype=""; osha=""
+    if [ -n "$bentry" ]; then IFS=$'\t' read -r bmode btype bsha <<< "$bentry"; fi
+    if [ -n "$tentry" ]; then IFS=$'\t' read -r tmode ttype tsha <<< "$tentry"; fi
+    if [ -n "$oentry" ]; then IFS=$'\t' read -r omode otype osha <<< "$oentry"; fi
+
+    [ "$bentry" = "$tentry" ] && continue       # unchanged upstream, including mode/type
+    if [ -z "$bentry" ]; then                    # added upstream
+      if [ -n "$oentry" ] || [ -e "$ours" ] || [ -L "$ours" ]; then
         echo "   ! $ours: upstream added path but it already exists locally - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
         continue
       fi
-      mkdir -p "$(dirname "$ours")"
-      git -C "$sub" show "$target:$f" > "$ours"
-      if git -C "$sub" ls-tree "$target" -- "$f" | grep -q '^100755'; then chmod +x "$ours"; fi
+      materialize_entry "$sub" "$target" "$f" "$ours" "$tmode" "$ttype"
       echo "   + $ours (new upstream file)"
       added=$((added+1))
-    elif [ -z "$tsha" ]; then                   # deleted upstream
-      if [ -f "$ours" ] && [ "$(git hash-object "$ours")" = "$bsha" ]; then
-        rm "$ours"
+    elif [ -z "$tentry" ]; then                 # deleted upstream
+      if [ -z "$oentry" ]; then
+        continue
+      elif [ "$oentry" = "$bentry" ]; then
+        remove_local_path "$ours"
         echo "   - $ours (deleted upstream)"
         deleted=$((deleted+1))
-      elif [ -f "$ours" ]; then
+      else
         echo "   ! $ours: deleted upstream but locally modified - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
       fi
-    else                                        # modified upstream
-      if [ ! -f "$ours" ]; then
-        echo "   ! $ours: missing locally - copying upstream version"
-        mkdir -p "$(dirname "$ours")"
-        git -C "$sub" show "$target:$f" > "$ours"
-        added=$((added+1))
+    else                                        # modified upstream content, mode, or type
+      if [ -z "$oentry" ]; then
+        echo "   ! $ours: modified upstream but locally deleted - KEPT, resolve in walk-through"
+        kept=$((kept+1)); total_attention=$((total_attention+1))
         continue
       fi
-      tmpb="$(mktemp)"; tmpt="$(mktemp)"
+
+      if [ "$oentry" = "$tentry" ]; then       # already matches upstream exactly
+        continue
+      fi
+      if [ "$oentry" = "$bentry" ]; then       # locally unchanged: safe whole-entry fast-forward
+        materialize_entry "$sub" "$target" "$f" "$ours" "$tmode" "$ttype"
+        if [ "$btype" = "tree" ] && [ "$ttype" != "tree" ]; then
+          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        fi
+        changed=$((changed+1))
+        continue
+      fi
+
+      if [ "$omode" != "$bmode" ] && [ "$tmode" != "$bmode" ] && [ "$omode" != "$tmode" ]; then
+        echo "   ! $ours: upstream type/mode $bmode->$tmode conflicts with local $bmode->$omode - KEPT, resolve in walk-through"
+        kept=$((kept+1)); total_attention=$((total_attention+1))
+        continue
+      fi
+      if ! is_regular_entry "$bmode" "$btype" \
+          || ! is_regular_entry "$omode" "$otype" \
+          || ! is_regular_entry "$tmode" "$ttype"; then
+        echo "   ! $ours: upstream changed a non-regular/type-transition entry with local changes - KEPT, resolve in walk-through"
+        kept=$((kept+1)); total_attention=$((total_attention+1))
+        continue
+      fi
+
+      result_mode="$omode"
+      if [ "$omode" = "$bmode" ]; then
+        result_mode="$tmode"
+      elif [ "$tmode" = "$bmode" ]; then
+        result_mode="$omode"
+      elif [ "$omode" = "$tmode" ]; then
+        result_mode="$omode"
+      fi
+
+      if [ "$osha" = "$bsha" ]; then           # only local mode changed
+        materialize_entry "$sub" "$target" "$f" "$ours" "$tmode" "$ttype"
+        apply_regular_mode "$ours" "$result_mode"
+        changed=$((changed+1))
+        continue
+      fi
+      if [ "$tsha" = "$bsha" ]; then           # only upstream mode changed
+        if [ "$omode" != "$result_mode" ]; then
+          apply_regular_mode "$ours" "$result_mode"
+          changed=$((changed+1))
+        fi
+        continue
+      fi
+      if [ "$osha" = "$tsha" ]; then           # content already agrees
+        if [ "$omode" != "$result_mode" ]; then
+          apply_regular_mode "$ours" "$result_mode"
+          changed=$((changed+1))
+        fi
+        continue
+      fi
+
+      active_tmp="$(mktemp -d "${TMPDIR:-/tmp}/update-from-upstream.XXXXXX")"
+      tmpo="$active_tmp/ours"; tmpb="$active_tmp/base"; tmpt="$active_tmp/upstream"; tmpe="$active_tmp/error"
+      cp "$ours" "$tmpo"
       git -C "$sub" show "$base:$f"   > "$tmpb"
       git -C "$sub" show "$target:$f" > "$tmpt"
-      if git merge-file -L "ours ($name)" -L "base" -L "upstream" "$ours" "$tmpb" "$tmpt"; then
+      merge_status=0
+      git merge-file -L "ours ($name)" -L "base" -L "upstream" "$tmpo" "$tmpb" "$tmpt" 2> "$tmpe" \
+        || merge_status=$?
+      if [ "$merge_status" -eq 0 ] || [ "$merge_status" -eq 1 ]; then
+        apply_regular_mode "$tmpo" "$result_mode"
+        remove_local_path "$ours"
+        mv "$tmpo" "$ours"
+        if [ "$merge_status" -eq 1 ]; then
+          echo "   CONFLICT: $ours (markers left in file)"
+          nconf=$((nconf+1)); total_conflicts=$((total_conflicts+1))
+        fi
         changed=$((changed+1))
       else
-        echo "   CONFLICT: $ours (markers left in file)"
-        nconf=$((nconf+1)); total_conflicts=$((total_conflicts+1)); changed=$((changed+1))
+        echo "   ERROR: $ours: merge-file failed (exit $merge_status) - KEPT, resolve in walk-through"
+        if [ -s "$tmpe" ]; then sed 's/^/     /' "$tmpe"; fi
+        kept=$((kept+1)); total_attention=$((total_attention+1)); total_errors=$((total_errors+1))
       fi
-      rm -f "$tmpb" "$tmpt"
+      cleanup_active_tmp
     fi
   done < <( { git -C "$sub" ls-tree -r --name-only "$base" -- "$srcpath"; \
               git -C "$sub" ls-tree -r --name-only "$target" -- "$srcpath"; } | sort -u )
@@ -155,4 +316,8 @@ merge_submodule superpowers "$TO_SUPERPOWERS"
 
 echo
 echo "SUMMARY: conflicts=$total_conflicts attention=$total_attention new-candidates=$total_candidates"
+if [ "$total_errors" -gt 0 ]; then
+  echo "FAILED: operational-errors=$total_errors; affected local files preserved; nothing committed, submodule pins not bumped."
+  exit 1
+fi
 echo "Working tree updated; nothing committed, submodule pins not bumped."
