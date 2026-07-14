@@ -75,12 +75,15 @@ Repository scripts target macOS `/bin/bash` 3.2:
 
 Use `/update-from-upstream` for an upstream sync after plan 0002 exists. Its workflow is intentionally split:
 
-1. `scripts/update-from-upstream.sh` performs a three-way merge: base is the submodule SHA pinned in the repository's `HEAD`, ours is `skills/<name>`, and theirs is the selected upstream commit.
-2. Inspect upstream commit history to understand intent, then narrate clean merges and resolve conflicts, new candidates, deletions, or renames with the user one decision at a time.
-3. Record every membership or divergence decision in `provenance.tsv`, regenerate the README, run reference checks, and bump only the relevant submodule pins.
-4. Stage the agreed result and stop. Suggest a commit message, but do not commit or push; the sync commit belongs to the user.
+1. Run the workflow only from a linked Git worktree. The primary checkout may be live through global skill symlinks, so `/update-from-upstream` must recommend `/using-git-worktrees` and stop when isolation is absent; the merge engine enforces the same guard before dirty checks, fetches, or merges.
+2. `scripts/update-from-upstream.sh` performs a three-way merge: base is the submodule SHA pinned in the repository's `HEAD`, ours is `skills/<name>`, and theirs is the selected upstream commit.
+3. Inspect upstream commit history to understand intent, then narrate clean merges and resolve conflicts, attention items, new candidates, deletions, or renames with the user one decision at a time.
+4. Record every membership or divergence decision in `provenance.tsv`, regenerate the README, run all applicable verification, and bump only the relevant submodule pins.
+5. Stage the agreed result and stop. Suggest a commit message, but do not commit or push; the sync commit belongs to the user.
 
 Never automatically adopt or drop a skill. Never push changes upstream. A rejected clean upstream change is permanent divergence after the pin advances, so record it in the manifest's `changes` column.
+
+Never run the real `scripts/link-skills.sh` from the maintenance worktree. Test membership changes twice with a throwaway `HOME` there, then clean the fixture. The user may relink the real global installs only from the primary checkout after merging the sync; already-running harness sessions retain their previous skill snapshot until restarted.
 
 ## Verification
 

@@ -29,6 +29,14 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+GIT_DIR_CANONICAL="$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)"
+GIT_COMMON_DIR_CANONICAL="$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)"
+SUPERPROJECT_WORK_TREE="$(git rev-parse --show-superproject-working-tree 2>/dev/null || true)"
+if [ -n "$SUPERPROJECT_WORK_TREE" ] || [ "$GIT_DIR_CANONICAL" = "$GIT_COMMON_DIR_CANONICAL" ]; then
+  echo "ABORT: upstream sync must run in a linked Git worktree; the primary checkout may be live through global skill symlinks. Run /using-git-worktrees, then re-run /update-from-upstream inside that linked worktree." >&2
+  exit 2
+fi
+
 if [ -n "$(git status --porcelain skills/ provenance.tsv)" ]; then
   echo "ABORT: skills/ or provenance.tsv has uncommitted changes - commit or restore first" >&2
   exit 2
@@ -157,14 +165,14 @@ is_descendant_of_prefixes() {
 }
 
 merge_skill() {
-  local sub="$1" base="$2" target="$3" name="$4" srcpath="$5"
-  local ours_dir="skills/$name"
+  local submodule_path="$1" base_commit="$2" target_commit="$3" skill_name="$4" source_path="$5"
+  local local_skill_dir="skills/$skill_name"
 
   # Source path gone at target: rename (fix provenance.tsv, re-run) or deletion
   # (fork-or-drop decision in the walk-through). Never auto-repaired.
-  if ! git -C "$sub" rev-parse --verify --quiet "$target:$srcpath/SKILL.md" >/dev/null; then
-    echo "   ATTENTION $name: $srcpath missing at target (rename or deletion):"
-    git -C "$sub" diff -M --name-status "$base" "$target" -- "$srcpath" | sed 's/^/     /' || true
+  if ! git -C "$submodule_path" rev-parse --verify --quiet "$target_commit:$source_path/SKILL.md" >/dev/null; then
+    echo "   ATTENTION $skill_name: $source_path missing at target (rename or deletion):"
+    git -C "$submodule_path" diff -M --name-status "$base_commit" "$target_commit" -- "$source_path" | sed 's/^/     /' || true
     echo "     rename: fix source_path in provenance.tsv and re-run"
     echo "     deletion: decide fork-or-drop in the walk-through"
     total_attention=$((total_attention+1))
@@ -172,165 +180,168 @@ merge_skill() {
   fi
 
   local changed=0 added=0 deleted=0 kept=0 nconf=0
-  local f rel ours bentry tentry oentry bmode btype bsha tmode ttype tsha omode otype osha
-  local result_mode merge_status tmpo tmpb tmpt tmpe collapsed_prefixes="" expanded_prefixes=""
+  local upstream_path relative_path local_path base_entry target_entry local_entry
+  local base_mode base_type base_blob target_mode target_type target_blob local_mode local_type local_blob
+  local result_mode merge_status temporary_local_file temporary_base_file temporary_target_file temporary_error_file
+  local collapsed_prefixes="" expanded_prefixes=""
   local local_ancestor ancestor_rel
-  while IFS= read -r f; do
-    [ -n "$f" ] || continue
-    if is_descendant_of_prefixes "$f" "$collapsed_prefixes"; then continue; fi
-    rel="${f#"$srcpath"/}"
-    ours="$ours_dir/$rel"
-    bentry="$(entry_info "$sub" "$base" "$f")"
-    tentry="$(entry_info "$sub" "$target" "$f")"
-    oentry="$(entry_info . HEAD "$ours")"
-    bmode=""; btype=""; bsha=""
-    tmode=""; ttype=""; tsha=""
-    omode=""; otype=""; osha=""
-    if [ -n "$bentry" ]; then IFS=$'\t' read -r bmode btype bsha <<< "$bentry"; fi
-    if [ -n "$tentry" ]; then IFS=$'\t' read -r tmode ttype tsha <<< "$tentry"; fi
-    if [ -n "$oentry" ]; then IFS=$'\t' read -r omode otype osha <<< "$oentry"; fi
+  while IFS= read -r upstream_path; do
+    [ -n "$upstream_path" ] || continue
+    if is_descendant_of_prefixes "$upstream_path" "$collapsed_prefixes"; then continue; fi
+    relative_path="${upstream_path#"$source_path"/}"
+    local_path="$local_skill_dir/$relative_path"
+    base_entry="$(entry_info "$submodule_path" "$base_commit" "$upstream_path")"
+    target_entry="$(entry_info "$submodule_path" "$target_commit" "$upstream_path")"
+    local_entry="$(entry_info . HEAD "$local_path")"
+    base_mode=""; base_type=""; base_blob=""
+    target_mode=""; target_type=""; target_blob=""
+    local_mode=""; local_type=""; local_blob=""
+    if [ -n "$base_entry" ]; then IFS=$'\t' read -r base_mode base_type base_blob <<< "$base_entry"; fi
+    if [ -n "$target_entry" ]; then IFS=$'\t' read -r target_mode target_type target_blob <<< "$target_entry"; fi
+    if [ -n "$local_entry" ]; then IFS=$'\t' read -r local_mode local_type local_blob <<< "$local_entry"; fi
 
-    if [ -z "$bentry" ] && [ -n "$tentry" ]; then
-      if ! is_descendant_of_prefixes "$f" "$expanded_prefixes"; then
-        local_ancestor="$(committed_nondirectory_ancestor "$ours_dir" "$rel" || true)"
+    if [ -z "$base_entry" ] && [ -n "$target_entry" ]; then
+      if ! is_descendant_of_prefixes "$upstream_path" "$expanded_prefixes"; then
+        local_ancestor="$(committed_nondirectory_ancestor "$local_skill_dir" "$relative_path" || true)"
         if [ -n "$local_ancestor" ]; then
-          ancestor_rel="${local_ancestor#"$ours_dir"/}"
+          ancestor_rel="${local_ancestor#"$local_skill_dir"/}"
           echo "   ! $local_ancestor: upstream added descendants beneath this committed local non-directory - KEPT, resolve in walk-through"
           kept=$((kept+1)); total_attention=$((total_attention+1))
-          collapsed_prefixes="${collapsed_prefixes}${srcpath}/${ancestor_rel}/"$'\n'
+          collapsed_prefixes="${collapsed_prefixes}${source_path}/${ancestor_rel}/"$'\n'
           continue
         fi
       fi
     fi
 
-    [ "$bentry" = "$tentry" ] && continue       # unchanged upstream, including mode/type
-    if [ -z "$bentry" ]; then                    # added upstream
-      if [ -n "$oentry" ] || [ -e "$ours" ] || [ -L "$ours" ]; then
-        echo "   ! $ours: upstream added path but it already exists locally - KEPT, resolve in walk-through"
+    [ "$base_entry" = "$target_entry" ] && continue       # unchanged upstream, including mode/type
+    if [ -z "$base_entry" ]; then                    # added upstream
+      if [ -n "$local_entry" ] || [ -e "$local_path" ] || [ -L "$local_path" ]; then
+        echo "   ! $local_path: upstream added path but it already exists locally - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
         continue
       fi
-      materialize_entry "$sub" "$target" "$f" "$ours" "$tmode" "$ttype"
-      echo "   + $ours (new upstream file)"
+      materialize_entry "$submodule_path" "$target_commit" "$upstream_path" "$local_path" "$target_mode" "$target_type"
+      echo "   + $local_path (new upstream file)"
       added=$((added+1))
-    elif [ -z "$tentry" ]; then                 # deleted upstream
-      if [ -z "$oentry" ]; then
+    elif [ -z "$target_entry" ]; then                 # deleted upstream
+      if [ -z "$local_entry" ]; then
         continue
-      elif [ "$oentry" = "$bentry" ]; then
-        remove_local_path "$ours"
-        echo "   - $ours (deleted upstream)"
+      elif [ "$local_entry" = "$base_entry" ]; then
+        remove_local_path "$local_path"
+        echo "   - $local_path (deleted upstream)"
         deleted=$((deleted+1))
       else
-        echo "   ! $ours: deleted upstream but locally modified - KEPT, resolve in walk-through"
+        echo "   ! $local_path: deleted upstream but locally modified - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
       fi
     else                                        # modified upstream content, mode, or type
-      if [ -z "$oentry" ]; then
-        echo "   ! $ours: modified upstream but locally deleted - KEPT, resolve in walk-through"
+      if [ -z "$local_entry" ]; then
+        echo "   ! $local_path: modified upstream but locally deleted - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
-        if is_tree_transition "$btype" "$ttype"; then
-          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        if is_tree_transition "$base_type" "$target_type"; then
+          collapsed_prefixes="${collapsed_prefixes}${upstream_path}/"$'\n'
         fi
         continue
       fi
 
-      if [ "$oentry" = "$tentry" ]; then       # already matches upstream exactly
-        if is_tree_transition "$btype" "$ttype"; then
-          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+      if [ "$local_entry" = "$target_entry" ]; then       # already matches upstream exactly
+        if is_tree_transition "$base_type" "$target_type"; then
+          collapsed_prefixes="${collapsed_prefixes}${upstream_path}/"$'\n'
         fi
         continue
       fi
-      if [ "$oentry" = "$bentry" ]; then       # locally unchanged: safe whole-entry fast-forward
-        materialize_entry "$sub" "$target" "$f" "$ours" "$tmode" "$ttype"
-        if [ "$btype" = "tree" ] && [ "$ttype" != "tree" ]; then
-          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
-        elif [ "$btype" != "tree" ] && [ "$ttype" = "tree" ]; then
-          expanded_prefixes="${expanded_prefixes}${f}/"$'\n'
+      if [ "$local_entry" = "$base_entry" ]; then       # locally unchanged: safe whole-entry fast-forward
+        materialize_entry "$submodule_path" "$target_commit" "$upstream_path" "$local_path" "$target_mode" "$target_type"
+        if [ "$base_type" = "tree" ] && [ "$target_type" != "tree" ]; then
+          collapsed_prefixes="${collapsed_prefixes}${upstream_path}/"$'\n'
+        elif [ "$base_type" != "tree" ] && [ "$target_type" = "tree" ]; then
+          expanded_prefixes="${expanded_prefixes}${upstream_path}/"$'\n'
         fi
         changed=$((changed+1))
         continue
       fi
 
-      if [ "$omode" != "$bmode" ] && [ "$tmode" != "$bmode" ] && [ "$omode" != "$tmode" ]; then
-        echo "   ! $ours: upstream type/mode $bmode->$tmode conflicts with local $bmode->$omode - KEPT, resolve in walk-through"
+      if [ "$local_mode" != "$base_mode" ] && [ "$target_mode" != "$base_mode" ] && [ "$local_mode" != "$target_mode" ]; then
+        echo "   ! $local_path: upstream type/mode $base_mode->$target_mode conflicts with local $base_mode->$local_mode - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
-        if is_tree_transition "$btype" "$ttype"; then
-          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        if is_tree_transition "$base_type" "$target_type"; then
+          collapsed_prefixes="${collapsed_prefixes}${upstream_path}/"$'\n'
         fi
         continue
       fi
-      if ! is_regular_entry "$bmode" "$btype" \
-          || ! is_regular_entry "$omode" "$otype" \
-          || ! is_regular_entry "$tmode" "$ttype"; then
-        echo "   ! $ours: upstream changed a non-regular/type-transition entry with local changes - KEPT, resolve in walk-through"
+      if ! is_regular_entry "$base_mode" "$base_type" \
+          || ! is_regular_entry "$local_mode" "$local_type" \
+          || ! is_regular_entry "$target_mode" "$target_type"; then
+        echo "   ! $local_path: upstream changed a non-regular/type-transition entry with local changes - KEPT, resolve in walk-through"
         kept=$((kept+1)); total_attention=$((total_attention+1))
-        if is_tree_transition "$btype" "$ttype"; then
-          collapsed_prefixes="${collapsed_prefixes}${f}/"$'\n'
+        if is_tree_transition "$base_type" "$target_type"; then
+          collapsed_prefixes="${collapsed_prefixes}${upstream_path}/"$'\n'
         fi
         continue
       fi
 
-      result_mode="$omode"
-      if [ "$omode" = "$bmode" ]; then
-        result_mode="$tmode"
-      elif [ "$tmode" = "$bmode" ]; then
-        result_mode="$omode"
-      elif [ "$omode" = "$tmode" ]; then
-        result_mode="$omode"
+      result_mode="$local_mode"
+      if [ "$local_mode" = "$base_mode" ]; then
+        result_mode="$target_mode"
+      elif [ "$target_mode" = "$base_mode" ]; then
+        result_mode="$local_mode"
+      elif [ "$local_mode" = "$target_mode" ]; then
+        result_mode="$local_mode"
       fi
 
-      if [ "$osha" = "$bsha" ]; then           # only local mode changed
-        materialize_entry "$sub" "$target" "$f" "$ours" "$tmode" "$ttype"
-        apply_regular_mode "$ours" "$result_mode"
+      if [ "$local_blob" = "$base_blob" ]; then           # only local mode changed
+        materialize_entry "$submodule_path" "$target_commit" "$upstream_path" "$local_path" "$target_mode" "$target_type"
+        apply_regular_mode "$local_path" "$result_mode"
         changed=$((changed+1))
         continue
       fi
-      if [ "$tsha" = "$bsha" ]; then           # only upstream mode changed
-        if [ "$omode" != "$result_mode" ]; then
-          apply_regular_mode "$ours" "$result_mode"
+      if [ "$target_blob" = "$base_blob" ]; then           # only upstream mode changed
+        if [ "$local_mode" != "$result_mode" ]; then
+          apply_regular_mode "$local_path" "$result_mode"
           changed=$((changed+1))
         fi
         continue
       fi
-      if [ "$osha" = "$tsha" ]; then           # content already agrees
-        if [ "$omode" != "$result_mode" ]; then
-          apply_regular_mode "$ours" "$result_mode"
+      if [ "$local_blob" = "$target_blob" ]; then           # content already agrees
+        if [ "$local_mode" != "$result_mode" ]; then
+          apply_regular_mode "$local_path" "$result_mode"
           changed=$((changed+1))
         fi
         continue
       fi
 
       active_tmp="$(mktemp -d "${TMPDIR:-/tmp}/update-from-upstream.XXXXXX")"
-      tmpo="$active_tmp/ours"; tmpb="$active_tmp/base"; tmpt="$active_tmp/upstream"; tmpe="$active_tmp/error"
-      cp "$ours" "$tmpo"
-      git -C "$sub" show "$base:$f"   > "$tmpb"
-      git -C "$sub" show "$target:$f" > "$tmpt"
+      temporary_local_file="$active_tmp/local"; temporary_base_file="$active_tmp/base"
+      temporary_target_file="$active_tmp/upstream"; temporary_error_file="$active_tmp/error"
+      cp "$local_path" "$temporary_local_file"
+      git -C "$submodule_path" show "$base_commit:$upstream_path"   > "$temporary_base_file"
+      git -C "$submodule_path" show "$target_commit:$upstream_path" > "$temporary_target_file"
       merge_status=0
-      git merge-file -L "ours ($name)" -L "base" -L "upstream" "$tmpo" "$tmpb" "$tmpt" 2> "$tmpe" \
+      git merge-file -L "ours ($skill_name)" -L "base" -L "upstream" "$temporary_local_file" "$temporary_base_file" "$temporary_target_file" 2> "$temporary_error_file" \
         || merge_status=$?
       if [ "$merge_status" -le 127 ]; then
-        apply_regular_mode "$tmpo" "$result_mode"
-        remove_local_path "$ours"
-        mv "$tmpo" "$ours"
+        apply_regular_mode "$temporary_local_file" "$result_mode"
+        remove_local_path "$local_path"
+        mv "$temporary_local_file" "$local_path"
         if [ "$merge_status" -gt 0 ]; then
-          echo "   CONFLICT: $ours (markers left in file)"
+          echo "   CONFLICT: $local_path (markers left in file)"
           nconf=$((nconf+1)); total_conflicts=$((total_conflicts+1))
         fi
         changed=$((changed+1))
       else
-        echo "   ERROR: $ours: merge-file failed (exit $merge_status) - KEPT; operational error must be resolved before walk-through"
-        if [ -s "$tmpe" ]; then sed 's/^/     /' "$tmpe"; fi
+        echo "   ERROR: $local_path: merge-file failed (exit $merge_status) - KEPT; operational error must be resolved before walk-through"
+        if [ -s "$temporary_error_file" ]; then sed 's/^/     /' "$temporary_error_file"; fi
         kept=$((kept+1)); total_attention=$((total_attention+1)); total_errors=$((total_errors+1))
       fi
       cleanup_active_tmp
     fi
-  done < <( { git -C "$sub" ls-tree -r --name-only "$base" -- "$srcpath"; \
-              git -C "$sub" ls-tree -r --name-only "$target" -- "$srcpath"; } | sort -u )
+  done < <( { git -C "$submodule_path" ls-tree -r --name-only "$base_commit" -- "$source_path"; \
+              git -C "$submodule_path" ls-tree -r --name-only "$target_commit" -- "$source_path"; } | sort -u )
 
   if [ $((changed + added + deleted + kept)) -eq 0 ]; then
-    echo "   = $name: unchanged"
+    echo "   = $skill_name: unchanged"
   else
-    echo "   ok $name: $changed merged ($nconf conflicts), $added added, $deleted deleted, $kept kept"
+    echo "   ok $skill_name: $changed merged ($nconf conflicts), $added added, $deleted deleted, $kept kept"
   fi
 }
 

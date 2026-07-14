@@ -42,7 +42,11 @@ Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`
 
 `provenance.tsv` is the single source of truth for the skill ↔ upstream mapping. The Reference table below is generated from it by `scripts/gen-readme-table.sh` (between the provenance markers) — edit the tsv, never the table.
 
-Upstream sync: `/update-from-upstream`, a repo-local skill (`.claude/skills/`, loads only in this workspace). It runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through conflicts, new upstream skills, and deletions as grilled decisions, regenerates this README, runs `scripts/check-refs.sh`, bumps the submodule pins, and stops. The commit is mine.
+Upstream sync: `/update-from-upstream`, a repo-local skill (`.claude/skills/`, loads only in this workspace). It runs only in a linked Git worktree because the primary checkout may be live through the global skill symlinks. If invoked from the primary checkout, it names `/using-git-worktrees` as the next manual command and stops; after entering that worktree, invoke `/update-from-upstream` again.
+
+Inside the maintenance worktree, the skill runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through clean merges and grills every conflict, attention item, new upstream skill, deletion, and rename one at a time. It records the decisions, completes the repository checks, bumps only moved pins, stages the agreed result, and stops. It never commits, pushes, merges, or relinks the real global installs.
+
+After I commit and merge the staged sync, any membership change is handed back to the primary checkout: run `scripts/link-skills.sh` there, then restart already-running harness sessions because they retain their old skill snapshot. I own the commit, merge, sanity testing, primary-checkout relinking, and maintenance-worktree cleanup.
 
 ## Reference
 
