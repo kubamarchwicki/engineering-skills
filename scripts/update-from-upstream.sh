@@ -168,18 +168,20 @@ merge_skill() {
   local submodule_path="$1" base_commit="$2" target_commit="$3" skill_name="$4" source_path="$5"
   local local_skill_dir="skills/$skill_name"
 
-  # Source path gone at target: rename (fix provenance.tsv, re-run) or deletion
-  # (fork-or-drop decision in the walk-through). Never auto-repaired.
+  # Source path gone at target: rename (manual reconciliation and a hard workflow
+  # stop) or deletion (fork-or-drop decision in the walk-through). Never auto-repaired.
   if ! git -C "$submodule_path" rev-parse --verify --quiet "$target_commit:$source_path/SKILL.md" >/dev/null; then
     echo "   ATTENTION $skill_name: $source_path missing at target (rename or deletion):"
-    git -C "$submodule_path" diff -M --name-status "$base_commit" "$target_commit" -- "$source_path" | sed 's/^/     /' || true
-    echo "     rename: fix source_path in provenance.tsv and re-run"
+    git -C "$submodule_path" diff -M --name-status "$base_commit" "$target_commit" \
+      | awk -F'\t' -v source_prefix="$source_path/" 'index($2, source_prefix) == 1 { print }' \
+      | sed 's/^/     /' || true
+    echo "     rename: STOP; manually reconcile $local_skill_dir and provenance.tsv in the maintenance worktree"
     echo "     deletion: decide fork-or-drop in the walk-through"
     total_attention=$((total_attention+1))
     return
   fi
 
-  local changed=0 added=0 deleted=0 kept=0 nconf=0
+  local changed=0 added=0 deleted=0 kept=0 conflict_count=0
   local upstream_path relative_path local_path base_entry target_entry local_entry
   local base_mode base_type base_blob target_mode target_type target_blob local_mode local_type local_blob
   local result_mode merge_status temporary_local_file temporary_base_file temporary_target_file temporary_error_file
@@ -325,7 +327,7 @@ merge_skill() {
         mv "$temporary_local_file" "$local_path"
         if [ "$merge_status" -gt 0 ]; then
           echo "   CONFLICT: $local_path (markers left in file)"
-          nconf=$((nconf+1)); total_conflicts=$((total_conflicts+1))
+          conflict_count=$((conflict_count+1)); total_conflicts=$((total_conflicts+1))
         fi
         changed=$((changed+1))
       else
@@ -341,47 +343,47 @@ merge_skill() {
   if [ $((changed + added + deleted + kept)) -eq 0 ]; then
     echo "   = $skill_name: unchanged"
   else
-    echo "   ok $skill_name: $changed merged ($nconf conflicts), $added added, $deleted deleted, $kept kept"
+    echo "   ok $skill_name: $changed merged ($conflict_count conflicts), $added added, $deleted deleted, $kept kept"
   fi
 }
 
 merge_submodule() {
-  local sub="$1" override="$2"
-  local base target
-  base="$(git rev-parse "HEAD:$sub")"
-  if [ -n "$override" ]; then
-    target="$(git -C "$sub" rev-parse --verify "$override^{commit}")"
+  local submodule_path="$1" target_override="$2"
+  local base_commit target_commit
+  base_commit="$(git rev-parse "HEAD:$submodule_path")"
+  if [ -n "$target_override" ]; then
+    target_commit="$(git -C "$submodule_path" rev-parse --verify "$target_override^{commit}")"
   else
-    git -C "$sub" fetch --quiet origin
-    target="$(git -C "$sub" rev-parse --verify --quiet origin/HEAD \
-           || git -C "$sub" rev-parse --verify origin/main)"
+    git -C "$submodule_path" fetch --quiet origin
+    target_commit="$(git -C "$submodule_path" rev-parse --verify --quiet origin/HEAD \
+           || git -C "$submodule_path" rev-parse --verify origin/main)"
   fi
-  echo "== $sub: ${base:0:9} -> ${target:0:9}"
-  if [ "$base" = "$target" ]; then
+  echo "== $submodule_path: ${base_commit:0:9} -> ${target_commit:0:9}"
+  if [ "$base_commit" = "$target_commit" ]; then
     echo "   up to date"
     return
   fi
 
-  local name srcpath
-  while IFS=$'\t' read -r name srcpath; do
-    merge_skill "$sub" "$base" "$target" "$name" "$srcpath"
-  done < <(awk -F'\t' -v s="$sub" 'NR>1 && $4=="imported" && $2==s {print $1 "\t" $3}' "$TSV")
+  local skill_name source_path
+  while IFS=$'\t' read -r skill_name source_path; do
+    merge_skill "$submodule_path" "$base_commit" "$target_commit" "$skill_name" "$source_path"
+  done < <(awk -F'\t' -v selected_submodule="$submodule_path" 'NR>1 && $4=="imported" && $2==selected_submodule {print $1 "\t" $3}' "$TSV")
 
   # Membership: a skill dir at target is NEW only if its name is neither in the
   # manifest (any status) nor present anywhere at base. Category moves of
   # never-imported skills therefore stay quiet.
-  local known base_names dir bn desc
-  known="$(awk -F'\t' 'NR>1 {print $1}' "$TSV")"
-  base_names="$(git -C "$sub" ls-tree -r --name-only "$base" | awk -F/ '/\/SKILL\.md$/ {print $(NF-1)}' | sort -u)"
-  while IFS= read -r dir; do
-    [ -n "$dir" ] || continue
-    bn="${dir##*/}"
-    if printf '%s\n' "$known" | grep -qx "$bn"; then continue; fi
-    if printf '%s\n' "$base_names" | grep -qx "$bn"; then continue; fi
-    desc="$(git -C "$sub" show "$target:$dir/SKILL.md" | awk '/^description:/ {sub(/^description: */, ""); print; exit}')"
-    echo "   NEW-CANDIDATE: $dir - $desc"
+  local manifest_names base_skill_names candidate_directory candidate_name candidate_description
+  manifest_names="$(awk -F'\t' 'NR>1 {print $1}' "$TSV")"
+  base_skill_names="$(git -C "$submodule_path" ls-tree -r --name-only "$base_commit" | awk -F/ '/\/SKILL\.md$/ {print $(NF-1)}' | sort -u)"
+  while IFS= read -r candidate_directory; do
+    [ -n "$candidate_directory" ] || continue
+    candidate_name="${candidate_directory##*/}"
+    if printf '%s\n' "$manifest_names" | grep -qx "$candidate_name"; then continue; fi
+    if printf '%s\n' "$base_skill_names" | grep -qx "$candidate_name"; then continue; fi
+    candidate_description="$(git -C "$submodule_path" show "$target_commit:$candidate_directory/SKILL.md" | awk '/^description:/ {sub(/^description: */, ""); print; exit}')"
+    echo "   NEW-CANDIDATE: $candidate_directory - $candidate_description"
     total_candidates=$((total_candidates+1))
-  done < <(git -C "$sub" ls-tree -r --name-only "$target" | grep '/SKILL\.md$' | sed 's|/SKILL\.md$||' || true)
+  done < <(git -C "$submodule_path" ls-tree -r --name-only "$target_commit" | grep '/SKILL\.md$' | sed 's|/SKILL\.md$||' || true)
 }
 
 merge_submodule mattpocock-skills "$TO_MATTPOCOCK"
