@@ -18,7 +18,7 @@ Subagent ([PROFILE — select this named reviewer profile, never `general-purpos
 
     ## Routing Contract
 
-    Policy version: 1
+    Policy version: 2
     Role: task reviewer
     Work Class: [WORK_CLASS]
     Effective Floor: [CAPABILITY_FLOOR]/[REASONING_FLOOR]

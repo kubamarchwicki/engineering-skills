@@ -10,7 +10,7 @@ Subagent ([PROFILE — select this named profile, never `general-purpose`]):
 
     ## Routing Contract
 
-    Policy version: 1
+    Policy version: 2
     Role: implementer or fixer
     Work Class: [WORK_CLASS]
     Effective Floor: [CAPABILITY_FLOOR]/[REASONING_FLOOR]

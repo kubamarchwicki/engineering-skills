@@ -1487,7 +1487,7 @@ Immediately after `You are implementing Task N: [task name]`, insert:
 ```markdown
     ## Routing Contract
 
-    Policy version: 1
+    Policy version: 2
     Role: implementer or fixer
     Work Class: [WORK_CLASS]
     Effective Floor: [CAPABILITY_FLOOR]/[REASONING_FLOOR]
@@ -1531,7 +1531,7 @@ Immediately after the paragraph ending `all tasks are complete.`, insert:
 ```markdown
     ## Routing Contract
 
-    Policy version: 1
+    Policy version: 2
     Role: task reviewer
     Work Class: [WORK_CLASS]
     Effective Floor: [CAPABILITY_FLOOR]/[REASONING_FLOOR]
@@ -1654,7 +1654,7 @@ from isolated context and adversarial instructions.
 Prefix both prompts with this routing declaration, filled from step 4:
 
 ```text
-Policy version: 1
+Policy version: 2
 Role: code-review Standards reviewer | code-review Spec reviewer
 Work Class: <Bounded | Integrated | Demanding | Exceptional>
 Effective Floor: <capability>/<reasoning>
