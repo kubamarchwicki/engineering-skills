@@ -318,7 +318,7 @@ merge_skill() {
         fi
         changed=$((changed+1))
       else
-        echo "   ERROR: $ours: merge-file failed (exit $merge_status) - KEPT, resolve in walk-through"
+        echo "   ERROR: $ours: merge-file failed (exit $merge_status) - KEPT; operational error must be resolved before walk-through"
         if [ -s "$tmpe" ]; then sed 's/^/     /' "$tmpe"; fi
         kept=$((kept+1)); total_attention=$((total_attention+1)); total_errors=$((total_errors+1))
       fi
