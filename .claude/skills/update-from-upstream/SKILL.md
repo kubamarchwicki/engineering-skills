@@ -19,6 +19,12 @@ Resolve `git rev-parse --git-dir` and `git rev-parse --git-common-dir` to canoni
 
 If this is the primary checkout or a submodule, recommend creating an isolated worktree. Name `/using-git-worktrees` as the next manual command and **STOP**. Do not create or auto-chain the worktree. The user must run `/using-git-worktrees`, enter that linked worktree, and invoke `/update-from-upstream` again.
 
+Once isolation is confirmed, initialize this worktree's pinned submodules before invoking the updater:
+
+    git submodule update --init --recursive mattpocock-skills superpowers
+
+For each submodule, compare `git -C <submodule> rev-parse HEAD` with `git rev-parse HEAD:<submodule>` and require an exact match. If initialization fails or either SHA differs from its recorded gitlink, stop and report the mismatch; do not fetch or merge.
+
 ## 2. Mechanical merge
 
 Run `scripts/update-from-upstream.sh` from the repo root. It fetches both submodules and three-way-merges every imported skill (base = pinned submodule SHA, ours = the `skills/` copy, theirs = upstream HEAD) into the working tree, uncommitted. Its report lines: `ok`/`=` (merged/unchanged), `CONFLICT:` (markers left in the file), `+`/`-`/`!` (file added/deleted/needs attention), `ATTENTION` (source path gone: rename or deletion), `NEW-CANDIDATE:` (upstream skill we've never seen), `ERROR:` (operational/binary merge failure; local file preserved), `SUMMARY:` (totals).

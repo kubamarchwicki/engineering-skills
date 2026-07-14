@@ -37,6 +37,25 @@ if [ -n "$SUPERPROJECT_WORK_TREE" ] || [ "$GIT_DIR_CANONICAL" = "$GIT_COMMON_DIR
   exit 2
 fi
 
+SUBMODULE_INIT_COMMAND="git submodule update --init --recursive mattpocock-skills superpowers"
+validate_submodule_worktree() {
+  local submodule_path="$1" expected_top_level actual_top_level actual_top_level_canonical
+  expected_top_level="$(cd "$REPO/$submodule_path" 2>/dev/null && pwd -P || true)"
+  actual_top_level="$(git -C "$REPO/$submodule_path" rev-parse --show-toplevel 2>/dev/null || true)"
+  actual_top_level_canonical=""
+  if [ -n "$actual_top_level" ]; then
+    actual_top_level_canonical="$(cd "$actual_top_level" 2>/dev/null && pwd -P || true)"
+  fi
+
+  if [ -z "$expected_top_level" ] || [ "$actual_top_level_canonical" != "$expected_top_level" ]; then
+    echo "ABORT: maintenance submodules are not initialized in this linked worktree. Run: $SUBMODULE_INIT_COMMAND" >&2
+    exit 2
+  fi
+}
+
+validate_submodule_worktree mattpocock-skills
+validate_submodule_worktree superpowers
+
 if [ -n "$(git status --porcelain skills/ provenance.tsv)" ]; then
   echo "ABORT: skills/ or provenance.tsv has uncommitted changes - commit or restore first" >&2
   exit 2
