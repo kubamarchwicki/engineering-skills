@@ -36,7 +36,7 @@ Lost? Type `/how`.
 scripts/link-skills.sh
 ```
 
-Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`. Edits in this repo are live immediately; re-run after adding, removing, or renaming a skill.
+Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`, plus the SDD-owned Codex and Claude profiles into `~/.codex/agents` and `~/.claude/agents` respectively. Re-run after adding, removing, or renaming a skill or provider profile. Already-running harness sessions retain their loaded skill and agent snapshot, so restart them after relinking.
 
 ## Maintenance
 
@@ -46,7 +46,7 @@ Upstream sync: `/update-from-upstream` in Claude or `$update-from-upstream` in C
 
 Inside the maintenance worktree, the skill runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through clean merges and grills every conflict, attention item, new upstream skill, deletion, and rename one at a time. A suspected rename is an explicit human-in-the-loop stop: it explains the evidence and waits for me to reconcile the affected skill directory and provenance entry manually before inspecting my fix and continuing. It records the decisions, completes the repository checks, bumps only moved pins, stages the agreed result only after all checks pass, and stops. It never commits, pushes, merges, or relinks the real global installs.
 
-After I commit and merge the staged sync, any membership change is handed back to the primary checkout: run `scripts/link-skills.sh` there, then restart already-running harness sessions because they retain their old skill snapshot. I own the commit, merge, sanity testing, primary-checkout relinking, and maintenance-worktree cleanup.
+After I commit and merge the staged sync, any skill-membership or provider-profile change is handed back to the primary checkout: run `scripts/link-skills.sh` there, then restart already-running harness sessions because they retain their old skill and agent snapshot. I own the commit, merge, sanity testing, primary-checkout relinking, and maintenance-worktree cleanup.
 
 ## Reference
 
@@ -61,14 +61,14 @@ U = user-invoked (slash only) · M = model-invoked (fires on its own)
 | to-spec | U | Conversation → `docs/specs/<name>.md` | mattpocock `skills/engineering/to-spec` | tracker → local file; gear-shift ending |
 | implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate |
 | writing-plans | U | Exhaustive plan → `docs/plans/` | superpowers `skills/writing-plans` | user-invoked; docs/plans path; grilling refs; SDD-only handoff |
-| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; code-review axes; verification gate; stop-before-merge |
+| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; code-review axes; verification gate; stop-before-merge; v2 model-routing policy/profiles; local dispatch records |
 | using-git-worktrees | U | Optional isolation for heavy work | superpowers `skills/using-git-worktrees` | user-invoked |
 | handoff | U | Compact session → handoff doc | mattpocock `skills/productivity/handoff` | verbatim |
 | improve-codebase-architecture | U | Deep-module sweep + report | mattpocock `skills/engineering/improve-codebase-architecture` | verbatim |
 | writing-great-skills | U | Meta: how to write skills | mattpocock `skills/productivity/writing-great-skills` | verbatim |
 | grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | verbatim |
 | tdd | M | Seams-based red-green loop | mattpocock `skills/engineering/tdd` | verbatim |
-| code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup |
+| code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup; verified Demanding model-routing gate |
 | receiving-code-review | M | Rigor when subagent review feedback arrives | superpowers `skills/receiving-code-review` | description rescoped |
 | verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | verbatim |
 | systematic-debugging | M | 4-phase root-cause debugging | superpowers `skills/systematic-debugging` | refs → tdd, verification-before-completion |

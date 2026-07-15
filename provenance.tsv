@@ -5,14 +5,14 @@ grill-with-docs	mattpocock-skills	skills/engineering/grill-with-docs	imported	U	
 to-spec	mattpocock-skills	skills/engineering/to-spec	imported	U	Conversation → `docs/specs/<name>.md`	tracker → local file; gear-shift ending
 implement	mattpocock-skills	skills/engineering/implement	imported	U	Light-track build	+ verification-before-completion gate
 writing-plans	superpowers	skills/writing-plans	imported	U	Exhaustive plan → `docs/plans/`	user-invoked; docs/plans path; grilling refs; SDD-only handoff
-subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; code-review axes; verification gate; stop-before-merge
+subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; code-review axes; verification gate; stop-before-merge; v2 model-routing policy/profiles; local dispatch records
 using-git-worktrees	superpowers	skills/using-git-worktrees	imported	U	Optional isolation for heavy work	user-invoked
 handoff	mattpocock-skills	skills/productivity/handoff	imported	U	Compact session → handoff doc	verbatim
 improve-codebase-architecture	mattpocock-skills	skills/engineering/improve-codebase-architecture	imported	U	Deep-module sweep + report	verbatim
 writing-great-skills	mattpocock-skills	skills/productivity/writing-great-skills	imported	U	Meta: how to write skills	verbatim
 grilling	mattpocock-skills	skills/productivity/grilling	imported	M	The reusable interview loop	verbatim
 tdd	mattpocock-skills	skills/engineering/tdd	imported	M	Seams-based red-green loop	verbatim
-code-review	mattpocock-skills	skills/engineering/code-review	imported	M	Two-axis review (Standards + Spec)	tracker setup/spec lookup → local spec lookup
+code-review	mattpocock-skills	skills/engineering/code-review	imported	M	Two-axis review (Standards + Spec)	tracker setup/spec lookup → local spec lookup; verified Demanding model-routing gate
 receiving-code-review	superpowers	skills/receiving-code-review	imported	M	Rigor when subagent review feedback arrives	description rescoped
 verification-before-completion	superpowers	skills/verification-before-completion	imported	M	Universal completion gate	verbatim
 systematic-debugging	superpowers	skills/systematic-debugging	imported	M	4-phase root-cause debugging	refs → tdd, verification-before-completion
