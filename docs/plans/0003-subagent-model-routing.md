@@ -272,7 +272,7 @@ Expected: Work Class `Bounded`; Effective Floor `Integrated/high`; profile `engi
 
 Input: Code Review examines a small, strongly tested branch with both a spec and repository standards. Neither axis has an Exceptional signal.
 
-Expected: Standards and Spec each use Work Class `Bounded` with Effective Floor `Demanding/high`; both select `engineering-reviewer-demanding-high`; both are verified, read-only Single-Agent dispatches; the Controller launches the two axes in parallel with separate prompts and records. Codex requests `gpt-5.6-sol`/high and Claude requests `claude-opus-4-8`/high.
+Expected: Standards and Spec each use Work Class `Bounded` with Effective Floor `Demanding/high`; both select `engineering-reviewer-demanding-high`; both are verified, read-only Single-Agent dispatches; the Controller pins the merge base and head SHA, materializes and validates one non-empty range-named frozen package through the sibling `review-package` helper, and gives the same absolute readable path to both axes with an explicit instruction to read it. The full diff command and commit list remain traceability context, not a reviewer Bash prerequisite. The Controller launches the two axes in parallel with separate prompts and records, and regenerates a new range-named package rather than reusing stale evidence after a fix changes `HEAD`. Codex requests `gpt-5.6-sol`/high and Claude requests `claude-opus-4-8`/high.
 
 ## Authorization forces Demanding
 
@@ -1690,15 +1690,108 @@ git commit -m "feat: route sdd subagents by effective floor"
 
 **Files:**
 
-- Modify: `skills/code-review/SKILL.md:56-78`
+- Modify: `skills/code-review/SKILL.md:15-153`
+- Modify: `scripts/check-model-routing.sh`
 
-### Step 1: Confirm the existing code-review workflow fails its routing case
+### Step 1: Confirm the frozen-evidence defect and add its failing guard
 
-Give a fresh read-only Controller `skills/code-review/SKILL.md`, `skills/subagent-driven-development/model-routing.md`, and only the Input for `Code Review axes baseline`. Use the evaluation instruction from Task 4.
+Inspect commit `6ece059` structurally before editing. Confirm that all six
+Claude reviewer profiles declare only `Read`, `Grep`, and `Glob` and omit
+`Bash`. Then inspect both Code Review axis prompt-input lists.
 
-Expected RED evidence: the current workflow chooses `general-purpose`, has no Demanding/high floor, no Floor Verification gate, and no Dispatch Records. Capture those field-level failures in the task report.
+Expected RED evidence: the profiles correctly preserve read-only authority,
+but Code Review provides only a literal diff command and commit list. It does
+not materialize the sibling `review-package` helper or require either axis to
+read a shared frozen package, so a Claude reviewer cannot independently inspect
+the Story 50 evidence. Capture the profile tool lines and the missing package
+inputs in the task report.
 
-### Step 2: Replace the generic parallel dispatch section
+Then insert this block in `scripts/check-model-routing.sh` immediately before
+the existing `recorder=` assignment:
+
+```bash
+code_review="$repo_root/skills/code-review/SKILL.md"
+
+require_file "$code_review"
+
+check_code_review_prompt() {
+  label=$1
+  start=$2
+  end=$3
+  prompt=$(awk -v start="$start" -v end="$end" '
+    index($0, start) == 1 { active=1 }
+    active && index($0, end) == 1 { exit }
+    active { print }
+  ' "$code_review")
+
+  if [ -z "$prompt" ]; then
+    fail "skills/code-review/SKILL.md: missing $label prompt block"
+    return
+  fi
+  if ! printf '%s\n' "$prompt" | grep -Fq -- 'The absolute frozen review package path from step 1.'; then
+    fail "skills/code-review/SKILL.md: $label prompt missing frozen package path"
+  fi
+  if ! printf '%s\n' "$prompt" | grep -Fq -- 'Read the frozen review package before reviewing.'; then
+    fail "skills/code-review/SKILL.md: $label prompt missing package read instruction"
+  fi
+}
+
+if [ -f "$code_review" ]; then
+  require_text "$code_review" '"$repo_root/skills/subagent-driven-development/scripts/review-package" "$merge_base_sha" "$head_sha"'
+  require_text "$code_review" 'Require that path to be absolute, a regular file,'
+  require_text "$code_review" 'Use the same `review_package_path` captured in step 1 for every axis dispatched in this run.'
+  check_code_review_prompt Standards '**Standards sub-agent prompt**' '**Spec sub-agent prompt**'
+  check_code_review_prompt Spec '**Spec sub-agent prompt**' 'If the spec is missing'
+fi
+```
+
+Run:
+
+```bash
+bash -n scripts/check-model-routing.sh
+scripts/check-model-routing.sh
+```
+
+Expected: syntax succeeds, then the checker exits `1` with missing helper,
+shared-path, and per-axis package-input diagnostics.
+
+### Step 2: Freeze evidence and route the parallel review axes
+
+In `skills/code-review/SKILL.md`, replace the complete `### 1. Pin the fixed
+point` section with this exact content:
+
+```markdown
+### 1. Pin the fixed point and freeze review evidence
+
+Whatever the user said is the fixed point — a commit SHA, branch name, tag, `main`, `HEAD~5`, etc. If they didn't specify one, ask for it.
+
+Resolve the fixed point and `HEAD` to full commit SHAs, then compute and pin the
+merge base. Keep those exact values as `fixed_point_sha`, `head_sha`, and
+`merge_base_sha` for the whole review. Capture the full diff command as
+`git diff -U10 <merge-base-sha>..<head-sha>` and the commit list as
+`git log <merge-base-sha>..<head-sha> --oneline`. Use the pinned SHAs in both;
+do not leave a moving ref such as `HEAD` in either command.
+
+Before going further, confirm both commits and the merge base resolve and that
+the pinned diff is non-empty. A bad ref or empty diff should fail here — not
+inside two parallel sub-agents.
+
+Use the sibling
+[`review-package`](../subagent-driven-development/scripts/review-package)
+helper to freeze the evidence before either axis dispatches. Resolve the
+repository root with `git rev-parse --show-toplevel` as `repo_root`, then run
+`"$repo_root/skills/subagent-driven-development/scripts/review-package" "$merge_base_sha" "$head_sha"`
+and capture the absolute path reported between `wrote ` and the summary as
+`review_package_path`. Require that path to be absolute, a regular file,
+readable, and non-empty. Also require its first line to identify the exact
+`${merge_base_sha}..${head_sha}` range. Stop here if materialization or any
+validation fails.
+
+Immediately before every initial or repeat axis dispatch, verify that the
+current `HEAD` still equals `head_sha`. If a fix advanced `HEAD`, pin the new
+full head SHA and rerun the helper against the same `merge_base_sha`; use the
+new range-named package. Never reuse or overwrite a package for a stale range.
+```
 
 In `skills/code-review/SKILL.md`, replace the complete section from `### 4. Spawn both sub-agents in parallel` through the sentence about a missing spec at current lines 56-72 with this exact content:
 
@@ -1738,6 +1831,11 @@ reviewer profile for each. Both agents receive fresh context and read-only
 authority. They may use the same provider or model family; independence comes
 from isolated context and adversarial instructions.
 
+Use the same `review_package_path` captured in step 1 for every axis dispatched in this run.
+The diff command and commit list remain provenance and traceability context;
+the frozen package is the readable review evidence and executing the command
+is not a reviewer capability prerequisite.
+
 Prefix both prompts with this routing declaration, filled from step 4:
 
 ```text
@@ -1756,14 +1854,18 @@ FLOOR_UNVERIFIED with mismatch evidence.
 **Standards sub-agent prompt** — include:
 
 - The routing declaration.
-- The full diff command and commit list.
+- The full diff command and commit list, for traceability.
+- The absolute frozen review package path from step 1.
+- This explicit instruction: "Read the frozen review package before reviewing. It is the shared evidence for the pinned range; do not depend on executing the diff command."
 - The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full — the sub-agent has no other access to it.
 - The brief: "Report — per file/hunk where relevant — (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls — documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Label every finding Critical, Important, or Minor. Critical means a safety, security, data-integrity, or correctness failure with severe consequence; Important means the branch cannot be trusted until fixed; Minor is non-blocking. Under 400 words."
 
 **Spec sub-agent prompt** — include:
 
 - The routing declaration.
-- The diff command and commit list.
+- The full diff command and commit list, for traceability.
+- The absolute frozen review package path from step 1.
+- This explicit instruction: "Read the frozen review package before reviewing. It is the shared evidence for the pinned range; do not depend on executing the diff command."
 - The path or fetched contents of the spec.
 - The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Label every finding Critical, Important, or Minor using the same severity definitions as the Standards axis. Under 400 words."
 
@@ -1813,14 +1915,19 @@ Expected:
 - `check-model-routing: clean`
 - `check-refs: clean`
 - `git diff --check` prints nothing.
-- The code-review diff contains only the local model-routing rewire; preserve all existing standards, smell-baseline, spec-source, two-axis, and aggregation behavior.
+- The checker proves Code Review still materializes the sibling review package
+  and that both axis prompt blocks retain the absolute package path and explicit
+  read instruction.
+- The code-review diff contains only the local model-routing and frozen-evidence
+  rewire; preserve all existing standards, smell-baseline, spec-source,
+  two-axis, read-only, and aggregation behavior.
 
-Then rerun `Code Review axes baseline` against the changed workflow and policy without exposing its Expected block. Expected GREEN evidence: both separate axes use verified `Demanding/high` named reviewers, remain read-only Single-Agent dispatches, launch in parallel, and produce separate records. Also run the code-review variants of `Reported substitution is floor checked`, `Local overrides cannot lower a gate`, `Dispatch Record is complete and redacted`, and `Escaped finding calibration waits for in-flight work`.
+Then rerun `Code Review axes baseline` against the changed workflow and policy without exposing its Expected block. Expected GREEN evidence: the Controller pins the merge base and head SHA, materializes and validates one range-named package through the sibling helper, requires both separate axes to read the same absolute package path, keeps the diff command and commit list only for traceability, and regenerates the package after a fix changes `HEAD`. Both axes use verified `Demanding/high` named reviewers, remain read-only Single-Agent dispatches without depending on reviewer Bash, launch in parallel, and produce separate records. Also run the code-review variants of `Reported substitution is floor checked`, `Local overrides cannot lower a gate`, `Dispatch Record is complete and redacted`, and `Escaped finding calibration waits for in-flight work`.
 
 ### Step 4: Commit the code-review integration
 
 ```bash
-git add skills/code-review/SKILL.md
+git add skills/code-review/SKILL.md scripts/check-model-routing.sh
 git commit -m "feat: enforce routed code review"
 ```
 

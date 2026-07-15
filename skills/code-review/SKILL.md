@@ -12,13 +12,36 @@ Both axes run as **parallel sub-agents** so they don't pollute each other's cont
 
 ## Process
 
-### 1. Pin the fixed point
+### 1. Pin the fixed point and freeze review evidence
 
 Whatever the user said is the fixed point — a commit SHA, branch name, tag, `main`, `HEAD~5`, etc. If they didn't specify one, ask for it.
 
-Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
+Resolve the fixed point and `HEAD` to full commit SHAs, then compute and pin the
+merge base. Keep those exact values as `fixed_point_sha`, `head_sha`, and
+`merge_base_sha` for the whole review. Capture the full diff command as
+`git diff -U10 <merge-base-sha>..<head-sha>` and the commit list as
+`git log <merge-base-sha>..<head-sha> --oneline`. Use the pinned SHAs in both;
+do not leave a moving ref such as `HEAD` in either command.
 
-Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here — not inside two parallel sub-agents.
+Before going further, confirm both commits and the merge base resolve and that
+the pinned diff is non-empty. A bad ref or empty diff should fail here — not
+inside two parallel sub-agents.
+
+Use the sibling
+[`review-package`](../subagent-driven-development/scripts/review-package)
+helper to freeze the evidence before either axis dispatches. Resolve the
+repository root with `git rev-parse --show-toplevel` as `repo_root`, then run
+`"$repo_root/skills/subagent-driven-development/scripts/review-package" "$merge_base_sha" "$head_sha"`
+and capture the absolute path reported between `wrote ` and the summary as
+`review_package_path`. Require that path to be absolute, a regular file,
+readable, and non-empty. Also require its first line to identify the exact
+`${merge_base_sha}..${head_sha}` range. Stop here if materialization or any
+validation fails.
+
+Immediately before every initial or repeat axis dispatch, verify that the
+current `HEAD` still equals `head_sha`. If a fix advanced `HEAD`, pin the new
+full head SHA and rerun the helper against the same `merge_base_sha`; use the
+new range-named package. Never reuse or overwrite a package for a stale range.
 
 ### 2. Identify the spec source
 
@@ -88,6 +111,11 @@ reviewer profile for each. Both agents receive fresh context and read-only
 authority. They may use the same provider or model family; independence comes
 from isolated context and adversarial instructions.
 
+Use the same `review_package_path` captured in step 1 for every axis dispatched in this run.
+The diff command and commit list remain provenance and traceability context;
+the frozen package is the readable review evidence and executing the command
+is not a reviewer capability prerequisite.
+
 Prefix both prompts with this routing declaration, filled from step 4:
 
 ```text
@@ -106,14 +134,18 @@ FLOOR_UNVERIFIED with mismatch evidence.
 **Standards sub-agent prompt** — include:
 
 - The routing declaration.
-- The full diff command and commit list.
+- The full diff command and commit list, for traceability.
+- The absolute frozen review package path from step 1.
+- This explicit instruction: "Read the frozen review package before reviewing. It is the shared evidence for the pinned range; do not depend on executing the diff command."
 - The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full — the sub-agent has no other access to it.
 - The brief: "Report — per file/hunk where relevant — (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls — documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Label every finding Critical, Important, or Minor. Critical means a safety, security, data-integrity, or correctness failure with severe consequence; Important means the branch cannot be trusted until fixed; Minor is non-blocking. Under 400 words."
 
 **Spec sub-agent prompt** — include:
 
 - The routing declaration.
-- The diff command and commit list.
+- The full diff command and commit list, for traceability.
+- The absolute frozen review package path from step 1.
+- This explicit instruction: "Read the frozen review package before reviewing. It is the shared evidence for the pinned range; do not depend on executing the diff command."
 - The path or fetched contents of the spec.
 - The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Label every finding Critical, Important, or Minor using the same severity definitions as the Standards axis. Under 400 words."
 

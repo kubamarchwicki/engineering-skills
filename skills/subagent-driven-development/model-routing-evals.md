@@ -20,7 +20,7 @@ Expected: Work Class `Bounded`; Effective Floor `Integrated/high`; profile `engi
 
 Input: Code Review examines a small, strongly tested branch with both a spec and repository standards. Neither axis has an Exceptional signal.
 
-Expected: Standards and Spec each use Work Class `Bounded` with Effective Floor `Demanding/high`; both select `engineering-reviewer-demanding-high`; both are verified, read-only Single-Agent dispatches; the Controller launches the two axes in parallel with separate prompts and records. Codex requests `gpt-5.6-sol`/high and Claude requests `claude-opus-4-8`/high.
+Expected: Standards and Spec each use Work Class `Bounded` with Effective Floor `Demanding/high`; both select `engineering-reviewer-demanding-high`; both are verified, read-only Single-Agent dispatches; the Controller pins the merge base and head SHA, materializes and validates one non-empty range-named frozen package through the sibling `review-package` helper, and gives the same absolute readable path to both axes with an explicit instruction to read it. The full diff command and commit list remain traceability context, not a reviewer Bash prerequisite. The Controller launches the two axes in parallel with separate prompts and records, and regenerates a new range-named package rather than reusing stale evidence after a fix changes `HEAD`. Codex requests `gpt-5.6-sol`/high and Claude requests `claude-opus-4-8`/high.
 
 ## Authorization forces Demanding
 

@@ -122,6 +122,40 @@ if [ -d "$claude_dir" ]; then
   fi
 fi
 
+code_review="$repo_root/skills/code-review/SKILL.md"
+
+require_file "$code_review"
+
+check_code_review_prompt() {
+  label=$1
+  start=$2
+  end=$3
+  prompt=$(awk -v start="$start" -v end="$end" '
+    index($0, start) == 1 { active=1 }
+    active && index($0, end) == 1 { exit }
+    active { print }
+  ' "$code_review")
+
+  if [ -z "$prompt" ]; then
+    fail "skills/code-review/SKILL.md: missing $label prompt block"
+    return
+  fi
+  if ! printf '%s\n' "$prompt" | grep -Fq -- 'The absolute frozen review package path from step 1.'; then
+    fail "skills/code-review/SKILL.md: $label prompt missing frozen package path"
+  fi
+  if ! printf '%s\n' "$prompt" | grep -Fq -- 'Read the frozen review package before reviewing.'; then
+    fail "skills/code-review/SKILL.md: $label prompt missing package read instruction"
+  fi
+}
+
+if [ -f "$code_review" ]; then
+  require_text "$code_review" '"$repo_root/skills/subagent-driven-development/scripts/review-package" "$merge_base_sha" "$head_sha"'
+  require_text "$code_review" 'Require that path to be absolute, a regular file,'
+  require_text "$code_review" 'Use the same `review_package_path` captured in step 1 for every axis dispatched in this run.'
+  check_code_review_prompt Standards '**Standards sub-agent prompt**' '**Spec sub-agent prompt**'
+  check_code_review_prompt Spec '**Spec sub-agent prompt**' 'If the spec is missing'
+fi
+
 recorder="$repo_root/skills/subagent-driven-development/scripts/record-dispatch"
 
 require_file "$recorder"
