@@ -30,6 +30,11 @@ validation_file=$(mktemp "${TMPDIR:-/tmp}/record-dispatch.XXXXXX")
 trap 'rm -f "$validation_file"' EXIT
 printf '%s\n' "$record" > "$validation_file"
 
+strict_json_parser='ObjC.import("Foundation"); function run(argv) { var data = $.NSData.dataWithContentsOfFile(argv[0]); if (!data) { throw new Error("cannot read input"); } var source = $.NSString.alloc.initWithDataEncoding(data, $.NSUTF8StringEncoding); if (!source) { throw new Error("input is not UTF-8"); } JSON.parse(source.js); }'
+if ! /usr/bin/osascript -l JavaScript -e "$strict_json_parser" "$validation_file" >/dev/null 2>&1; then
+  validation_error 'record must be valid JSON'
+fi
+
 canonical_record=$(/usr/bin/plutil -convert json -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'record must be valid JSON'
 case "$canonical_record" in

@@ -1118,6 +1118,8 @@ if [ -f "$recorder" ]; then
   record_tmp=$(mktemp -d "${TMPDIR:-/tmp}/model-routing-record.XXXXXX")
   git -C "$record_tmp" init -q
   sample_record='{"policy_version":2,"event":"started","dispatch_id":"check-1","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{"capability":"Bounded","reasoning":"medium"},"dispatch_mode":"Single-Agent","requested":{"profile":"engineering-worker-bounded-medium","model":"gpt-5.6-luna","effort":"medium"},"effective":{"model":null,"effort":null},"floor_verification":{"status":"unverified","evidence":"runtime did not report"},"outcome":{"first_pass":"pending","critical":0,"important":0,"retries":0,"escalation":"none","final_verification":"pending","elapsed":null,"usage":null}}'
+  xml_record='<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>policy_version</key><integer>2</integer><key>event</key><string>completed</string><key>dispatch_id</key><string>xml-complete</string><key>role</key><string>task-reviewer</string><key>work_class</key><string>Demanding</string><key>escalation_signals</key><array><string>authorization</string></array><key>effective_floor</key><dict><key>capability</key><string>Demanding</string><key>reasoning</key><string>high</string></dict><key>dispatch_mode</key><string>Single-Agent</string><key>requested</key><dict><key>profile</key><string>engineering-reviewer-demanding-high</string><key>model</key><string>gpt-5.6-sol</string><key>effort</key><string>high</string></dict><key>effective</key><dict><key>model</key><string>gpt-5.6-sol</string><key>effort</key><string>high</string></dict><key>floor_verification</key><dict><key>status</key><string>verified</string><key>evidence</key><string>runtime report</string></dict><key>outcome</key><dict><key>first_pass</key><string>failed</string><key>critical</key><integer>1</integer><key>important</key><integer>2</integer><key>retries</key><integer>1</integer><key>escalation</key><string>reasoning</string><key>final_verification</key><string>passed</string><key>elapsed</key><real>1.5</real><key>usage</key><dict><key>input_tokens</key><integer>12</integer><key>output_tokens</key><integer>3</integer></dict></dict></dict></plist>'
+  openstep_record='{ policy_version = 2; event = started; dispatch_id = ascii; role = implementer; work_class = Bounded; escalation_signals = (); effective_floor = { capability = Bounded; reasoning = medium; }; dispatch_mode = "Single-Agent"; requested = { profile = "engineering-worker-bounded-medium"; model = "gpt-5.6-luna"; effort = medium; }; effective = { model = "gpt-5.6-luna"; effort = medium; }; floor_verification = { status = verified; evidence = report; }; outcome = { first_pass = pending; critical = 0; important = 0; retries = 0; escalation = none; final_verification = pending; elapsed = 1; usage = {}; }; }'
   (
     cd "$record_tmp"
     printf '%s\n' "$sample_record" | "$recorder" >/dev/null
@@ -1150,6 +1152,8 @@ if [ -f "$recorder" ]; then
   reject_record 'a forbidden prompt field' '{"prompt":"secret"}'
   reject_record 'a whitespace-formatted forbidden prompt field' "$(printf '%s\n' "$sample_record" | sed 's/"dispatch_id":/"prompt" : "secret", "dispatch_id":/')"
   reject_record 'malformed JSON' '{"policy_version":2'
+  reject_record 'a complete XML plist record' "$xml_record"
+  reject_record 'an OpenStep plist dictionary' "$openstep_record"
   reject_record 'a sibling property injected after the record object' "$sample_record,\"prompt\":\"synthetic\""
   reject_record 'a non-dictionary root' '[]'
   reject_record 'event started-extra' "$(printf '%s\n' "$sample_record" | sed 's/"event":"started"/"event":"started-extra"/')"
@@ -1180,11 +1184,11 @@ if [ -f "$recorder" ]; then
 fi
 ```
 
-The rejection table exercises malformed or non-standalone JSON, an injected
-sibling property, a non-dictionary root, exact policy and event values,
-required nested structures, scalar and container types, nullable fields, and
-forbidden keys at any nesting depth or whitespace. Every rejected case must
-leave the accepted-line count unchanged.
+The rejection table exercises malformed or non-standalone JSON, complete XML
+and OpenStep property lists, an injected sibling property, a non-dictionary
+root, exact policy and event values, required nested structures, scalar and
+container types, nullable fields, and forbidden keys at any nesting depth or
+whitespace. Every rejected case must leave the accepted-line count unchanged.
 
 Run:
 
@@ -1230,6 +1234,11 @@ validation_error() {
 validation_file=$(mktemp "${TMPDIR:-/tmp}/record-dispatch.XXXXXX")
 trap 'rm -f "$validation_file"' EXIT
 printf '%s\n' "$record" > "$validation_file"
+
+strict_json_parser='ObjC.import("Foundation"); function run(argv) { var data = $.NSData.dataWithContentsOfFile(argv[0]); if (!data) { throw new Error("cannot read input"); } var source = $.NSString.alloc.initWithDataEncoding(data, $.NSUTF8StringEncoding); if (!source) { throw new Error("input is not UTF-8"); } JSON.parse(source.js); }'
+if ! /usr/bin/osascript -l JavaScript -e "$strict_json_parser" "$validation_file" >/dev/null 2>&1; then
+  validation_error 'record must be valid JSON'
+fi
 
 canonical_record=$(/usr/bin/plutil -convert json -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'record must be valid JSON'
@@ -1354,10 +1363,10 @@ scripts/check-model-routing.sh
 ```
 
 Expected: `bash -n` succeeds and `check-model-routing: clean`. The checker
-proves that `/usr/bin/plutil` parses the input as one standalone JSON document
-and validates the Dispatch Record schema before any rejected input can append
-to the ledger. Workflow behavior remains RED until the Markdown rewires below
-are complete and the black-box cases pass.
+proves that macOS JavaScript `JSON.parse` accepts the source as one standalone
+JSON document before `/usr/bin/plutil` validates the Dispatch Record schema,
+and that no rejected input can append to the ledger. Workflow behavior remains
+RED until the Markdown rewires below are complete and the black-box cases pass.
 
 ### Step 3: Replace generic model selection with the Routing Policy
 
@@ -1644,10 +1653,11 @@ Expected:
 - `check-model-routing: clean`
 - `bash -n` succeeds.
 - `git diff --check` prints nothing.
-- The structured recorder cases reject malformed or non-standalone JSON, an
-  injected sibling property, wrong roots, policy version `20`, wrong events and
-  types, missing nested fields, and recursively nested forbidden keys without
-  changing the accepted-line count.
+- The structured recorder cases reject malformed or non-standalone JSON,
+  complete XML and brace-leading OpenStep property lists, an injected sibling
+  property, wrong roots, policy version `20`, wrong events and types, missing
+  nested fields, and recursively nested forbidden keys without changing the
+  accepted-line count.
 
 Then use a fresh read-only subagent as an evaluation runner. Give it `skills/subagent-driven-development/SKILL.md`, the linked `model-routing.md`, and one Input paragraph from `model-routing-evals.md`, but not the Expected paragraph. Use this instruction:
 
