@@ -1150,6 +1150,7 @@ if [ -f "$recorder" ]; then
   reject_record 'a forbidden prompt field' '{"prompt":"secret"}'
   reject_record 'a whitespace-formatted forbidden prompt field' "$(printf '%s\n' "$sample_record" | sed 's/"dispatch_id":/"prompt" : "secret", "dispatch_id":/')"
   reject_record 'malformed JSON' '{"policy_version":2'
+  reject_record 'a sibling property injected after the record object' "$sample_record,\"prompt\":\"synthetic\""
   reject_record 'a non-dictionary root' '[]'
   reject_record 'event started-extra' "$(printf '%s\n' "$sample_record" | sed 's/"event":"started"/"event":"started-extra"/')"
   reject_record 'an unknown event' "$(printf '%s\n' "$sample_record" | sed 's/"event":"started"/"event":"unknown"/')"
@@ -1179,10 +1180,11 @@ if [ -f "$recorder" ]; then
 fi
 ```
 
-The rejection table exercises malformed JSON, a non-dictionary root, exact
-policy and event values, required nested structures, scalar and container
-types, nullable fields, and forbidden keys at any nesting depth or whitespace.
-Every rejected case must leave the accepted-line count unchanged.
+The rejection table exercises malformed or non-standalone JSON, an injected
+sibling property, a non-dictionary root, exact policy and event values,
+required nested structures, scalar and container types, nullable fields, and
+forbidden keys at any nesting depth or whitespace. Every rejected case must
+leave the accepted-line count unchanged.
 
 Run:
 
@@ -1227,16 +1229,14 @@ validation_error() {
 
 validation_file=$(mktemp "${TMPDIR:-/tmp}/record-dispatch.XXXXXX")
 trap 'rm -f "$validation_file"' EXIT
-printf '{"record":%s}\n' "$record" > "$validation_file"
+printf '%s\n' "$record" > "$validation_file"
 
-record_type=$(/usr/bin/plutil -type record -- "$validation_file" 2>/dev/null) ||
+canonical_record=$(/usr/bin/plutil -convert json -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'record must be valid JSON'
-if [ "$record_type" != dictionary ]; then
-  validation_error 'record must be a JSON object'
-fi
-
-canonical_record=$(/usr/bin/plutil -extract record json -o - -- "$validation_file" 2>/dev/null) ||
-  validation_error 'record must be valid JSON'
+case "$canonical_record" in
+  \{*\}) ;;
+  *) validation_error 'record must be a JSON object' ;;
+esac
 
 for forbidden in prompt diff source_code secret credential; do
   if printf '%s\n' "$canonical_record" |
@@ -1246,7 +1246,7 @@ for forbidden in prompt diff source_code secret credential; do
 done
 
 type_of() {
-  /usr/bin/plutil -type "record.$1" -- "$validation_file" 2>/dev/null
+  /usr/bin/plutil -type "$1" -- "$validation_file" 2>/dev/null
 }
 
 require_type() {
@@ -1311,7 +1311,7 @@ require_type outcome.final_verification string
 require_number_or_null outcome.elapsed
 require_nullable_type outcome.usage dictionary
 
-signal_count=$(/usr/bin/plutil -extract record.escalation_signals raw -expect array -o - -- "$validation_file" 2>/dev/null) ||
+signal_count=$(/usr/bin/plutil -extract escalation_signals raw -expect array -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'escalation_signals must be an array'
 signal_index=0
 while [ "$signal_index" -lt "$signal_count" ]; do
@@ -1319,13 +1319,13 @@ while [ "$signal_index" -lt "$signal_count" ]; do
   signal_index=$((signal_index + 1))
 done
 
-policy_version=$(/usr/bin/plutil -extract record.policy_version raw -expect integer -o - -- "$validation_file" 2>/dev/null) ||
+policy_version=$(/usr/bin/plutil -extract policy_version raw -expect integer -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'policy_version must be an integer'
 if [ "$policy_version" != 2 ]; then
   validation_error 'policy_version must be 2'
 fi
 
-event=$(/usr/bin/plutil -extract record.event raw -expect string -o - -- "$validation_file" 2>/dev/null) ||
+event=$(/usr/bin/plutil -extract event raw -expect string -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'event must be a string'
 case "$event" in
   started|completed) ;;
@@ -1354,9 +1354,10 @@ scripts/check-model-routing.sh
 ```
 
 Expected: `bash -n` succeeds and `check-model-routing: clean`. The checker
-proves that `/usr/bin/plutil` parses and validates the Dispatch Record schema
-before any rejected input can append to the ledger. Workflow behavior remains
-RED until the Markdown rewires below are complete and the black-box cases pass.
+proves that `/usr/bin/plutil` parses the input as one standalone JSON document
+and validates the Dispatch Record schema before any rejected input can append
+to the ledger. Workflow behavior remains RED until the Markdown rewires below
+are complete and the black-box cases pass.
 
 ### Step 3: Replace generic model selection with the Routing Policy
 
@@ -1643,9 +1644,10 @@ Expected:
 - `check-model-routing: clean`
 - `bash -n` succeeds.
 - `git diff --check` prints nothing.
-- The structured recorder cases reject malformed JSON, wrong roots, policy
-  version `20`, wrong events and types, missing nested fields, and recursively
-  nested forbidden keys without changing the accepted-line count.
+- The structured recorder cases reject malformed or non-standalone JSON, an
+  injected sibling property, wrong roots, policy version `20`, wrong events and
+  types, missing nested fields, and recursively nested forbidden keys without
+  changing the accepted-line count.
 
 Then use a fresh read-only subagent as an evaluation runner. Give it `skills/subagent-driven-development/SKILL.md`, the linked `model-routing.md`, and one Input paragraph from `model-routing-evals.md`, but not the Expected paragraph. Use this instruction:
 

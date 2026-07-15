@@ -28,16 +28,14 @@ validation_error() {
 
 validation_file=$(mktemp "${TMPDIR:-/tmp}/record-dispatch.XXXXXX")
 trap 'rm -f "$validation_file"' EXIT
-printf '{"record":%s}\n' "$record" > "$validation_file"
+printf '%s\n' "$record" > "$validation_file"
 
-record_type=$(/usr/bin/plutil -type record -- "$validation_file" 2>/dev/null) ||
+canonical_record=$(/usr/bin/plutil -convert json -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'record must be valid JSON'
-if [ "$record_type" != dictionary ]; then
-  validation_error 'record must be a JSON object'
-fi
-
-canonical_record=$(/usr/bin/plutil -extract record json -o - -- "$validation_file" 2>/dev/null) ||
-  validation_error 'record must be valid JSON'
+case "$canonical_record" in
+  \{*\}) ;;
+  *) validation_error 'record must be a JSON object' ;;
+esac
 
 for forbidden in prompt diff source_code secret credential; do
   if printf '%s\n' "$canonical_record" |
@@ -47,7 +45,7 @@ for forbidden in prompt diff source_code secret credential; do
 done
 
 type_of() {
-  /usr/bin/plutil -type "record.$1" -- "$validation_file" 2>/dev/null
+  /usr/bin/plutil -type "$1" -- "$validation_file" 2>/dev/null
 }
 
 require_type() {
@@ -112,7 +110,7 @@ require_type outcome.final_verification string
 require_number_or_null outcome.elapsed
 require_nullable_type outcome.usage dictionary
 
-signal_count=$(/usr/bin/plutil -extract record.escalation_signals raw -expect array -o - -- "$validation_file" 2>/dev/null) ||
+signal_count=$(/usr/bin/plutil -extract escalation_signals raw -expect array -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'escalation_signals must be an array'
 signal_index=0
 while [ "$signal_index" -lt "$signal_count" ]; do
@@ -120,13 +118,13 @@ while [ "$signal_index" -lt "$signal_count" ]; do
   signal_index=$((signal_index + 1))
 done
 
-policy_version=$(/usr/bin/plutil -extract record.policy_version raw -expect integer -o - -- "$validation_file" 2>/dev/null) ||
+policy_version=$(/usr/bin/plutil -extract policy_version raw -expect integer -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'policy_version must be an integer'
 if [ "$policy_version" != 2 ]; then
   validation_error 'policy_version must be 2'
 fi
 
-event=$(/usr/bin/plutil -extract record.event raw -expect string -o - -- "$validation_file" 2>/dev/null) ||
+event=$(/usr/bin/plutil -extract event raw -expect string -o - -- "$validation_file" 2>/dev/null) ||
   validation_error 'event must be a string'
 case "$event" in
   started|completed) ;;

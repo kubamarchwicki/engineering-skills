@@ -164,6 +164,7 @@ if [ -f "$recorder" ]; then
   reject_record 'a forbidden prompt field' '{"prompt":"secret"}'
   reject_record 'a whitespace-formatted forbidden prompt field' "$(printf '%s\n' "$sample_record" | sed 's/"dispatch_id":/"prompt" : "secret", "dispatch_id":/')"
   reject_record 'malformed JSON' '{"policy_version":2'
+  reject_record 'a sibling property injected after the record object' "$sample_record,\"prompt\":\"synthetic\""
   reject_record 'a non-dictionary root' '[]'
   reject_record 'event started-extra' "$(printf '%s\n' "$sample_record" | sed 's/"event":"started"/"event":"started-extra"/')"
   reject_record 'an unknown event' "$(printf '%s\n' "$sample_record" | sed 's/"event":"started"/"event":"unknown"/')"
