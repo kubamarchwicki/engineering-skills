@@ -144,26 +144,50 @@ if [ -f "$recorder" ]; then
   if [ "$(cat "$record_tmp/.superpowers/model-routing/.gitignore")" != '*' ]; then
     fail 'record-dispatch did not self-ignore its workspace'
   fi
-  if (
-    cd "$record_tmp"
-    printf '%s\n' '{"prompt":"secret"}' | "$recorder" >/dev/null 2>&1
-  ); then
-    fail 'record-dispatch accepted a forbidden prompt field'
-  fi
-  if (
-    cd "$record_tmp"
-    printf '%s\n' '{"policy_version":2,"event":"started","dispatch_id":"incomplete","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{},"dispatch_mode":"Single-Agent","requested":{},"effective":{},"floor_verification":{},"outcome":{}}' | "$recorder" >/dev/null 2>&1
-  ); then
-    fail 'record-dispatch accepted missing nested fields'
-  fi
-  if (
-    cd "$record_tmp"
-    printf '%s\n' "$sample_record" | sed 's/"policy_version":2/"policy_version":1/' | "$recorder" >/dev/null 2>&1
-  ); then
-    fail 'record-dispatch accepted the wrong policy version'
-  fi
+
+  reject_record() {
+    reject_label=$1
+    reject_json=$2
+    before_count=$(wc -l < "$record_file" | tr -d ' ')
+    if (
+      cd "$record_tmp"
+      printf '%s\n' "$reject_json" | "$recorder" >/dev/null 2>&1
+    ); then
+      fail "record-dispatch accepted $reject_label"
+    fi
+    after_count=$(wc -l < "$record_file" | tr -d ' ')
+    if [ "$after_count" != "$before_count" ]; then
+      fail "record-dispatch appended rejected case: $reject_label"
+    fi
+  }
+
+  reject_record 'a forbidden prompt field' '{"prompt":"secret"}'
+  reject_record 'a whitespace-formatted forbidden prompt field' "$(printf '%s\n' "$sample_record" | sed 's/"dispatch_id":/"prompt" : "secret", "dispatch_id":/')"
+  reject_record 'malformed JSON' '{"policy_version":2'
+  reject_record 'a non-dictionary root' '[]'
+  reject_record 'event started-extra' "$(printf '%s\n' "$sample_record" | sed 's/"event":"started"/"event":"started-extra"/')"
+  reject_record 'an unknown event' "$(printf '%s\n' "$sample_record" | sed 's/"event":"started"/"event":"unknown"/')"
+  reject_record 'missing nested fields' '{"policy_version":2,"event":"started","dispatch_id":"incomplete","role":"implementer","work_class":"Bounded","escalation_signals":[],"effective_floor":{},"dispatch_mode":"Single-Agent","requested":{},"effective":{},"floor_verification":{},"outcome":{}}'
+  reject_record 'a missing top-level field' "$(printf '%s\n' "$sample_record" | sed 's/"dispatch_id"/"missing_dispatch_id"/')"
+  reject_record 'an array effective_floor' "$(printf '%s\n' "$sample_record" | sed 's/"effective_floor":{"capability":"Bounded","reasoning":"medium"}/"effective_floor":[]/')"
+  reject_record 'an array requested value' "$(printf '%s\n' "$sample_record" | sed 's/"requested":{"profile":"engineering-worker-bounded-medium","model":"gpt-5.6-luna","effort":"medium"}/"requested":[]/')"
+  reject_record 'an array outcome value' "$(printf '%s\n' "$sample_record" | sed 's/"outcome":{.*}/"outcome":[]}/')"
+  reject_record 'policy version 1' "$(printf '%s\n' "$sample_record" | sed 's/"policy_version":2/"policy_version":1/')"
+  reject_record 'policy version 20' "$(printf '%s\n' "$sample_record" | sed 's/"policy_version":2/"policy_version":20/')"
+  reject_record 'a numeric role value' "$(printf '%s\n' "$sample_record" | sed 's/"role":"implementer"/"role":7/')"
+  reject_record 'a dictionary escalation_signals value' "$(printf '%s\n' "$sample_record" | sed 's/"escalation_signals":\[\]/"escalation_signals":{}/')"
+  reject_record 'a non-string escalation signal' "$(printf '%s\n' "$sample_record" | sed 's/"escalation_signals":\[\]/"escalation_signals":[7]/')"
+  reject_record 'a numeric effective model' "$(printf '%s\n' "$sample_record" | sed 's/"effective":{"model":null/"effective":{"model":7/')"
+  reject_record 'a string Critical count' "$(printf '%s\n' "$sample_record" | sed 's/"critical":0/"critical":"0"/')"
+  reject_record 'a string elapsed value' "$(printf '%s\n' "$sample_record" | sed 's/"elapsed":null/"elapsed":"unknown"/')"
+  reject_record 'an array usage value' "$(printf '%s\n' "$sample_record" | sed 's/"usage":null/"usage":[]/')"
+
+  for forbidden in prompt diff source_code secret credential; do
+    reject_record "a nested forbidden $forbidden field" "$(printf '%s\n' "$sample_record" | sed "s/\"outcome\":{/\"outcome\":{\"$forbidden\" : \"redacted\",/")"
+  done
+
   if [ "$(wc -l < "$record_file" | tr -d ' ')" != 1 ]; then
-    fail 'record-dispatch appended a rejected event'
+    fail 'record-dispatch changed the accepted-line count for rejected input'
   fi
   rm -rf "$record_tmp"
 fi
