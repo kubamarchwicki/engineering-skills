@@ -20,145 +20,145 @@ Policy Calibration is initiated by the user without an evidence threshold. A Cri
 
 ## User Stories
 
-1. As a user, I want correctness to govern model routing, so that cost or latency never lowers an acceptance gate below the Correctness Bar.
+1. **Story 01:** As a user, I want correctness to govern model routing, so that cost or latency never lowers an acceptance gate below the Correctness Bar.
 
-2. As a user, I want capability and reasoning selected independently, so that narrow but subtle work can receive deep reasoning without conflating that need with broader model capability.
+2. **Story 02:** As a user, I want capability and reasoning selected independently, so that narrow but subtle work can receive deep reasoning without conflating that need with broader model capability.
 
-3. As a Controller, I want every dispatch to have a Capability Floor, so that the selected model is strong enough for the work's breadth, autonomy, and consequence.
+3. **Story 03:** As a Controller, I want every dispatch to have a Capability Floor, so that the selected model is strong enough for the work's breadth, autonomy, and consequence.
 
-4. As a Controller, I want every dispatch to have a Reasoning Floor, so that the selected model deliberates deeply enough for the task even when the task is small.
+4. **Story 04:** As a Controller, I want every dispatch to have a Reasoning Floor, so that the selected model deliberates deeply enough for the task even when the task is small.
 
-5. As a Controller, I want role floors and work floors composed independently, so that a reviewer cannot be weakened merely because the implementation looked mechanical.
+5. **Story 05:** As a Controller, I want role floors and work floors composed independently, so that a reviewer cannot be weakened merely because the implementation looked mechanical.
 
-6. As a Controller, I want to assign Work Classes without interrupting an already authorized Stage, so that SDD can remain continuous between task boundaries.
+6. **Story 06:** As a Controller, I want to assign Work Classes without interrupting an already authorized Stage, so that SDD can remain continuous between task boundaries.
 
-7. As a user, I want classification uncertainty to resolve upward, so that ambiguous routing decisions favor correctness.
+7. **Story 07:** As a user, I want classification uncertainty to resolve upward, so that ambiguous routing decisions favor correctness.
 
-8. As an implementer, I want Bounded Work recognized as exact, local, reversible, and strongly verified, so that a suitable fast model can handle it.
+8. **Story 08:** As an implementer, I want Bounded Work recognized as exact, local, reversible, and strongly verified, so that a suitable fast model can handle it.
 
-9. As an implementer, I want Integrated Work recognized as ordinary repository coordination, so that it receives a capable everyday model without automatic frontier escalation.
+9. **Story 09:** As an implementer, I want Integrated Work recognized as ordinary repository coordination, so that it receives a capable everyday model without automatic frontier escalation.
 
-10. As a reviewer, I want security, authorization, privacy, secrets, data integrity, migrations, concurrency, ordering, public compatibility, cross-module invariants, weak verification, and novel architecture to force at least Demanding Work, so that apparent task size cannot hide consequential risk.
+10. **Story 10:** As a reviewer, I want security, authorization, privacy, secrets, data integrity, migrations, concurrency, ordering, public compatibility, cross-module invariants, weak verification, and novel architecture to force at least Demanding Work, so that apparent task size cannot hide consequential risk.
 
-11. As a user, I want Exceptional Work to require a strict trigger, so that the strongest configurations are reserved for genuinely long-horizon, highest-consequence, repeatedly failing, or escaped-defect cases.
+11. **Story 11:** As a user, I want Exceptional Work to require a strict trigger, so that the strongest configurations are reserved for genuinely long-horizon, highest-consequence, repeatedly failing, or escaped-defect cases.
 
-12. As a Controller, I want the Work Class to set an initial capability and reasoning pair, so that routing begins from a predictable policy rather than ad hoc preference.
+12. **Story 12:** As a Controller, I want the Work Class to set an initial capability and reasoning pair, so that routing begins from a predictable policy rather than ad hoc preference.
 
-13. As an SDD implementer, I want a Bounded/medium role baseline, so that write-capable work receives at least routine deliberation.
+13. **Story 13:** As an SDD implementer, I want a Bounded/medium role baseline, so that write-capable work receives at least routine deliberation.
 
-14. As an SDD task reviewer, I want an Integrated/high role baseline, so that independent task review is never assigned a merely mechanical configuration.
+14. **Story 14:** As an SDD task reviewer, I want an Integrated/high role baseline, so that independent task review is never assigned a merely mechanical configuration.
 
-15. As a Code Review user, I want both Standards and Spec reviewers to use at least Demanding/high, so that the two acceptance axes share a simple, correctness-oriented baseline.
+15. **Story 15:** As a Code Review user, I want both Standards and Spec reviewers to use at least Demanding/high, so that the two acceptance axes share a simple, correctness-oriented baseline.
 
-16. As a final-review user, I want whole-branch review to use at least Demanding/high, so that the branch cannot inherit a weak session configuration.
+16. **Story 16:** As a final-review user, I want whole-branch review to use at least Demanding/high, so that the branch cannot inherit a weak session configuration.
 
-17. As a final reviewer, I want the branch Work Class recomputed from all task classes and cross-task interactions, so that migrations, accumulated findings, review escapes, and weak end-to-end verification can raise the final floor.
+17. **Story 17:** As a final reviewer, I want the branch Work Class recomputed from all task classes and cross-task interactions, so that migrations, accumulated findings, review escapes, and weak end-to-end verification can raise the final floor.
 
-18. As a fixer, I want my Work Class to be no lower than both the original task and the finding, so that correcting a consequential defect never downgrades the configuration.
+18. **Story 18:** As a fixer, I want my Work Class to be no lower than both the original task and the finding, so that correcting a consequential defect never downgrades the configuration.
 
-19. As a re-reviewer, I want my Effective Floor to be no lower than the reviewer that found the defect, so that a fix cannot pass through weaker scrutiny.
+19. **Story 19:** As a re-reviewer, I want my Effective Floor to be no lower than the reviewer that found the defect, so that a fix cannot pass through weaker scrutiny.
 
-20. As a user, I want Codex Bounded Work mapped to 5.6 Luna, so that clear and repeatable implementation can use the appropriate current model.
+20. **Story 20:** As a user, I want Codex Bounded Work mapped to 5.6 Luna, so that clear and repeatable implementation can use the appropriate current model.
 
-21. As a user, I want Codex Integrated Work mapped to 5.6 Terra, so that ordinary engineering work uses the pragmatic all-rounder.
+21. **Story 21:** As a user, I want Codex Integrated Work mapped to 5.6 Terra, so that ordinary engineering work uses the pragmatic all-rounder.
 
-22. As a user, I want Codex Demanding and Exceptional Work mapped to 5.6 Sol, so that complex work uses the strongest current 5.6 model while reasoning distinguishes the two floors.
+22. **Story 22:** As a user, I want Codex Demanding and Exceptional Work mapped to 5.6 Sol, so that complex work uses the strongest current 5.6 model while reasoning distinguishes the two floors.
 
-23. As a user, I want Claude Bounded and Integrated Work mapped to Sonnet, so that routine work uses the current balanced coding model.
+23. **Story 23:** As a user, I want Claude Bounded and Integrated Work mapped to Sonnet, so that routine work uses the current balanced coding model.
 
-24. As a user, I want Claude Demanding Work mapped to Opus, so that complex engineering judgment receives the stronger agentic model.
+24. **Story 24:** As a user, I want Claude Demanding Work mapped to Opus, so that complex engineering judgment receives the stronger agentic model.
 
-25. As a user, I want Claude Exceptional Work mapped to Fable, so that the highest-capability model is reserved for strict Exceptional triggers.
+25. **Story 25:** As a user, I want Claude Exceptional Work mapped to Fable, so that the highest-capability model is reserved for strict Exceptional triggers.
 
-26. As a maintainer, I want full model identifiers pinned, so that model behavior does not change silently when a family alias moves between versions or providers.
+26. **Story 26:** As a maintainer, I want full model identifiers pinned, so that model behavior does not change silently when a family alias moves between versions or providers.
 
-27. As a maintainer, I want GPT-5.5 excluded, so that the Routing Policy has no ambiguous compatibility tier.
+27. **Story 27:** As a maintainer, I want GPT-5.5 excluded, so that the Routing Policy has no ambiguous compatibility tier.
 
-28. As a Controller, I want Max reasoning available only as an explicit escalation above xhigh, so that it is used for the hardest single-agent cases rather than as a routine default.
+28. **Story 28:** As a Controller, I want Max reasoning available only as an explicit escalation above xhigh, so that it is used for the hardest single-agent cases rather than as a routine default.
 
-29. As a Controller, I want Ultra treated as a Dispatch Mode rather than ordinary reasoning, so that permission to delegate is visible and governed separately.
+29. **Story 29:** As a Controller, I want Ultra treated as a Dispatch Mode rather than ordinary reasoning, so that permission to delegate is visible and governed separately.
 
-30. As an SDD user, I want implementers and fixers to remain Single-Agent, so that parallel writers cannot violate sequential task ownership.
+30. **Story 30:** As an SDD user, I want implementers and fixers to remain Single-Agent, so that parallel writers cannot violate sequential task ownership.
 
-31. As a Code Review user, I want v2 reviewer profiles to remain Single-Agent, so that the existing two-axis orchestration stays explicit and auditable.
+31. **Story 31:** As a Code Review user, I want v2 reviewer profiles to remain Single-Agent, so that the existing two-axis orchestration stays explicit and auditable.
 
-32. As a user, I want Delegating mode allowed only for explicitly decomposable, read-only work, so that nested delegation cannot expand write authority or bypass workflow structure.
+32. **Story 32:** As a user, I want Delegating mode allowed only for explicitly decomposable, read-only work, so that nested delegation cannot expand write authority or bypass workflow structure.
 
-33. As a Controller, I want a finite set of named profiles covering baselines, reachable escalation steps, and strongest Single-Agent Max, so that the adapters remain explicit without a full model-by-effort-by-role Cartesian product.
+33. **Story 33:** As a Controller, I want a finite set of named profiles covering baselines, reachable escalation steps, and strongest Single-Agent Max, so that the adapters remain explicit without a full model-by-effort-by-role Cartesian product.
 
-34. As a Controller, I want the next available named profile that meets or exceeds both floors when an exact pair is absent, so that finite profiles never cause a downward substitution.
+34. **Story 34:** As a Controller, I want the next available named profile that meets or exceeds both floors when an exact pair is absent, so that finite profiles never cause a downward substitution.
 
-35. As a Codex user, I want Codex profiles exposed only through Codex agent discovery, so that Claude configuration is ignored by Codex.
+35. **Story 35:** As a Codex user, I want Codex profiles exposed only through Codex agent discovery, so that Claude configuration is ignored by Codex.
 
-36. As a Claude user, I want Claude profiles exposed only through Claude agent discovery, so that Codex configuration is ignored by Claude.
+36. **Story 36:** As a Claude user, I want Claude profiles exposed only through Claude agent discovery, so that Codex configuration is ignored by Claude.
 
-37. As a maintainer, I want both providers' profiles colocated inside the owning Skill, so that policy, prompts, and adapter definitions remain one reviewable package.
+37. **Story 37:** As a maintainer, I want both providers' profiles colocated inside the owning Skill, so that policy, prompts, and adapter definitions remain one reviewable package.
 
-38. As a maintainer, I want explicit Codex and Claude profile files even when they repeat configuration, so that a generator or shared manifest does not obscure the installed behavior.
+38. **Story 38:** As a maintainer, I want explicit Codex and Claude profile files even when they repeat configuration, so that a generator or shared manifest does not obscure the installed behavior.
 
-39. As a user, I want the linker to expose profiles to the harness-specific discovery directories, so that the globally linked Skill Set can enforce routing in repositories other than Engineering Skills.
+39. **Story 39:** As a user, I want the linker to expose profiles to the harness-specific discovery directories, so that the globally linked Skill Set can enforce routing in repositories other than Engineering Skills.
 
-40. As a user, I want the linker to refuse to replace real profile files, so that installing Engineering Skills cannot destroy my local custom agents.
+40. **Story 40:** As a user, I want the linker to refuse to replace real profile files, so that installing Engineering Skills cannot destroy my local custom agents.
 
-41. As a user, I want repeated linking to be idempotent, so that updating or repairing the installation is safe.
+41. **Story 41:** As a user, I want repeated linking to be idempotent, so that updating or repairing the installation is safe.
 
-42. As a Controller, I want a named profile selection or an effective runtime report before claiming Floor Verification, so that a requested configuration is not confused with the configuration that ran.
+42. **Story 42:** As a Controller, I want a named profile selection or an effective runtime report before claiming Floor Verification, so that a requested configuration is not confused with the configuration that ran.
 
-43. As a reviewer, I want prompt steering alone treated as unverified, so that natural-language routing hints cannot satisfy an acceptance gate.
+43. **Story 43:** As a reviewer, I want prompt steering alone treated as unverified, so that natural-language routing hints cannot satisfy an acceptance gate.
 
-44. As an implementer, I want to proceed with an unverified Effective Floor when the runtime cannot pin my profile, so that a limited surface can still produce a proposed change.
+44. **Story 44:** As an implementer, I want to proceed with an unverified Effective Floor when the runtime cannot pin my profile, so that a limited surface can still produce a proposed change.
 
-45. As a reviewer, I want the workflow to stop when my Effective Floor cannot be verified, so that an unsupported runtime cannot approve work under an unknown model.
+45. **Story 45:** As a reviewer, I want the workflow to stop when my Effective Floor cannot be verified, so that an unsupported runtime cannot approve work under an unknown model.
 
-46. As a user, I want an unverified implementer prevented from making work Branch Ready without verified independent review, so that fallback usefulness does not weaken acceptance.
+46. **Story 46:** As a user, I want an unverified implementer prevented from making work Branch Ready without verified independent review, so that fallback usefulness does not weaken acceptance.
 
-47. As a user, I want unavailable pinned models substituted only by a reported configuration known to meet or exceed the floor, so that availability problems never cause silent downgrades.
+47. **Story 47:** As a user, I want unavailable pinned models substituted only by a reported configuration known to meet or exceed the floor, so that availability problems never cause silent downgrades.
 
-48. As a user, I want a local override to raise floors or choose an allowed Dispatch Mode, so that I can demand more scrutiny for a particular task.
+48. **Story 48:** As a user, I want a local override to raise floors or choose an allowed Dispatch Mode, so that I can demand more scrutiny for a particular task.
 
-49. As a user, I want a local request below the Effective Floor barred from satisfying a gate, so that consuming workflows cannot weaken global policy.
+49. **Story 49:** As a user, I want a local request below the Effective Floor barred from satisfying a gate, so that consuming workflows cannot weaken global policy.
 
-50. As a reviewer, I want Review Independence based on fresh context, read-only authority, independent evidence, and an adversarial contract, so that independence does not depend on switching model families.
+50. **Story 50:** As a reviewer, I want Review Independence based on fresh context, read-only authority, independent evidence, and an adversarial contract, so that independence does not depend on switching model families.
 
-51. As a Controller, I want the Escalation Ladder to repair context before raising reasoning, raise reasoning before capability, split oversized work before forcing it, and return contradictory requirements to the user, so that model escalation addresses the actual cause of failure.
+51. **Story 51:** As a Controller, I want the Escalation Ladder to repair context before raising reasoning, raise reasoning before capability, split oversized work before forcing it, and return contradictory requirements to the user, so that model escalation addresses the actual cause of failure.
 
-52. As a Controller, I want unchanged retries forbidden, so that a blocked subagent is not repeatedly dispatched without a meaningful intervention.
+52. **Story 52:** As a Controller, I want unchanged retries forbidden, so that a blocked subagent is not repeatedly dispatched without a meaningful intervention.
 
-53. As a user, I want every acceptance-relevant dispatch represented by a Dispatch Record, so that routing and gate decisions are auditable.
+53. **Story 53:** As a user, I want every acceptance-relevant dispatch represented by a Dispatch Record, so that routing and gate decisions are auditable.
 
-54. As a user, I want Dispatch Records to include role, Work Class, Escalation Signals, Effective Floor, Dispatch Mode, requested configuration, effective configuration, and Floor Verification, so that the complete routing decision is inspectable.
+54. **Story 54:** As a user, I want Dispatch Records to include role, Work Class, Escalation Signals, Effective Floor, Dispatch Mode, requested configuration, effective configuration, and Floor Verification, so that the complete routing decision is inspectable.
 
-55. As a user, I want correctness outcomes added to Dispatch Records, so that first-pass verdicts, Critical and Important findings, retries, escalation, and final verification can inform future judgment.
+55. **Story 55:** As a user, I want correctness outcomes added to Dispatch Records, so that first-pass verdicts, Critical and Important findings, retries, escalation, and final verification can inform future judgment.
 
-56. As a user, I want raw Dispatch Records stored locally per workspace and excluded from version control, so that they remain available without creating repository noise.
+56. **Story 56:** As a user, I want raw Dispatch Records stored locally per workspace and excluded from version control, so that they remain available without creating repository noise.
 
-57. As a user, I want raw telemetry to exclude prompts, diffs, and source code, so that routing evidence does not become a second store of sensitive work.
+57. **Story 57:** As a user, I want raw telemetry to exclude prompts, diffs, and source code, so that routing evidence does not become a second store of sensitive work.
 
-58. As a user, I want no global telemetry aggregate or sample-size threshold, so that supervised workflows do not accumulate unnecessary cross-repository state.
+58. **Story 58:** As a user, I want no global telemetry aggregate or sample-size threshold, so that supervised workflows do not accumulate unnecessary cross-repository state.
 
-59. As a user, I want to initiate Policy Calibration whenever I judge it necessary, so that global policy changes do not require a prescribed amount of evidence.
+59. **Story 59:** As a user, I want to initiate Policy Calibration whenever I judge it necessary, so that global policy changes do not require a prescribed amount of evidence.
 
-60. As a user, I want a Critical or Important escape to emit `POLICY_CALIBRATION_REQUIRED`, preserve its record identifiers, and force Exceptional/xhigh acceptance for the current branch without blocking its remediation, so that policy debt is visible without abandoning the authorized work.
+60. **Story 60:** As a user, I want a Critical or Important escape to emit `POLICY_CALIBRATION_REQUIRED`, preserve its record identifiers, and force Exceptional/xhigh acceptance for the current branch without blocking its remediation, so that policy debt is visible without abandoning the authorized work.
 
-61. As a user, I want an incorrect Branch Ready result or the absence of any compatible verified-review surface to hard-stop after in-flight work, so that unsafe acceptance cannot continue.
+61. **Story 61:** As a user, I want an incorrect Branch Ready result or the absence of any compatible verified-review surface to hard-stop after in-flight work, so that unsafe acceptance cannot continue.
 
-62. As a user, I want a calibration flag to produce a redacted handoff with relevant Dispatch Record identifiers, so that I can review the failure without copying prompts or code.
+62. **Story 62:** As a user, I want a calibration flag to produce a redacted handoff with relevant Dispatch Record identifiers, so that I can review the failure without copying prompts or code.
 
-63. As a user, I want the handoff to direct me back to Engineering Skills and `$grill-with-docs`, so that policy adjustment is an explicit global Gear Shift.
+63. **Story 63:** As a user, I want the handoff to direct me back to Engineering Skills and `$grill-with-docs`, so that policy adjustment is an explicit global Gear Shift.
 
-64. As a user, I want consuming workflows prohibited from editing global routing policy, so that one review cannot silently retune every future workflow.
+64. **Story 64:** As a user, I want consuming workflows prohibited from editing global routing policy, so that one review cannot silently retune every future workflow.
 
-65. As a maintainer, I want the Routing Policy to have an explicit integer version, so that Dispatch Records and calibration handoffs identify the policy that governed them.
+65. **Story 65:** As a maintainer, I want the Routing Policy to have an explicit integer version, so that Dispatch Records and calibration handoffs identify the policy that governed them.
 
-66. As a maintainer, I want policy-relevant changes to increment the version, so that floors, mappings, fallbacks, triggers, and profiles cannot change invisibly.
+66. **Story 66:** As a maintainer, I want policy-relevant changes to increment the version, so that floors, mappings, fallbacks, triggers, and profiles cannot change invisibly.
 
-67. As a maintainer, I want imported-skill changes recorded as Rewirings in Provenance, so that upstream synchronization can distinguish deliberate routing behavior from drift.
+67. **Story 67:** As a maintainer, I want imported-skill changes recorded as Rewirings in Provenance, so that upstream synchronization can distinguish deliberate routing behavior from drift.
 
-68. As a user, I want model routing to remain inside the Stage I explicitly authorized, so that it cannot auto-chain workflow stages.
+68. **Story 68:** As a user, I want model routing to remain inside the Stage I explicitly authorized, so that it cannot auto-chain workflow stages.
 
-69. As a user, I want final verification and stop-before-merge behavior preserved, so that stronger models cannot assume ownership of merge, sanity testing, or cleanup.
+69. **Story 69:** As a user, I want final verification and stop-before-merge behavior preserved, so that stronger models cannot assume ownership of merge, sanity testing, or cleanup.
 
-70. As a user of a limited runtime, I want the workflow to name the missing compatible surface or configuration when review fails closed, so that the stop gives me an actionable next step.
+70. **Story 70:** As a user of a limited runtime, I want the workflow to name the missing compatible surface or configuration when review fails closed, so that the stop gives me an actionable next step.
 
 ## Implementation Decisions
 
