@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Populate `/Users/jakub/workspaces/engineering-skills/skills/` with the 22-skill set (14 mattpocock + 7 superpowers + 1 fresh router), rewire the agreed edits, write the README/provenance map and `link-skills.sh`, and swap the stale `~/.agents/skills` installs for symlinks into this repo.
+**Goal:** Populate `/Users/jakub/workspaces/engineering-skills/skills/` with the curated 22-skill set, rewire the agreed edits, write the README/provenance map and reference sweep, and install the set with `npx skills`.
 
-**Architecture:** Every imported skill is copied whole-directory, verbatim, from its source checkout (`mattpocock-skills/` or `superpowers/` — soon git submodules). Edits are limited to the surgical exceptions agreed in the design: invocation frontmatter, dangling-reference repoints, and the specific rewirings listed per task. Fresh files (`how`, `README.md`, `link-skills.sh`) are written from the complete content in this plan.
+**Architecture:** Every imported skill is copied whole-directory, verbatim, from its source checkout (`mattpocock-skills/` or `superpowers/` — soon git submodules). Edits are limited to the surgical exceptions agreed in the design: invocation frontmatter, dangling-reference repoints, and the specific rewirings listed per task. Fresh files (`how`, `README.md`) are written from the complete content in this plan.
 
-**Tech Stack:** Markdown skill files (Claude Code Agent Skills format), bash, git, symlinks.
+**Tech Stack:** Markdown skill files (Claude Code Agent Skills format), bash, git, `npx skills`.
 
 ## Global Constraints
 
@@ -15,24 +15,24 @@
 - Skill names stay exactly as inherited. The only new name is `how`.
 - Artifact conventions the skills must reference: `CONTEXT.md` at repo root, `docs/adr/`, `docs/specs/`, `docs/plans/NNNN-<feature-name>.md`.
 - User-invoked skills carry `disable-model-invocation: true` in frontmatter; model-invoked skills must not.
-- No Claude plugin / marketplace files. Distribution is `scripts/link-skills.sh` only.
+- No Claude plugin / marketplace files. Install with `npx skills add ./skills --global --skill '*' --agent codex --agent claude-code --yes`.
 - Copy each skill's **entire directory** (including `agents/`, reference `.md` files, `scripts/`). Do not prune sub-files.
 - Commit after every task with the message given in the task.
 - Where a step says "Replace every occurrence", use Edit with replace_all; expected occurrence counts are stated so a mismatch is caught, not papered over.
 
 ---
 
-### Task 1: Verbatim import of the 14 clean skills
+### Task 1: Verbatim import of the 15 clean skills
 
 **Files:**
-- Create: `skills/grilling/`, `skills/grill-me/`, `skills/grill-with-docs/`, `skills/tdd/`, `skills/code-review/`, `skills/domain-modeling/`, `skills/codebase-design/`, `skills/research/`, `skills/handoff/`, `skills/improve-codebase-architecture/`, `skills/resolving-merge-conflicts/`, `skills/writing-great-skills/` (from mattpocock-skills)
+- Create: `skills/grilling/`, `skills/grill-me/`, `skills/grill-with-docs/`, `skills/tdd/`, `skills/code-review/`, `skills/domain-modeling/`, `skills/codebase-design/`, `skills/research/`, `skills/handoff/`, `skills/wait-what/`, `skills/improve-codebase-architecture/`, `skills/resolving-merge-conflicts/`, `skills/writing-for-agents/` (from mattpocock-skills)
 - Create: `skills/verification-before-completion/`, `skills/dispatching-parallel-agents/` (from superpowers)
 - Delete: `skills/.empty`
 
 **Interfaces:**
-- Produces: 14 skill directories, byte-identical to their sources. Later tasks rely on skill names `tdd`, `code-review`, `verification-before-completion`, `grilling` existing under `skills/`.
+- Produces: 15 skill directories, byte-identical to their sources. Later tasks rely on skill names `tdd`, `code-review`, `verification-before-completion`, `grilling` existing under `skills/`.
 
-- [ ] **Step 1: Copy the 14 directories**
+- [ ] **Step 1: Copy the 15 directories**
 
 ```bash
 cd /Users/jakub/workspaces/engineering-skills
@@ -46,9 +46,10 @@ cp -R $M/engineering/domain-modeling      skills/domain-modeling
 cp -R $M/engineering/codebase-design      skills/codebase-design
 cp -R $M/engineering/research             skills/research
 cp -R $M/productivity/handoff             skills/handoff
+cp -R $M/productivity/wait-what            skills/wait-what
 cp -R $M/engineering/improve-codebase-architecture skills/improve-codebase-architecture
 cp -R $M/engineering/resolving-merge-conflicts     skills/resolving-merge-conflicts
-cp -R $M/productivity/writing-great-skills         skills/writing-great-skills
+cp -R $M/productivity/writing-for-agents          skills/writing-for-agents
 cp -R $S/verification-before-completion   skills/verification-before-completion
 cp -R $S/dispatching-parallel-agents      skills/dispatching-parallel-agents
 rm skills/.empty
@@ -68,9 +69,10 @@ diff -r $M/engineering/domain-modeling skills/domain-modeling && \
 diff -r $M/engineering/codebase-design skills/codebase-design && \
 diff -r $M/engineering/research skills/research && \
 diff -r $M/productivity/handoff skills/handoff && \
+diff -r $M/productivity/wait-what skills/wait-what && \
 diff -r $M/engineering/improve-codebase-architecture skills/improve-codebase-architecture && \
 diff -r $M/engineering/resolving-merge-conflicts skills/resolving-merge-conflicts && \
-diff -r $M/productivity/writing-great-skills skills/writing-great-skills && \
+diff -r $M/productivity/writing-for-agents skills/writing-for-agents && \
 diff -r $S/verification-before-completion skills/verification-before-completion && \
 diff -r $S/dispatching-parallel-agents skills/dispatching-parallel-agents && echo ALL-IDENTICAL
 ```
@@ -80,70 +82,7 @@ Expected: `ALL-IDENTICAL` (no diff output).
 
 ```bash
 git add -A skills/
-git commit -m "feat: import 14 skills verbatim from mattpocock-skills and superpowers"
-```
-
----
-
-### Task 2: Import + rewire `to-spec` (tracker → docs/specs/)
-
-**Files:**
-- Create: `skills/to-spec/` (from `mattpocock-skills/skills/engineering/to-spec`)
-- Modify: `skills/to-spec/SKILL.md` (3 edits)
-
-**Interfaces:**
-- Produces: `/to-spec` saving specs to `docs/specs/<feature-name>.md` and ending with a manual gear shift. `writing-plans` (Task 6) consumes those spec files.
-
-- [ ] **Step 1: Copy**
-
-```bash
-cd /Users/jakub/workspaces/engineering-skills
-cp -R mattpocock-skills/skills/engineering/to-spec skills/to-spec
-```
-
-- [ ] **Step 2: Edit `skills/to-spec/SKILL.md` — description**
-
-Old:
-```
-description: Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.
-```
-New:
-```
-description: Turn the current conversation into a spec saved to docs/specs/ — no interview, just synthesis of what you've already discussed.
-```
-
-- [ ] **Step 3: Edit — delete the setup-skill line (including its trailing blank line)**
-
-Old:
-```
-The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
-
-```
-New: (nothing — delete)
-
-- [ ] **Step 4: Edit — publish step becomes save-to-file + gear shift**
-
-Old:
-```
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage.
-```
-New:
-```
-3. Write the spec using the template below, then save it to `docs/specs/<feature-name>.md` in the repo (create the directory if needed). Tell the user the path and stop: `/writing-plans` is the next gear for heavy work, `/implement` for small.
-```
-
-- [ ] **Step 5: Verify no tracker references remain**
-
-```bash
-grep -n "tracker\|triage\|setup-matt-pocock" skills/to-spec/SKILL.md
-```
-Expected: no output (exit code 1).
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add skills/to-spec
-git commit -m "feat: import to-spec, rewired to save specs to docs/specs/ instead of a tracker"
+git commit -m "feat: import 15 skills verbatim from mattpocock-skills and superpowers"
 ```
 
 ---
@@ -655,16 +594,15 @@ Two tracks. The user picks the gear: every stage boundary is the user typing the
 **Heavy track** — features and multi-step work:
 
 1. `/grill-with-docs` — align, sharpening `CONTEXT.md` and ADRs as you go
-2. `/to-spec` — synthesize the conversation into `docs/specs/<feature>.md`
-3. `/using-git-worktrees` — optional: isolate the work in a worktree
-4. `/writing-plans` — exhaustive plan to `docs/plans/NNNN-<feature>.md`
-5. `/subagent-driven-development` — execute: fresh subagent per task with two-stage review; ends with a whole-branch code-review, then verification-before-completion, then STOPS. Merge, sanity testing, and worktree cleanup belong to the user.
+2. `/using-git-worktrees` — optional: isolate the work in a worktree
+3. `/writing-plans` — exhaustive plan to `docs/plans/NNNN-<feature>.md`
+4. `/subagent-driven-development` — execute: fresh subagent per task with two-stage review; ends with a whole-branch code-review, then verification-before-completion, then STOPS. Merge, sanity testing, and worktree cleanup belong to the user.
 
 **Debugging:** describe the bug — systematic-debugging fires on its own (nudge it by name if it doesn't).
 
-**Disciplines that fire mid-flow** (model-invoked; invoke by name to nudge): systematic-debugging, tdd, code-review, receiving-code-review, verification-before-completion, domain-modeling, codebase-design, grilling, dispatching-parallel-agents, resolving-merge-conflicts, research.
+**Disciplines that fire mid-flow** (model-invoked; invoke by name to nudge): systematic-debugging, tdd, code-review, receiving-code-review, verification-before-completion, domain-modeling, codebase-design, grilling, dispatching-parallel-agents, resolving-merge-conflicts, research, writing-for-agents.
 
-**Other commands:** `/handoff` (compact this session for a future one), `/improve-codebase-architecture` (periodic deep-module sweep), `/writing-great-skills` (when editing this skill set).
+**Other commands:** `/handoff` (compact this session for a future one), `/wait-what` (re-pitch an explanation that did not land), `/improve-codebase-architecture` (periodic deep-module sweep).
 
 Full catalog and provenance: `~/workspaces/engineering-skills/README.md`.
 ```
@@ -710,28 +648,28 @@ My personal agent skill set — a deliberate hybrid of [obra/superpowers](https:
 **Heavy** — features and multi-step work:
 
 ```
-/grill-with-docs  →  /to-spec  →  [/using-git-worktrees]  →  /writing-plans  →  /subagent-driven-development
-                     docs/specs/                              docs/plans/       per-task two-stage review,
-                                                                                whole-branch code-review,
-                                                                                verification, then STOP
+/grill-with-docs  →  [/using-git-worktrees]  →  /writing-plans  →  /subagent-driven-development
+                                                docs/plans/       per-task two-stage review,
+                                                                  whole-branch code-review,
+                                                                  verification, then STOP
 ```
 
 Lost? Type `/how`.
 
 ## Conventions
 
-- `CONTEXT.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — specs from `/to-spec`; `docs/plans/NNNN-<name>.md` — plans from `/writing-plans`. All created lazily.
+- `CONTEXT.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — optional specs; `docs/plans/NNNN-<name>.md` — plans from `/writing-plans`. All created lazily.
 - Skill names are inherited from their source repos, unchanged.
 - Imported skills are verbatim except the rewirings listed below. The submodule SHAs pin exactly what each import forked from.
-- Meta-philosophy for writing and editing these skills: `writing-great-skills`.
+- Guidance for writing and editing documents agents consume: `writing-for-agents`.
 
 ## Install
 
 ```bash
-scripts/link-skills.sh
+npx skills add ./skills --global --skill '*' --agent codex --agent claude-code --yes
 ```
 
-Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`. Edits in this repo are live immediately; re-run after adding, removing, or renaming a skill.
+Installs every skill in `skills/` for Codex and Claude Code. Re-run after adding, removing, or renaming a skill.
 
 ## Reference
 
@@ -743,14 +681,14 @@ U = user-invoked (slash only) · M = model-invoked (fires on its own)
 | how | U | Router over the whole set | original | — |
 | grill-me | U | Interview to align before building | mattpocock `skills/productivity/grill-me` | verbatim |
 | grill-with-docs | U | Grill + CONTEXT.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
-| to-spec | U | Conversation → `docs/specs/<name>.md` | mattpocock `skills/engineering/to-spec` | tracker → local file; gear-shift ending |
 | implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate |
 | writing-plans | U | Exhaustive plan → `docs/plans/` | superpowers `skills/writing-plans` | user-invoked; docs/plans path; grilling refs; SDD-only handoff |
 | subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; code-review axes; verification gate; stop-before-merge |
 | using-git-worktrees | U | Optional isolation for heavy work | superpowers `skills/using-git-worktrees` | user-invoked |
 | handoff | U | Compact session → handoff doc | mattpocock `skills/productivity/handoff` | verbatim |
 | improve-codebase-architecture | U | Deep-module sweep + report | mattpocock `skills/engineering/improve-codebase-architecture` | verbatim |
-| writing-great-skills | U | Meta: how to write skills | mattpocock `skills/productivity/writing-great-skills` | verbatim |
+| wait-what | U | Re-pitch an explanation that did not land | mattpocock `skills/productivity/wait-what` | verbatim |
+| writing-for-agents | M | Guidance for documents agents consume | mattpocock `skills/productivity/writing-for-agents` | verbatim |
 | grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | verbatim |
 | tdd | M | Seams-based red-green loop | mattpocock `skills/engineering/tdd` | verbatim |
 | code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | verbatim |
@@ -791,78 +729,15 @@ git commit -m "docs: README with track map and provenance table"
 
 ---
 
-### Task 11: Write `scripts/link-skills.sh` and `scripts/check-refs.sh`
+### Task 11: Write `scripts/check-refs.sh`
 
 **Files:**
-- Create: `scripts/link-skills.sh` (executable)
 - Create: `scripts/check-refs.sh` (executable)
 
 **Interfaces:**
-- Produces: idempotent linker: repo `skills/*` → `~/.agents/skills/<name>` and `~/.claude/skills/<name>`. Refuses to clobber real (non-symlink) entries; prunes dead symlinks it finds.
 - Produces: `check-refs.sh`, the whole-set dangling-reference sweep (exit 0 = clean). Task 12 runs it, and every future upstream update (plan 0002) reruns it.
 
-- [ ] **Step 1: Create `scripts/link-skills.sh` with exactly this content**
-
-```bash
-#!/usr/bin/env bash
-# Link every skill in this repo into the harness skill directories.
-# Idempotent: re-run after adding, removing, or renaming a skill.
-set -euo pipefail
-
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILLS_DIR="$REPO/skills"
-TARGETS=("$HOME/.agents/skills" "$HOME/.claude/skills")
-status=0
-
-for target in "${TARGETS[@]}"; do
-  mkdir -p "$target"
-
-  # prune dead symlinks and stale links into this repo's skills dir
-  for link in "$target"/*; do
-    [ -L "$link" ] || continue
-    if [ ! -e "$link" ]; then
-      rm "$link"; echo "pruned dead link: $link"
-    elif [[ "$(readlink "$link")" == "$SKILLS_DIR"/* ]] && [ ! -d "$SKILLS_DIR/$(basename "$link")" ]; then
-      rm "$link"; echo "pruned removed skill: $link"
-    fi
-  done
-
-  for skill in "$SKILLS_DIR"/*/; do
-    name="$(basename "$skill")"
-    dest="$target/$name"
-    if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-      echo "SKIP: $dest exists and is not a symlink — remove it manually" >&2
-      status=1
-      continue
-    fi
-    ln -sfn "$SKILLS_DIR/$name" "$dest"
-    echo "linked: $dest -> $SKILLS_DIR/$name"
-  done
-done
-
-exit $status
-```
-
-- [ ] **Step 2: Make executable and syntax-check**
-
-```bash
-chmod +x scripts/link-skills.sh
-bash -n scripts/link-skills.sh && echo SYNTAX-OK
-```
-Expected: `SYNTAX-OK`
-
-- [ ] **Step 3: Test against a throwaway HOME (does not touch the real install)**
-
-```bash
-TESTHOME=$(mktemp -d)
-HOME="$TESTHOME" bash scripts/link-skills.sh | tail -3
-ls "$TESTHOME/.claude/skills" | wc -l
-readlink "$TESTHOME/.claude/skills/how"
-rm -rf "$TESTHOME"
-```
-Expected: link lines printed; count `22`; readlink shows `/Users/jakub/workspaces/engineering-skills/skills/how`.
-
-- [ ] **Step 4: Create `scripts/check-refs.sh` with exactly this content**
+- [ ] **Step 1: Create `scripts/check-refs.sh` with exactly this content**
 
 ```bash
 #!/usr/bin/env bash
@@ -874,7 +749,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 bad=0
 
-if grep -rn "superpowers:\|setup-matt-pocock\|docs/superpowers\|ask-matt" skills/ --include=SKILL.md; then
+if grep -rn "superpowers:\|setup-matt-pocock\|docs/superpowers\|ask-matt\|to-spec\|writing-great-skills" skills/ --include=SKILL.md; then
   bad=1
 fi
 if grep -rln "brainstorming skill\|requesting-code-review\|finishing-a-development-branch" skills/ --include=SKILL.md; then
@@ -887,7 +762,7 @@ fi
 exit "$bad"
 ```
 
-- [ ] **Step 5: Make executable, syntax-check, and run against the imported set**
+- [ ] **Step 2: Make executable, syntax-check, and run against the imported set**
 
 ```bash
 chmod +x scripts/check-refs.sh
@@ -896,81 +771,49 @@ scripts/check-refs.sh
 ```
 Expected: `SYNTAX-OK`, then `check-refs: clean` with exit code 0 (Tasks 1–8 already imported and rewired every skill).
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add scripts/link-skills.sh scripts/check-refs.sh
-git commit -m "feat: link-skills.sh installer and check-refs.sh dangling-reference sweep"
+git add scripts/check-refs.sh
+git commit -m "feat: add check-refs.sh dangling-reference sweep"
 ```
 
 ---
 
-### Task 12: Swap the stale installs for repo symlinks
+### Task 12: Install the curated set
 
 **Files:**
-- Modify: `~/.agents/skills/` and `~/.claude/skills/` (outside the repo — destructive; the diff review in Step 1 is the safety gate)
+- Update: global Codex and Claude Code skill installations through `npx skills`
 
-- [ ] **Step 1: Diff review — prove the old copies hold nothing worth keeping**
+- [ ] **Step 1: Diff review the existing installed skills**
 
-The `~/.agents/skills` copies are Jul-10 snapshots of upstream. Differences vs. our fresh imports should be *upstream drift only*. For each old copy that has a counterpart in the repo:
+Compare existing global copies against both upstream sources before replacing them. If any difference looks like a local customization that exists in neither source checkout, stop and show it to Jakub.
 
-```bash
-cd /Users/jakub/workspaces/engineering-skills
-for d in ~/.agents/skills/*/; do n=$(basename "$d"); if [ -d "skills/$n" ]; then echo "== $n"; diff -r "$d" "skills/$n" | head -20; fi; done
-```
-
-Read the output. Expected: small wording drift and our known rewirings. **If any difference looks like a local customization (content that exists in the old copy but in NEITHER source checkout), STOP and show it to Jakub before deleting anything.** Cross-check suspicious hunks:
-
-```bash
-grep -rn "<suspicious phrase>" superpowers/skills mattpocock-skills/skills
-```
-
-- [ ] **Step 2: Remove the old copies and stale links**
-
-Old skills with no successor (dropped by design): `diagnosing-bugs`, `prototype`, `wayfinder`, `executing-plans`, `finishing-a-development-branch`, `requesting-code-review`, `test-driven-development`, `writing-skills` — plus all stale keeper copies (replaced by symlinks next step).
-
-```bash
-rm -rf ~/.agents/skills/*
-find ~/.claude/skills -maxdepth 1 -type l -delete
-```
-
-- [ ] **Step 3: Link the new set**
+- [ ] **Step 2: Install from the primary checkout**
 
 ```bash
 cd /Users/jakub/workspaces/engineering-skills
-scripts/link-skills.sh
+npx skills add ./skills --global --skill '*' --agent codex --agent claude-code --yes
 ```
-Expected: 44 `linked:` lines (22 skills × 2 targets), exit code 0, no `SKIP` lines.
 
-- [ ] **Step 4: Verify the installed set**
+- [ ] **Step 3: Whole-set dangling-reference sweep**
 
 ```bash
-ls ~/.claude/skills | wc -l
-ls ~/.claude/skills | sort | diff - <(ls /Users/jakub/workspaces/engineering-skills/skills | sort) && echo SETS-MATCH
-readlink ~/.claude/skills/grilling
-```
-Expected: `22`; `SETS-MATCH`; `/Users/jakub/workspaces/engineering-skills/skills/grilling`.
-
-- [ ] **Step 5: Whole-set dangling-reference sweep**
-
-```bash
-cd /Users/jakub/workspaces/engineering-skills
 scripts/check-refs.sh
 ```
 Expected: `check-refs: clean`, exit code 0.
 
-- [ ] **Step 6: Final commit (nothing should be dirty; confirm clean tree)**
+- [ ] **Step 4: Confirm the repository is clean**
 
 ```bash
 git status --short
 ```
-Expected: empty output. New sessions now load the set from this repo. Remind Jakub: current Claude Code sessions keep the old skill snapshot until restarted, and the submodule conversion of `superpowers/` and `mattpocock-skills/` is his manual follow-up.
-```
+Expected: empty output. Restart active harness sessions so they load the updated skill snapshot.
 
 ---
 
 ## Self-Review
 
-- **Spec coverage:** 22 skills → Task 1 (14) + Tasks 2–8 (7 imports with edits) + Task 9 (how) = 22. Rewirings from the design: to-spec→docs/specs (T2), implement verification gate (T3), receiving-code-review rescope (T4), systematic-debugging repoints (T5), writing-plans conventions + SDD-only handoff (T6), SDD full rewire incl. stop-before-merge (T7), worktrees optional/user-invoked (T8), router (T9), README provenance (T10), link script (T11), install swap + diff-review guard (T12). ✓
+- **Spec coverage:** 22 skills → Task 1 (15) + Tasks 3–8 (6 imports with edits) + Task 9 (how) = 22. Rewirings from the design: implement verification gate (T3), receiving-code-review rescope (T4), systematic-debugging repoints (T5), writing-plans conventions + SDD-only handoff (T6), SDD full rewire including stop-before-merge (T7), worktrees optional/user-invoked (T8), router (T9), README provenance (T10), reference sweep (T11), `npx skills` installation + diff-review guard (T12). ✓
 - **Placeholder scan:** all edits carry exact old/new text; fresh files carry complete content; Task 7 Step 9 and Task 12 Step 1 are bounded sweeps with explicit mappings and stop conditions, not "handle appropriately". ✓
 - **Consistency:** skill names referenced across tasks (`tdd`, `code-review`, `verification-before-completion`, `how`) match the directory names created in Tasks 1 and 9; plan-path convention `docs/plans/NNNN-<feature-name>.md` used consistently in T6, T7, T9, T10 — and by this very file. ✓

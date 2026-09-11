@@ -2,14 +2,14 @@ name	submodule	source_path	status	inv	role	changes
 how	-	-	original	U	Router over the whole set	—
 grill-me	mattpocock-skills	skills/productivity/grill-me	imported	U	Interview to align before building	verbatim
 grill-with-docs	mattpocock-skills	skills/engineering/grill-with-docs	imported	U	Grill + CONTEXT.md/ADRs inline	verbatim
-to-spec	mattpocock-skills	skills/engineering/to-spec	imported	U	Conversation → `docs/specs/<name>.md`	tracker → local file; gear-shift ending
 implement	mattpocock-skills	skills/engineering/implement	imported	U	Light-track build	+ verification-before-completion gate
-writing-plans	superpowers	skills/writing-plans	imported	U	Exhaustive plan → `docs/plans/`	user-invoked; docs/plans path; grilling refs; SDD-only handoff
-subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; code-review axes; verification gate; stop-before-merge
+writing-plans	superpowers	skills/writing-plans	imported	U	Exhaustive plan → `docs/plans/`	user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff
+subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge
 using-git-worktrees	superpowers	skills/using-git-worktrees	imported	U	Optional isolation for heavy work	user-invoked
 handoff	mattpocock-skills	skills/productivity/handoff	imported	U	Compact session → handoff doc	verbatim
+wait-what	mattpocock-skills	skills/productivity/wait-what	imported	U	Re-pitch an explanation that did not land	verbatim
 improve-codebase-architecture	mattpocock-skills	skills/engineering/improve-codebase-architecture	imported	U	Deep-module sweep + report	verbatim
-writing-great-skills	mattpocock-skills	skills/productivity/writing-great-skills	imported	U	Meta: how to write skills	verbatim
+writing-for-agents	mattpocock-skills	skills/productivity/writing-for-agents	imported	M	Guidance for documents agents consume	verbatim
 grilling	mattpocock-skills	skills/productivity/grilling	imported	M	The reusable interview loop	verbatim
 tdd	mattpocock-skills	skills/engineering/tdd	imported	M	Seams-based red-green loop	verbatim
 code-review	mattpocock-skills	skills/engineering/code-review	imported	M	Two-axis review (Standards + Spec)	tracker setup/spec lookup → local spec lookup
@@ -27,7 +27,11 @@ finishing-a-development-branch	superpowers	skills/finishing-a-development-branch
 requesting-code-review	superpowers	skills/requesting-code-review	dropped	-	-	dropped: replaced by code-review
 test-driven-development	superpowers	skills/test-driven-development	dropped	-	-	dropped: replaced by seams-based tdd
 using-superpowers	superpowers	skills/using-superpowers	dropped	-	-	dropped: no bootstrap hook by design
-writing-skills	superpowers	skills/writing-skills	dropped	-	-	dropped: replaced by writing-great-skills
+writing-skills	superpowers	skills/writing-skills	dropped	-	-	dropped: replaced by writing-for-agents
+to-spec	mattpocock-skills	skills/engineering/to-spec	dropped	-	-	dropped: user requested removal
+implement-spec	mattpocock-skills	skills/in-progress/implement-spec	dropped	-	-	dropped: in-progress tracker/PR flow with automatic subagent merges
+retro	mattpocock-skills	skills/in-progress/retro	dropped	-	-	dropped: in-progress workflow outside the curated tracks
+to-questionnaire	mattpocock-skills	skills/productivity/to-questionnaire	dropped	-	-	dropped: outside the curated engineering tracks
 ask-matt	mattpocock-skills	skills/engineering/ask-matt	dropped	-	-	dropped: replaced by how
 diagnosing-bugs	mattpocock-skills	skills/engineering/diagnosing-bugs	dropped	-	-	dropped: replaced by systematic-debugging
 prototype	mattpocock-skills	skills/engineering/prototype	dropped	-	-	dropped: not needed

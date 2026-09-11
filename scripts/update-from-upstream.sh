@@ -33,7 +33,7 @@ GIT_DIR_CANONICAL="$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)"
 GIT_COMMON_DIR_CANONICAL="$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)"
 SUPERPROJECT_WORK_TREE="$(git rev-parse --show-superproject-working-tree 2>/dev/null || true)"
 if [ -n "$SUPERPROJECT_WORK_TREE" ] || [ "$GIT_DIR_CANONICAL" = "$GIT_COMMON_DIR_CANONICAL" ]; then
-  echo "ABORT: upstream sync must run in a linked Git worktree; the primary checkout may be live through global skill symlinks. Claude: run /using-git-worktrees, then re-run /update-from-upstream. Codex: run \$using-git-worktrees, then re-run \$update-from-upstream." >&2
+  echo "ABORT: upstream sync must run in a linked Git worktree; a global skill installation may reference the primary checkout. Claude: run /using-git-worktrees, then re-run /update-from-upstream. Codex: run \$using-git-worktrees, then re-run \$update-from-upstream." >&2
   exit 2
 fi
 

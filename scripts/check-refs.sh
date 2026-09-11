@@ -7,7 +7,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 bad=0
 
-if grep -rn "superpowers:\|setup-matt-pocock\|docs/superpowers\|ask-matt" skills/ --include=SKILL.md; then
+if grep -rn "superpowers:\|setup-matt-pocock\|docs/superpowers\|ask-matt\|to-spec\|writing-great-skills" skills/ --include=SKILL.md; then
   bad=1
 fi
 if grep -rln "brainstorming skill\|requesting-code-review\|finishing-a-development-branch" skills/ --include=SKILL.md; then

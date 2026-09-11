@@ -15,38 +15,38 @@ My personal agent skill set — a deliberate hybrid of [obra/superpowers](https:
 **Heavy** — features and multi-step work:
 
 ```
-/grill-with-docs  →  /to-spec  →  [/using-git-worktrees]  →  /writing-plans  →  /subagent-driven-development
-                     docs/specs/                              docs/plans/       per-task two-stage review,
-                                                                                whole-branch code-review,
-                                                                                verification, then STOP
+/grill-with-docs  →  [/using-git-worktrees]  →  /writing-plans  →  /subagent-driven-development
+                                                docs/plans/       per-task two-stage review,
+                                                                  whole-branch code-review,
+                                                                  verification, then STOP
 ```
 
 Lost? Type `/how`.
 
 ## Conventions
 
-- `CONTEXT.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — specs from `/to-spec`; `docs/plans/NNNN-<feature-name>.md` — plans from `/writing-plans`. All created lazily.
+- `CONTEXT.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — optional specs; `docs/plans/NNNN-<feature-name>.md` — plans from `/writing-plans`. All created lazily.
 - Skill names are inherited from their source repos, unchanged.
 - Imported skills are verbatim except the rewirings listed below. The submodule SHAs pin exactly what each import forked from.
-- Meta-philosophy for writing and editing these skills: `writing-great-skills`.
+- Guidance for writing and editing documents agents consume: `writing-for-agents`.
 
 ## Install
 
 ```bash
-scripts/link-skills.sh
+npx skills add ./skills --global --skill '*' --agent codex --agent claude-code --yes
 ```
 
-Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`. Edits in this repo are live immediately; re-run after adding, removing, or renaming a skill.
+Installs every skill in `skills/` for Codex and Claude Code. Re-run after adding, removing, or renaming a skill.
 
 ## Maintenance
 
 `provenance.tsv` is the single source of truth for the skill ↔ upstream mapping. The Reference table below is generated from it by `scripts/gen-readme-table.sh` (between the provenance markers) — edit the tsv, never the table.
 
-Upstream sync: `/update-from-upstream` in Claude or `$update-from-upstream` in Codex, backed by one canonical repo-local source (`skills-internal/update-from-upstream/`) exposed through `.claude/skills/` and `.agents/skills/` discovery symlinks. Claude's frontmatter and Codex's `agents/openai.yaml` both disable implicit invocation. The skill loads only in this workspace and is never part of the globally linked set. It runs only in a linked Git worktree because the primary checkout may be live through the global skill symlinks. If invoked from the primary checkout, it names `/using-git-worktrees` then `/update-from-upstream` for Claude, or `$using-git-worktrees` then `$update-from-upstream` for Codex, and stops before creating or auto-chaining the worktree.
+Upstream sync: `/update-from-upstream` in Claude or `$update-from-upstream` in Codex, backed by one canonical repo-local source (`skills-internal/update-from-upstream/`) exposed through `.claude/skills/` and `.agents/skills/` discovery symlinks. Claude's frontmatter and Codex's `agents/openai.yaml` both disable implicit invocation. The skill loads only in this workspace and is never part of the globally installed set. It runs only in a linked Git worktree because a global installation may reference the primary checkout. If invoked from the primary checkout, it names `/using-git-worktrees` then `/update-from-upstream` for Claude, or `$using-git-worktrees` then `$update-from-upstream` for Codex, and stops before creating or auto-chaining the worktree.
 
-Inside the maintenance worktree, the skill runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through clean merges and grills every conflict, attention item, new upstream skill, deletion, and rename one at a time. A suspected rename is an explicit human-in-the-loop stop: it explains the evidence and waits for me to reconcile the affected skill directory and provenance entry manually before inspecting my fix and continuing. It records the decisions, completes the repository checks, bumps only moved pins, stages the agreed result only after all checks pass, and stops. It never commits, pushes, merges, or relinks the real global installs.
+Inside the maintenance worktree, the skill runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through clean merges and grills every conflict, attention item, new upstream skill, deletion, and rename one at a time. A suspected rename is an explicit human-in-the-loop stop: it explains the evidence and waits for me to reconcile the affected skill directory and provenance entry manually before inspecting my fix and continuing. It records the decisions, completes the repository checks, bumps only moved pins, stages the agreed result only after all checks pass, and stops. It never commits, pushes, merges, or updates the real global installation.
 
-After I commit and merge the staged sync, any membership change is handed back to the primary checkout: run `scripts/link-skills.sh` there, then restart already-running harness sessions because they retain their old skill snapshot. I own the commit, merge, sanity testing, primary-checkout relinking, and maintenance-worktree cleanup.
+After I commit and merge the staged sync, any membership change is handed back to the primary checkout: run the `npx skills add` command above there, then restart already-running harness sessions because they retain their old skill snapshot. I own the commit, merge, sanity testing, primary-checkout installation, and maintenance-worktree cleanup.
 
 ## Reference
 
@@ -58,14 +58,14 @@ U = user-invoked (slash only) · M = model-invoked (fires on its own)
 | how | U | Router over the whole set | original | — |
 | grill-me | U | Interview to align before building | mattpocock `skills/productivity/grill-me` | verbatim |
 | grill-with-docs | U | Grill + CONTEXT.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
-| to-spec | U | Conversation → `docs/specs/<name>.md` | mattpocock `skills/engineering/to-spec` | tracker → local file; gear-shift ending |
 | implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate |
-| writing-plans | U | Exhaustive plan → `docs/plans/` | superpowers `skills/writing-plans` | user-invoked; docs/plans path; grilling refs; SDD-only handoff |
-| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; code-review axes; verification gate; stop-before-merge |
+| writing-plans | U | Exhaustive plan → `docs/plans/` | superpowers `skills/writing-plans` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff |
+| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge |
 | using-git-worktrees | U | Optional isolation for heavy work | superpowers `skills/using-git-worktrees` | user-invoked |
 | handoff | U | Compact session → handoff doc | mattpocock `skills/productivity/handoff` | verbatim |
+| wait-what | U | Re-pitch an explanation that did not land | mattpocock `skills/productivity/wait-what` | verbatim |
 | improve-codebase-architecture | U | Deep-module sweep + report | mattpocock `skills/engineering/improve-codebase-architecture` | verbatim |
-| writing-great-skills | U | Meta: how to write skills | mattpocock `skills/productivity/writing-great-skills` | verbatim |
+| writing-for-agents | M | Guidance for documents agents consume | mattpocock `skills/productivity/writing-for-agents` | verbatim |
 | grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | verbatim |
 | tdd | M | Seams-based red-green loop | mattpocock `skills/engineering/tdd` | verbatim |
 | code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup |

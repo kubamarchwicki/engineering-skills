@@ -11,10 +11,10 @@
 ## Global Constraints
 
 - Repo root: `/Users/jakub/workspaces/engineering-skills`. All commands run from the repo root unless stated.
-- **Prerequisite:** plan 0001 fully executed and committed — `skills/` populated with the 22 skills, `README.md` written with the `<!-- provenance:begin/end -->` markers around its Reference table, `scripts/link-skills.sh` and `scripts/check-refs.sh` in place, and the submodule gitlinks (`mattpocock-skills` @ `66898f60e8c744e269f8ce06c2b2b99ce7660d5f`, `superpowers` @ `d884ae04edebef577e82ff7c4e143debd0bbec99`) committed to HEAD.
+- **Prerequisite:** plan 0001 fully executed and committed — `skills/` populated with the curated set, `README.md` written with the `<!-- provenance:begin/end -->` markers around its Reference table, `scripts/check-refs.sh` in place, and the submodule gitlinks (`mattpocock-skills` @ `66898f60e8c744e269f8ce06c2b2b99ce7660d5f`, `superpowers` @ `d884ae04edebef577e82ff7c4e143debd0bbec99`) committed to HEAD.
 - All scripts: `#!/usr/bin/env bash`, `set -euo pipefail` (check-refs excepted per 0001), executable, and **bash 3.2 compatible** — no associative arrays, no `${var,,}`. No BSD-sed `\t` in replacements (use awk for tab handling).
 - `provenance.tsv` format: 7 tab-separated columns `name, submodule, source_path, status, inv, role, changes`; header row first; statuses are `imported`, `original`, `dropped`; imported+original rows appear in README-table order; `dropped` rows are never rendered into the README.
-- Nothing in this plan pushes to any upstream, commits inside a submodule beyond throwaway test branches (deleted in the same task), or bumps the submodule pins. The update *script* never commits and never bumps pins either — close-out belongs to the skill + Jakub.
+- Nothing in this plan pushes to any upstream or edits, branches, or commits inside the pinned upstream submodule worktrees. Purpose-built synthetic repositories outside those worktrees provide any mutable regression fixtures. The update *script* never commits and never bumps pins either — close-out belongs to the skill + Jakub.
 - Commit after every task with the message given in the task.
 
 ---
@@ -41,14 +41,14 @@ name | submodule | source_path | status | inv | role | changes
 how | - | - | original | U | Router over the whole set | —
 grill-me | mattpocock-skills | skills/productivity/grill-me | imported | U | Interview to align before building | verbatim
 grill-with-docs | mattpocock-skills | skills/engineering/grill-with-docs | imported | U | Grill + CONTEXT.md/ADRs inline | verbatim
-to-spec | mattpocock-skills | skills/engineering/to-spec | imported | U | Conversation → `docs/specs/<name>.md` | tracker → local file; gear-shift ending
 implement | mattpocock-skills | skills/engineering/implement | imported | U | Light-track build | + verification-before-completion gate
-writing-plans | superpowers | skills/writing-plans | imported | U | Exhaustive plan → `docs/plans/` | user-invoked; docs/plans path; grilling refs; SDD-only handoff
-subagent-driven-development | superpowers | skills/subagent-driven-development | imported | U | Heavy-track execution engine | user-invoked; code-review axes; verification gate; stop-before-merge
+writing-plans | superpowers | skills/writing-plans | imported | U | Exhaustive plan → `docs/plans/` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff
+subagent-driven-development | superpowers | skills/subagent-driven-development | imported | U | Heavy-track execution engine | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge
 using-git-worktrees | superpowers | skills/using-git-worktrees | imported | U | Optional isolation for heavy work | user-invoked
 handoff | mattpocock-skills | skills/productivity/handoff | imported | U | Compact session → handoff doc | verbatim
+wait-what | mattpocock-skills | skills/productivity/wait-what | imported | U | Re-pitch an explanation that did not land | verbatim
 improve-codebase-architecture | mattpocock-skills | skills/engineering/improve-codebase-architecture | imported | U | Deep-module sweep + report | verbatim
-writing-great-skills | mattpocock-skills | skills/productivity/writing-great-skills | imported | U | Meta: how to write skills | verbatim
+writing-for-agents | mattpocock-skills | skills/productivity/writing-for-agents | imported | M | Guidance for documents agents consume | verbatim
 grilling | mattpocock-skills | skills/productivity/grilling | imported | M | The reusable interview loop | verbatim
 tdd | mattpocock-skills | skills/engineering/tdd | imported | M | Seams-based red-green loop | verbatim
 code-review | mattpocock-skills | skills/engineering/code-review | imported | M | Two-axis review (Standards + Spec) | verbatim
@@ -66,7 +66,11 @@ finishing-a-development-branch | superpowers | skills/finishing-a-development-br
 requesting-code-review | superpowers | skills/requesting-code-review | dropped | - | - | dropped: replaced by code-review
 test-driven-development | superpowers | skills/test-driven-development | dropped | - | - | dropped: replaced by seams-based tdd
 using-superpowers | superpowers | skills/using-superpowers | dropped | - | - | dropped: no bootstrap hook by design
-writing-skills | superpowers | skills/writing-skills | dropped | - | - | dropped: replaced by writing-great-skills
+writing-skills | superpowers | skills/writing-skills | dropped | - | - | dropped: replaced by writing-for-agents
+to-spec | mattpocock-skills | skills/engineering/to-spec | dropped | - | - | dropped: user requested removal
+implement-spec | mattpocock-skills | skills/in-progress/implement-spec | dropped | - | - | dropped: in-progress tracker/PR flow with automatic subagent merges
+retro | mattpocock-skills | skills/in-progress/retro | dropped | - | - | dropped: in-progress workflow outside the curated tracks
+to-questionnaire | mattpocock-skills | skills/productivity/to-questionnaire | dropped | - | - | dropped: outside the curated engineering tracks
 ask-matt | mattpocock-skills | skills/engineering/ask-matt | dropped | - | - | dropped: replaced by how
 diagnosing-bugs | mattpocock-skills | skills/engineering/diagnosing-bugs | dropped | - | - | dropped: replaced by systematic-debugging
 prototype | mattpocock-skills | skills/engineering/prototype | dropped | - | - | dropped: not needed
@@ -78,7 +82,7 @@ teach | mattpocock-skills | skills/productivity/teach | dropped | - | - | droppe
 EOF
 ```
 
-Note on `dropped` rows: they record "known and deliberately rejected". Only the 15 *considered-and-dropped* skills get rows; upstream skills never considered (mattpocock `deprecated/`, `in-progress/`, `misc/`, `personal/` categories) need none, because new-candidate detection (Task 2) also checks presence at the base SHA.
+Note on `dropped` rows: they record "known and deliberately rejected". Every considered-and-dropped skill gets a row; upstream skills never considered need none, because new-candidate detection (Task 2) also checks presence at the base SHA.
 
 - [ ] **Step 2: Verify TSV structure**
 
@@ -86,7 +90,7 @@ Note on `dropped` rows: they record "known and deliberately rejected". Only the 
 awk -F'\t' 'NF != 7 { print "BAD ROW (" NF " cols): " $0 }' provenance.tsv
 wc -l < provenance.tsv
 ```
-Expected: no `BAD ROW` lines; `38` (1 header + 22 imported/original + 15 dropped).
+Expected: no `BAD ROW` lines; `42` (1 header + 22 imported/original + 19 dropped).
 
 - [ ] **Step 3: Verify TSV against reality — local dirs and upstream paths**
 
@@ -159,7 +163,7 @@ git diff --exit-code README.md && echo IDEMPOTENT
 ```
 Expected: `IDEMPOTENT`
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add provenance.tsv scripts/gen-readme-table.sh
@@ -368,47 +372,17 @@ SUMMARY: conflicts=0 attention=0 new-candidates=0
 Working tree updated; nothing committed, submodule pins not bumped.
 ```
 
-- [ ] **Step 5: Simulated upstream drift — clean merge, conflict, and new candidate in one synthetic commit**
+- [ ] **Step 5: Synthetic merge-engine scenario**
 
-Build a throwaway branch in the `superpowers` submodule with three kinds of drift: an appended line in a verbatim skill (must merge clean), an upstream edit to the exact line 0001 rewired in `writing-plans` (must conflict), and a brand-new skill dir (must report as candidate).
+Exercise a clean merge, a conflict, and a new-candidate report using purpose-built temporary Git repositories containing synthetic skill files. Do not edit, branch, or commit inside `mattpocock-skills/` or `superpowers/`; those submodule worktrees are read-only inputs. The fixture must verify these result classes:
 
-```bash
-cd /Users/jakub/workspaces/engineering-skills
-git -C superpowers checkout -q -b _upd-test
-printf '\n<!-- upd-test marker -->\n' >> superpowers/skills/verification-before-completion/SKILL.md
-perl -pi -e 's|^\*\*Save plans to:\*\* .*$|**Save plans to:** `docs/moved-by-upstream/plans/`|' superpowers/skills/writing-plans/SKILL.md
-mkdir -p superpowers/skills/zzz-upd-test
-printf -- '---\nname: zzz-upd-test\ndescription: synthetic test skill for the update mechanism\n---\n\nTest body.\n' > superpowers/skills/zzz-upd-test/SKILL.md
-git -C superpowers add -A
-git -C superpowers commit -qm "test: synthetic upstream drift"
-scripts/update-from-upstream.sh --to superpowers=_upd-test --to mattpocock-skills=66898f60e8c744e269f8ce06c2b2b99ce7660d5f
 ```
-Expected output must contain (among `= <name>: unchanged` lines for untouched skills):
-```
-   CONFLICT: skills/writing-plans/SKILL.md (markers left in file)
-   ok writing-plans: 1 merged (1 conflicts), 0 added, 0 deleted, 0 kept
-   ok verification-before-completion: 1 merged (0 conflicts), 0 added, 0 deleted, 0 kept
-   NEW-CANDIDATE: skills/zzz-upd-test - synthetic test skill for the update mechanism
+CONFLICT: <synthetic rewired skill file> (markers left in file)
+NEW-CANDIDATE: <synthetic new skill path> - <description>
 SUMMARY: conflicts=1 attention=0 new-candidates=1
 ```
 
-- [ ] **Step 6: Verify merge effects on disk**
-
-```bash
-tail -1 skills/verification-before-completion/SKILL.md
-grep -c '^<<<<<<<' skills/writing-plans/SKILL.md
-```
-Expected: `<!-- upd-test marker -->` (the clean merge carried the appended line into our copy); `1` (exactly one conflict block, at the rewired "Save plans to" line).
-
-- [ ] **Step 7: Clean up the simulation completely**
-
-```bash
-git restore skills/
-git -C superpowers checkout -q --detach d884ae04edebef577e82ff7c4e143debd0bbec99
-git -C superpowers branch -qD _upd-test
-git status --porcelain skills/ superpowers provenance.tsv
-```
-Expected: no output from the final status — `skills/` restored, submodule back on the pinned SHA, test branch gone.
+Confirm the clean-merge marker appears in the synthetic local skill, exactly one conflict block remains in the synthetic rewired file, then delete the complete fixture.
 
 - [ ] **Step 8: Commit**
 
@@ -429,7 +403,7 @@ git commit -m "feat: update-from-upstream.sh three-way merge engine (base = subm
 - Modify: `README.md` (insert Maintenance section)
 
 **Interfaces:**
-- Consumes: `scripts/update-from-upstream.sh` (Task 2), `scripts/gen-readme-table.sh` (Task 1), `scripts/check-refs.sh` and `scripts/link-skills.sh` (plan 0001), `provenance.tsv` (Task 1).
+- Consumes: `scripts/update-from-upstream.sh` (Task 2), `scripts/gen-readme-table.sh` (Task 1), `scripts/check-refs.sh` (plan 0001), `provenance.tsv` (Task 1).
 - Produces: `/update-from-upstream` in Claude and `$update-from-upstream` in Codex, available only when working in this repo and never added to the globally distributed set.
 
 - [ ] **Step 1: Create `skills-internal/update-from-upstream/SKILL.md` with exactly this content**
@@ -446,12 +420,13 @@ You are running the upstream sync for this repo. The mechanical merge is a scrip
 **Ground rules (non-negotiable):**
 - Ask in plain prose, one question at a time, always leading with your recommended answer. Never use the AskUserQuestion widget.
 - Never commit, never push, never do more than the close-out lists. The commit belongs to the user.
+- Treat the pinned upstream submodule worktrees as read-only: never edit files, create branches, or make commits inside them. Mutable regression fixtures must use purpose-built synthetic repositories elsewhere.
 - Report, never act, on set membership: adopting or dropping a skill happens only on the user's explicit say-so.
 - Name user-invoked skills in the active harness's form: `/skill-name` for Claude and `$skill-name` for Codex.
 
 ## 1. Prove worktree isolation
 
-This maintenance workflow may run only in a linked Git worktree. The primary checkout may be live through the real `~/.agents/skills` and `~/.claude/skills` symlinks, so mutating its `skills/` would change running installations before the user accepts the sync.
+This maintenance workflow may run only in a linked Git worktree. A global skill installation may reference the primary checkout, so mutating its `skills/` could change installed skills before the user accepts the sync.
 
 Resolve `git rev-parse --git-dir` and `git rev-parse --git-common-dir` to canonical paths, and also run `git rev-parse --show-superproject-working-tree`. A non-empty superproject path means this is a submodule, not an isolated root worktree. Only a root checkout whose canonical Git dir differs from its canonical common dir is isolated.
 
@@ -501,10 +476,10 @@ Only after every item above is resolved, perform every applicable check below an
 5. For each moved submodule only, check out the agreed target SHA detached. Do not move an unchanged submodule, stage anything yet, or commit.
 6. Validate that every `provenance.tsv` row has exactly seven tab-separated columns; non-dropped names exactly equal the flat directories under `skills/`; and every imported source path exists at its submodule's now-pinned `HEAD`.
 7. Diff changed verbatim imports against their pinned source directories. Separately verify each rewired import and require that every difference is documented in that row's `changes` field.
-8. If membership changed, create a throwaway `HOME`, run `scripts/link-skills.sh` twice with only that `HOME`, verify the second run is idempotent, and remove the fixture. Never run the real linker from this maintenance worktree.
+8. If membership changed, confirm the README installation command still targets `./skills`, Codex, and Claude Code. Never update the real global installation from this maintenance worktree.
 9. After every applicable check above passes, stage only the agreed sync result, including each moved submodule gitlink. Run `git status --short`, distinguish staged from remaining changes, and report both accurately.
 
-Then **STOP**. Present the staged summary and suggest `chore: sync upstream (<submodule> <old-short>..<new-short>)`, but do not commit, push, merge, or relink the real global installs. The user owns the commit, merge, sanity testing, and maintenance-worktree cleanup. If membership changed, tell the user to run `scripts/link-skills.sh` from the primary checkout only after merging, and remind them that already-running harness sessions retain their old skill snapshot until restarted.
+Then **STOP**. Present the staged summary and suggest `chore: sync upstream (<submodule> <old-short>..<new-short>)`, but do not commit, push, merge, or update the real global installation. The user owns the commit, merge, sanity testing, and maintenance-worktree cleanup. If membership changed, tell the user to run `npx skills add ./skills --global --skill '*' --agent codex --agent claude-code --yes` from the primary checkout only after merging, and remind them that already-running harness sessions retain their old skill snapshot until restarted.
 ```
 
 - [ ] **Step 2: Create the Codex explicit-invocation policy**
@@ -526,7 +501,7 @@ ln -s ../../skills-internal/update-from-upstream .claude/skills/update-from-upst
 ln -s ../../skills-internal/update-from-upstream .agents/skills/update-from-upstream
 ```
 
-The canonical directory remains repo-local automation. Neither it nor either discovery link belongs under distributed `skills/` or in the global installs created by `scripts/link-skills.sh`.
+The canonical directory remains repo-local automation. Neither it nor either discovery link belongs under distributed `skills/` or in the global installation created from `./skills`.
 
 - [ ] **Step 4: Verify both discovery links, frontmatter, and Codex policy**
 
@@ -563,19 +538,19 @@ Edit `README.md` — insert between the Install section and `## Reference`:
 
 Old:
 ```
-Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`. Edits in this repo are live immediately; re-run after adding, removing, or renaming a skill.
+Installs every skill in `skills/` for Codex and Claude Code. Re-run after adding, removing, or renaming a skill.
 
 ## Reference
 ```
 New:
 ```
-Symlinks every skill in `skills/` into `~/.agents/skills` and `~/.claude/skills`. Edits in this repo are live immediately; re-run after adding, removing, or renaming a skill.
+Installs every skill in `skills/` for Codex and Claude Code. Re-run after adding, removing, or renaming a skill.
 
 ## Maintenance
 
 `provenance.tsv` is the single source of truth for the skill ↔ upstream mapping. The Reference table below is generated from it by `scripts/gen-readme-table.sh` (between the provenance markers) — edit the tsv, never the table.
 
-Upstream sync: `/update-from-upstream` in Claude or `$update-from-upstream` in Codex, backed by one canonical repo-local source (`skills-internal/update-from-upstream/`) exposed through `.claude/skills/` and `.agents/skills/` discovery symlinks. Claude's frontmatter and Codex's `agents/openai.yaml` both disable implicit invocation. It loads only in this workspace and is never part of the globally linked set. If isolation is absent, it names `/using-git-worktrees` then `/update-from-upstream` for Claude, or `$using-git-worktrees` then `$update-from-upstream` for Codex, and stops. It runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through conflicts, new upstream skills, and deletions as grilled decisions, regenerates this README, runs `scripts/check-refs.sh`, bumps the submodule pins, and stops. The commit is mine.
+Upstream sync: `/update-from-upstream` in Claude or `$update-from-upstream` in Codex, backed by one canonical repo-local source (`skills-internal/update-from-upstream/`) exposed through `.claude/skills/` and `.agents/skills/` discovery symlinks. Claude's frontmatter and Codex's `agents/openai.yaml` both disable implicit invocation. It loads only in this workspace and is never part of the globally installed set. If isolation is absent, it names `/using-git-worktrees` then `/update-from-upstream` for Claude, or `$using-git-worktrees` then `$update-from-upstream` for Codex, and stops. It runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through conflicts, new upstream skills, and deletions as grilled decisions, regenerates this README, runs `scripts/check-refs.sh`, bumps the submodule pins, and stops. The commit is mine.
 
 ## Reference
 ```
