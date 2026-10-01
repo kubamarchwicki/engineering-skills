@@ -29,14 +29,6 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-GIT_DIR_CANONICAL="$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)"
-GIT_COMMON_DIR_CANONICAL="$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)"
-SUPERPROJECT_WORK_TREE="$(git rev-parse --show-superproject-working-tree 2>/dev/null || true)"
-if [ -n "$SUPERPROJECT_WORK_TREE" ] || [ "$GIT_DIR_CANONICAL" = "$GIT_COMMON_DIR_CANONICAL" ]; then
-  echo "ABORT: upstream sync must run in a linked Git worktree; a global skill installation may reference the primary checkout. Claude: run /using-git-worktrees, then re-run /update-from-upstream. Codex: run \$using-git-worktrees, then re-run \$update-from-upstream." >&2
-  exit 2
-fi
-
 SUBMODULE_INIT_COMMAND="git submodule update --init --recursive mattpocock-skills superpowers"
 validate_submodule_worktree() {
   local submodule_path="$1" expected_top_level actual_top_level actual_top_level_canonical
@@ -48,7 +40,7 @@ validate_submodule_worktree() {
   fi
 
   if [ -z "$expected_top_level" ] || [ "$actual_top_level_canonical" != "$expected_top_level" ]; then
-    echo "ABORT: maintenance submodules are not initialized in this linked worktree. Run: $SUBMODULE_INIT_COMMAND" >&2
+    echo "ABORT: maintenance submodules are not initialized in this checkout. Run: $SUBMODULE_INIT_COMMAND" >&2
     exit 2
   fi
 }

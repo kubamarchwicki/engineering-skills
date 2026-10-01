@@ -2,7 +2,7 @@
 
 ## Purpose and sources of truth
 
-This repository builds `engineering-skills`, a curated personal set of 22 agent skills imported from the pinned `mattpocock-skills/` and `superpowers/` submodules, with a small, explicitly documented set of local rewirings.
+This GitHub repository is the source of truth for `engineering-skills`, a curated personal set of 22 agent skills imported from the pinned `mattpocock-skills/` and `superpowers/` submodules, with a small, explicitly documented set of local rewirings. Each consuming project installs its own copy from GitHub.
 
 Before changing the repository, read the relevant plan completely:
 
@@ -22,9 +22,9 @@ Preserve these decisions in every skill, script, and document:
   - Heavy: `/grill-with-docs` -> optional `/using-git-worktrees` -> `/writing-plans` -> `/subagent-driven-development`.
 - Every stage boundary is a manual gear shift. Name the next command and stop; never auto-chain stages.
 - Never auto-merge. After review and verification, stop. The user owns merging, sanity testing, and worktree cleanup.
-- There is no session-start bootstrap hook and no plugin or marketplace packaging. Install the set with `npx skills add ./skills --global --skill '*' --agent codex --agent claude-code --yes`.
+- There is no session-start bootstrap hook and no plugin or marketplace packaging. From each consuming project, install the set with `npx skills add https://github.com/kubamarchwicki/engineering-skills/tree/master/skills --skill '*' --agent codex --agent claude-code --yes`.
 - Artifact paths are fixed: `CONTEXT.md` at the repository root, `docs/adr/`, `docs/specs/`, and numbered plans at `docs/plans/NNNN-<feature-name>.md`.
-- Keep inherited skill names unchanged. `how` is the only original globally distributed skill and is the router for the set.
+- Keep inherited skill names unchanged. `how` is the only original distributed skill and is the router for the set.
 
 When a decision is genuinely needed, investigate facts first, then ask in plain prose one question at a time and lead with a recommendation. Do not use a multiple-choice question widget.
 
@@ -33,7 +33,7 @@ When a decision is genuinely needed, investigate facts first, then ask in plain 
 - `skills/` is a flat directory: one directory per distributed skill.
 - `mattpocock-skills/` and `superpowers/` are pinned upstream source submodules. Treat them as read-only inputs. Never edit files, create branches, or make commits inside them; updater regression fixtures must use purpose-built synthetic repositories outside these submodule worktrees.
 - Copy an imported skill's entire directory, including `agents/`, scripts, and reference files. Do not prune files.
-- `skills-internal/update-from-upstream/` is the canonical repo-local maintenance automation. `.claude/skills/update-from-upstream` and `.agents/skills/update-from-upstream` are discovery symlinks to it for Claude and Codex respectively. Preserve `disable-model-invocation: true` in `SKILL.md` for Claude and `policy.allow_implicit_invocation: false` in `agents/openai.yaml` for Codex. The canonical directory must not be copied into `skills/` or globally installed.
+- `skills-internal/update-from-upstream/` is the canonical repo-local maintenance automation. `.claude/skills/update-from-upstream` and `.agents/skills/update-from-upstream` are discovery symlinks to it for Claude and Codex respectively. Preserve `disable-model-invocation: true` in `SKILL.md` for Claude and `policy.allow_implicit_invocation: false` in `agents/openai.yaml` for Codex. The canonical directory must not be copied into the distributed `skills/` path.
 - `provenance.tsv`, once introduced by plan 0002, is the single source of truth for skill membership, upstream paths, invocation type, role, and local changes.
 - The README provenance table between `<!-- provenance:begin -->` and `<!-- provenance:end -->` is generated. Change `provenance.tsv` and run `scripts/gen-readme-table.sh`; never hand-edit that table.
 
@@ -74,7 +74,7 @@ Repository scripts target macOS `/bin/bash` 3.2:
 
 Use `/update-from-upstream` in Claude or `$update-from-upstream` in Codex for an upstream sync after plan 0002 exists. Its workflow is intentionally split:
 
-1. Run the workflow only from a linked Git worktree. A global skill installation may reference the primary checkout, so the maintenance skill must recommend `/using-git-worktrees` then `/update-from-upstream` in Claude, or `$using-git-worktrees` then `$update-from-upstream` in Codex, and stop when isolation is absent; the merge engine enforces the same guard before dirty checks, fetches, or merges.
+1. Run the workflow from this repository's primary checkout or an optional linked worktree. Initialize the pinned submodules and verify their checked-out SHAs match the gitlinks in `HEAD` before fetching or merging. The merge engine checks that both submodules are initialized and that `skills/` and `provenance.tsv` are clean.
 2. `scripts/update-from-upstream.sh` performs a three-way merge: base is the submodule SHA pinned in the repository's `HEAD`, ours is `skills/<name>`, and theirs is the selected upstream commit.
 3. Inspect upstream commit history to understand intent, then narrate clean merges and resolve conflicts, attention items, new candidates, deletions, or renames with the user one decision at a time.
 4. Record every membership or divergence decision in `provenance.tsv`, regenerate the README, run all applicable verification, and bump only the relevant submodule pins.
@@ -82,7 +82,7 @@ Use `/update-from-upstream` in Claude or `$update-from-upstream` in Codex for an
 
 Never automatically adopt or drop a skill. Never push changes upstream. A rejected clean upstream change is permanent divergence after the pin advances, so record it in the manifest's `changes` column.
 
-Never run the global `npx skills add` installation from the maintenance worktree. The user may update the real global installation only from the primary checkout after merging the sync; already-running harness sessions retain their previous skill snapshot until restarted.
+After the user publishes the sync to GitHub, each consuming project may refresh its own installation from the `skills/` path. Already-running harness sessions retain their previous skill snapshot until restarted.
 
 ## Verification
 
@@ -96,4 +96,4 @@ Run the checks prescribed by the active plan and verify their actual output befo
 - For upstream-engine changes, run the dirty-tree guard and pinned-SHA no-op case. Exercise clean-merge/conflict/new-candidate behavior only with purpose-built synthetic repositories outside the pinned upstream submodule worktrees, then clean up completely.
 - End with `git status --short` and report any remaining changes accurately.
 
-Before replacing existing global skill entries, perform plan 0001's diff review. If an old copy contains a possible local customization that is absent from both upstream sources, stop and show it to the user before replacing anything. After installing, remind the user that already-running harness sessions retain their old skill snapshot until restarted.
+Before replacing existing project skill entries, review their diff against this repository and the pinned upstream sources. If an old copy contains a possible local customization absent from both, stop and show it to the user before replacing anything. After installing, remind the user that already-running harness sessions retain their old skill snapshot until restarted.
