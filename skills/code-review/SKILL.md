@@ -1,14 +1,14 @@
 ---
 name: code-review
-description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\"."
+description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) across four concerns: correctness, design validity, evidence quality, and scope and standards, allocated to Standards and Spec reviewers. Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\"."
 ---
 
-Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
+Review the actual change against its agreement across four concerns:
 
-- **Standards**: does the code conform to this repo's documented coding standards?
-- **Spec**: does the code faithfully implement the originating issue / spec?
+- **Standards**: Design validity and Scope and standards.
+- **Spec**: Implementation correctness and Evidence quality.
 
-Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
+Both reviewers run as **parallel sub-agents**, then this skill presents their separate conclusions.
 
 ## Process
 
@@ -18,16 +18,31 @@ Whatever the user said is the fixed point (a commit SHA, branch name, tag, `main
 
 Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
 
-Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here, not inside two parallel sub-agents.
+Before going further, resolve the fixed point to a SHA (`git rev-parse <fixed-point>`) and check the selected mode's artifact is non-empty. A bad ref or empty artifact should fail here, not inside two parallel sub-agents.
 
-### 2. Identify the spec source
+For explicitly requested working-tree review, use
+`git diff <fixed-point> -- <task-paths>` for tracked committed, staged, and
+unstaged changes. Enumerate untracked task files with
+`git ls-files --others --exclude-standard -- <task-paths>` and inspect their
+contents. The tracked diff alone omits these files.
 
-Look for the originating spec, in this order:
+Record the resolved fixed point, mode, task paths, and reviewed state. Give
+both reviewers the same artifact. Working-tree review is non-empty when
+either tracked diff or relevant untracked files exist. If the state changes
+during review, invalidate the affected conclusions before reporting them.
 
-1. A path the user passed as an argument.
-2. A spec or plan path referenced in the commit messages.
-3. A PRD, spec, or plan file under `docs/specs/`, `docs/plans/`, `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
-4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
+`<fixed-point>` is the caller's resolved revision; `<task-paths>` are the caller's relevant paths. Pass each path as a separate quoted argument, never interpolate a joined shell string. Identify unrelated user changes and keep them outside the implementation's claimed scope. Preserve committed mode's three-dot diff and commit list above.
+
+### 2. Identify the agreement sources
+
+Look for the agreed outcomes and acceptance, in this order:
+
+1. Explicit caller/user outcomes and paths.
+2. The named plan's outcome/verification, constraints, current refinements, and decision-source references. Use commit-message references when applicable.
+3. Applicable `GLOSSARY.md` and ADRs, any supplied spec, or a matching local document under `docs/specs/`, `docs/plans/`, `docs/`, `specs/`, or `.scratch/` found by branch or feature name.
+4. If the agreement cannot be recovered, ask for missing outcome/acceptance information and report that gap.
+
+Absence of a separate spec does not skip Spec review.
 
 ### 3. Identify the standards sources
 
@@ -55,19 +70,27 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 ### 4. Spawn both sub-agents in parallel
 
-**Standards sub-agent prompt** should include:
+Give both reviewers the same actual change artifact, agreement and constraints, baseline/current references when available, and Evidence Records. Include the selected mode, resolved fixed point, task paths, reviewed state, and committed-mode commit list when applicable.
 
-- The full diff command and commit list.
-- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the sub-agent has no other access to it).
-- The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
+Give Standards the standards sources and the full smell baseline from step 3; preserve repo overrides and the distinction between standards and heuristics.
 
-**Spec sub-agent prompt** should include:
+Standards reviewer:
+Conclude separately on Design validity and Scope and standards. Check design
+necessity/sufficiency, actual responsibility ownership, competing state,
+unsupported abstractions, and requirements behind defensive checks. Follow
+concrete consequences into validation, errors, cleanup, configuration, and
+documentation. Cite sources. Preserve the distinction between hard standards
+and smell heuristics. A proposed change to an agreed decision is a finding
+for the controller/user, not permission to override it.
 
-- The diff command and commit list.
-- The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+Spec reviewer:
+Conclude separately on Implementation correctness and Evidence quality.
+Check agreed outcomes, missing/extra/misunderstood behavior, and whether
+evidence detects meaningful failure at the actual boundary. Use
+verification-before-completion to assess tested state, output, and limits.
+Passing helper tests do not prove an unobserved integration.
 
-If the spec is missing, skip the Spec sub-agent and note this in the final report.
+Each reviewer reports its two allocated conclusions separately as `Verified`, `Findings`, or `Evidence gap`, with references and limits. A relevant criterion outside available evidence is an explicit controller follow-up.
 
 ### 5. Aggregate
 
@@ -77,9 +100,4 @@ End with a one-line summary: total findings per axis, and the worst issue _withi
 
 ## Why two axes
 
-A change can pass one axis and fail the other:
-
-- Code that follows every standard but implements the wrong thing → **Standards pass, Spec fail.**
-- Code that does exactly what the issue asked but breaks the project's conventions → **Spec pass, Standards fail.**
-
-Reporting them separately stops one axis from masking the other.
+The same two reviewers cover four distinct concerns. Correct implementation can rest on an invalid design; good design can lack boundary evidence; passing checks can still hide a scope or standards breach. Separate conclusions keep any one concern from masking another.

@@ -495,7 +495,7 @@ git commit --only -m "feat: reuse applicable verification evidence" -- skills/ve
 - Produces four conclusions: `Implementation correctness`, `Design validity`, `Evidence quality`, `Scope and standards`. Each is `Verified`, `Findings`, or `Evidence gap` with references/limits.
 - Retain one task reviewer and two final reviewer roles. Standards owns design validity plus scope/standards; Spec owns correctness plus evidence quality. Both receive the agreement and evidence.
 
-- [ ] **Step 1: Add an explicit working-tree artifact mode to code-review.**
+- [x] **Step 1: Add an explicit working-tree artifact mode to code-review.**
 
 Retain committed mode's fixed point, three-dot diff, and commit list. Add:
 
@@ -530,7 +530,7 @@ Use /code-review on that working-tree change before committing. Resolve
 findings and verify that the reviewed state still matches the change committed.
 ~~~
 
-- [ ] **Step 2: Expand agreement lookup and the two reviewer briefs.**
+- [x] **Step 2: Expand agreement lookup and the two reviewer briefs.**
 
 Rename Identify the spec source to Identify the agreement sources. Lookup order:
 1. Explicit caller/user outcomes and paths.
@@ -560,7 +560,7 @@ Passing helper tests do not prove an unobserved integration.
 
 Retain separate Standards and Spec reports with their two allocated conclusions, each explicitly `Verified`, `Findings`, or `Evidence gap` with references/limits; do not merge/rerank across axes. Update description, overview, and Why two axes only to reflect four concerns across the same reviewers. Remove “skip Spec without spec”.
 
-- [ ] **Step 3: Give task and scoped re-review the same conclusion contract.**
+- [x] **Step 3: Give task and scoped re-review the same conclusion contract.**
 
 In `task-reviewer-prompt.md`:
 - Supply Outcome and acceptance, Decision context, global constraints, baseline/current references, and Evidence Records.
@@ -592,7 +592,7 @@ Preserve severity calibration and no reviewer-spawned subagents. A relevant crit
 
 In `re-review-prompt.md` retain scoped per-finding verdicts. Supply prior four conclusions and report each as `unchanged and still applicable`, `reassessed`, or `unresolved`; use evidence for changed conclusions. Apply the shared validity rule. An out-of-scope consequential/blocking discovery is routed to the controller's dependency gate; remove blanket statements that every out-of-scope observation is non-blocking/minor.
 
-- [ ] **Step 4: Classify feedback before implementation.**
+- [x] **Step 4: Classify feedback before implementation.**
 
 Insert after receiving-code-review's Response Pattern and apply it from its IMPLEMENT step:
 
@@ -622,7 +622,7 @@ work with settled decisions and evidence may continue.
 
 Reconcile Handling Unclear Feedback, its examples, Implementation Order, and the “Partial implementation” row with dependency-scoped blocking. Replace the “can't easily verify” request to choose investigate/ask/proceed with factual investigation first, followed by evidence limits and any genuine user decision. Preserve unrelated upstream phrasing and technical skepticism.
 
-- [ ] **Step 5: Verify artifacts and decisions, then commit.**
+- [x] **Step 5: Verify artifacts and decisions, then commit.**
 
 In a disposable Git repository, change tracked.txt and create untracked new.txt before committing. Confirm the old `BASE...HEAD` diff is empty, `git diff BASE -- tracked.txt` contains the edit, and untracked enumeration includes new.txt. Review both contents through working-tree mode and record four conclusions.
 
@@ -1088,3 +1088,8 @@ Record final four-concern review and verification evidence in the Execution reco
 
 
 - Task 3: shared evidence validity implemented against Task 2 `4a6d4b1` and agreement/execution baseline `3363070f1179622ec32c64b30d3176d26ec493da`; preserved Task 2 independent-review record. Four dispositions inspected in verifier Gate Function/Evidence Record and implementer/implement completion instructions: unchanged C1/state with inspectable output reuses across implementation, review, and completion (Iron Law/Gate 2–3), limited to that criterion; dirty relevant lockfile invalidates affected integration evidence and requires covering checks plus required gates (tested dirty state, dependency conditions, Gate 2–3); helper success cannot establish actual-client recovery, requiring boundary evidence or an unresolved criterion (focused-check scope/Gate 5); a vanished report with stable original output calls for recovery/inspection before rerun (stable reference/Gate 3–4). These are instruction walkthroughs, not runtime or harness-compliance tests. Self-review of baseline and pinned-source diffs confirmed only requested rewiring, metadata/examples, completion/report instructions; TDD RED/GREEN, review, invocation flags, and current-branch commit preserved. Seven-column provenance/membership/source paths and pinned SHAs valid; 10 remaining verbatim imports identical. README generated twice with identical hash `c7fd93b2a4d1f5a1011e765239c6ccf46b587d83`; refs output `check-refs: clean`; diff check exit 0. No shell scripts changed; updater-engine tests do not apply.
+
+- Task 3 independent review (`4a6d4b1..1d2c364`): all four conclusions Verified; no findings. Shared claim/state/output validity reaches both implementation tracks; required gates and RED/GREEN reporting remain. Four evidence dispositions support the instruction claim, with live agent/runtime behavior outside the evidence scope.
+
+
+- Task 4: actual tracked/untracked review and four-concern conclusions implemented against `1d2c364`, agreement/execution base `3363070`; preserved Task 3 independent-review record. Disposable `/private/tmp` Git fixture: committed-only BASE...HEAD empty, fixed-base tracked diff contains `+edited`, untracked enumeration contains `new.txt`, both actual contents inspected; cleanup confirmed. Four fixture conclusions Verified for correctness (both edits captured), design (existing Git primitives suffice), evidence (observed exit-0 diff/enumeration/contents), scope/standards (explicit two paths, temporary external fixture); limit: artifact collection only, no runtime agent compliance. No-spec walkthrough: ADR 0004/0005 and plan acceptance supply agreement to both Standards and Spec; missing recoverable acceptance is an Evidence gap, never a skipped reviewer. Mixed feedback walkthrough: investigate ownership A→B and present evidence/recommendation for user decision; block ownership-dependent work, permit independent typo, update affected tasks/tests and superseding ADR before resuming, without glossary change unless terms change. Names/flags, no reviewer subagents, smell baseline, calibration, TDD and Task 3 evidence gate preserved. Seven-column membership/source paths valid; 10 verbatim imports match pinned sources; narrowly rewired diffs inspected. README generation twice identical (`c219d44c5d2c486439594820d8c480702727ba3b`), refs `check-refs: clean`, diff check exit 0. No shell scripts changed; updater-engine checks inapplicable. Detailed evidence/output and limitations: task-4 report in the plan workspace.

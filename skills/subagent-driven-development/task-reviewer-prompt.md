@@ -1,15 +1,15 @@
 # Task Reviewer Prompt Template
 
 Use this template when dispatching a task reviewer subagent. The reviewer
-reads the task's diff once and returns two verdicts: spec compliance and
-code quality.
+reads the task's diff once and returns four conclusions: correctness, design validity,
+evidence quality, and scope and standards.
 
 **Purpose:** Verify one task's implementation matches its requirements (nothing
 more, nothing less) and is well-built (clean, tested, maintainable)
 
 ```
 Subagent (general-purpose):
-  description: "Review Task N (spec + quality)"
+  description: "Review Task N (four concerns)"
   model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
          model silently inherits the session's most expensive one]
   prompt: |
@@ -22,12 +22,16 @@ Subagent (general-purpose):
 
     Read the task brief: [BRIEF_FILE]
 
-    Global constraints from the spec/design that bind this task:
+    Outcome and acceptance: [OUTCOME_AND_ACCEPTANCE]
+    Decision context and applicable source references: [DECISION_CONTEXT]
+    Agreement/execution baseline and current references: [AGREEMENT_REFERENCES]
+
+    Global constraints from the agreement that bind this task:
     [GLOBAL_CONSTRAINTS]
 
     ## What the Implementer Claims They Built
 
-    Read the implementer's report: [REPORT_FILE]
+    Read the implementer's report and Evidence Records: [REPORT_FILE]
 
     ## Diff Under Review
 
@@ -72,13 +76,16 @@ Subagent (general-purpose):
 
     ## Tests
 
-    The implementer already ran the tests and reported results with TDD
-    evidence for exactly this code. Do not re-run the suite to confirm their
+    Use verification-before-completion to assess Evidence Records: criterion,
+    claim scope, tested state including dirty changes, output, conditions, and
+    limits. Reuse evidence only while applicable; changed relevant inputs
+    invalidate affected conclusions. The implementer reports applicable runs
+    and TDD evidence when required. Do not re-run the suite to confirm their
     report. Run a test only when reading the code raises a specific doubt
     that no existing run answers — and then a focused test, never a
     package-wide suite, race detector run, or repeated/high-count loop. If
     heavy validation seems warranted, recommend it in your report instead of
-    running it. If you cannot run commands in this environment, name the
+    running it, naming the concrete risk for the controller. If you cannot run commands in this environment, name the
     test you would run.
 
     Warnings or other noise in the implementer's reported test output are
@@ -109,10 +116,23 @@ Subagent (general-purpose):
     batch looks.
 
     If a requirement cannot be verified from this diff alone (it lives in
-    unchanged code or spans tasks), report it as a ⚠️ item instead of
+    unchanged code or spans tasks), report an Evidence gap with a named
+    controller follow-up instead of
     broadening your search.
 
-    ## Part 2: Code Quality
+    ## Design Validity and Evidence Quality
+
+    Check design necessity/sufficiency, actual responsibility ownership,
+    competing state, unsupported abstractions, and requirements behind
+    defensive checks. Follow concrete consequences into validation, errors,
+    cleanup, configuration, and documentation. Cite decision sources; a
+    proposed change to an agreed decision is for the controller/user.
+
+    Check whether evidence detects meaningful failure at the actual boundary.
+    Passing helper tests do not prove an unobserved integration. A relevant
+    criterion outside available evidence is an explicit controller follow-up.
+
+    ## Scope and Standards
 
     **Code quality:**
     - Clean separation of concerns?
@@ -138,7 +158,7 @@ Subagent (general-purpose):
     it needs.
 
     Your final message is the report itself: begin directly with the
-    spec-compliance verdict. Every line is a verdict, a finding with
+    Implementation correctness conclusion. Every line is a verdict, a finding with
     file:line, or a check you ran — no preamble, no process narration,
     no closing summary.
 
@@ -160,31 +180,22 @@ Subagent (general-purpose):
 
     ## Output Format
 
-    ### Spec Compliance
+    ### Implementation correctness
+    Verified | Findings | Evidence gap — sources and observed behavior.
 
-    - ✅ Spec compliant | ❌ Issues found: [what's missing/extra/misunderstood,
-      with file:line references]
-    - ⚠️ Cannot verify from diff: [requirements you could not verify from the
-      diff alone, and what the controller should check — report alongside the
-      ✅/❌ verdict for everything you could verify]
+    ### Design validity
+    Verified | Findings | Evidence gap — responsibility and assumption evidence.
 
-    ### Strengths
-    [What's well done? Be specific.]
+    ### Evidence quality
+    Verified | Findings | Evidence gap — criteria, tested state, output, limits.
+
+    ### Scope and standards
+    Verified | Findings | Evidence gap — constraints, conventions, consequences.
 
     ### Issues
-
-    #### Critical (Must Fix)
-    #### Important (Should Fix)
-    #### Minor (Nice to Have)
-
-    For each issue: file:line, what's wrong, why it matters, how to fix
-    (if not obvious).
-
-    ### Assessment
-
-    **Task quality:** [Approved | Needs fixes]
-
-    **Reasoning:** [1-2 sentence technical assessment]
+    Critical / Important / Minor, each with file:line or evidence reference,
+    consequence, and recommended disposition. Identify questions needing
+    controller context or a user decision.
 ```
 
 **Placeholders:**
@@ -203,5 +214,9 @@ Subagent (general-purpose):
   package to (`bash scripts/review-package PLAN_FILE BASE HEAD` prints the unique
   path it wrote; the package never enters the controller's context)
 
-**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
-(Critical/Important/Minor), Task quality verdict
+**Reviewer returns:** four conclusions (Verified / Findings / Evidence gap)
+with references/limits, and Issues (Critical/Important/Minor).
+
+Additional inputs: `[OUTCOME_AND_ACCEPTANCE]`, `[DECISION_CONTEXT]`, and
+`[AGREEMENT_REFERENCES]` are task-local criteria, decisions, and baseline/current
+references supplied by the controller.

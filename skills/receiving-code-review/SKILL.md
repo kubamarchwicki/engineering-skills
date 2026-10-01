@@ -21,8 +21,30 @@ WHEN receiving code review feedback:
 3. VERIFY: Check against codebase reality
 4. EVALUATE: Technically sound for THIS codebase?
 5. RESPOND: Technical acknowledgment or reasoned pushback
-6. IMPLEMENT: One item at a time, test each
+6. IMPLEMENT: Classify and route feedback below; one settled item at a time, test each
 ```
+
+## Classify and route feedback
+
+Classify each finding:
+- Implementation defect: correct code/tests against agreed behavior.
+- Mistaken assumption: investigate before revisiting affected design choices.
+- Changed requirement: follow your human partner's direction and update
+  outcomes and dependent work.
+- New dependency capability: verify it and its ownership implications.
+- Newly expressed preference: record consequences and apply the user's direction.
+
+Resolve routine facts and reversible details yourself. Present evidence,
+tradeoffs, and a recommendation for a behavior, ownership, or scope change;
+your human partner owns that decision. Already explicit user direction
+does not need another approval of the same decision.
+
+Before dependent work resumes, update affected plan tasks/tests and durable
+decisions. Use superseding ADRs for substantive changes; change glossary
+entries only when terminology changes. Retire contradictory instructions.
+
+Unclear feedback blocks affected items and their dependants. Independent
+work with settled decisions and evidence may continue.
 
 ## Forbidden Responses
 
@@ -41,10 +63,11 @@ WHEN receiving code review feedback:
 
 ```
 IF any item is unclear:
-  STOP - do not implement anything yet
-  ASK for clarification on unclear items
+  Investigate facts, then ASK for missing clarification
+  BLOCK affected items and their dependants
+  CONTINUE independent work with settled decisions and evidence
 
-WHY: Items may be related. Partial understanding = wrong implementation.
+WHY: Related items require settled understanding; independent items can proceed.
 ```
 
 **Example:**
@@ -52,8 +75,8 @@ WHY: Items may be related. Partial understanding = wrong implementation.
 your human partner: "Fix 1-6"
 You understand 1,2,3,6. Unclear on 4,5.
 
-❌ WRONG: Implement 1,2,3,6 now, ask about 4,5 later
-✅ RIGHT: "I understand items 1,2,3,6. Need clarification on 4 and 5 before proceeding."
+❌ WRONG: Implement items dependent on unclear 4,5 before clarification
+✅ RIGHT: "Items 1,2,3 depend on 4,5 and wait. Independent typo 6 can proceed; need clarification on 4 and 5."
 ```
 
 ## Source-Specific Handling
@@ -77,7 +100,8 @@ IF suggestion seems wrong:
   Push back with technical reasoning
 
 IF can't easily verify:
-  Say so: "I can't verify this without [X]. Should I [investigate/ask/proceed]?"
+  Investigate available facts first. Report evidence and its limits.
+  Present a recommendation for any genuine user decision; block affected dependants.
 
 IF conflicts with your human partner's prior decisions:
   Stop and discuss with your human partner first
@@ -101,8 +125,9 @@ IF reviewer suggests "implementing properly":
 
 ```
 FOR multi-item feedback:
-  1. Clarify anything unclear FIRST
-  2. Then implement in this order:
+  1. Classify findings; investigate unclear facts and block affected dependants
+  2. Resolve genuine user decisions before affected work; independent settled work may continue
+     For settled items, implement in this order:
      - Blocking issues (breaks, security)
      - Simple fixes (typos, imports)
      - Complex fixes (refactoring, logic)
@@ -170,8 +195,8 @@ State the correction factually and move on.
 | Batch without testing | One at a time, test each |
 | Assuming reviewer is right | Check if breaks things |
 | Avoiding pushback | Technical correctness > comfort |
-| Partial implementation | Clarify all items first |
-| Can't verify, proceed anyway | State limitation, ask for direction |
+| Partial implementation | Block unclear items and dependants; continue settled independent work |
+| Can't verify, proceed anyway | Investigate facts, report limits, route genuine decisions |
 
 ## Real Examples
 
@@ -197,7 +222,7 @@ Reviewer: "Implement proper metrics tracking with database, date filters, CSV ex
 ```
 your human partner: "Fix items 1-6"
 You understand 1,2,3,6. Unclear on 4,5.
-✅ "Understand 1,2,3,6. Need clarification on 4 and 5 before implementing."
+✅ "Items 1,2,3 depend on unclear 4,5 and wait for clarification. Independent typo 6 can proceed."
 ```
 
 ## GitHub Thread Replies
