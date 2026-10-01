@@ -363,7 +363,7 @@ git commit --only -m "feat: validate designs before decomposing plans" -- skills
 - Produces the Evidence Record and validity rules consumed by Tasks 4–5.
 - Consumes acceptance criteria, required project gates, relevant current state, and inspectable output. Existing report statuses/paths remain.
 
-- [ ] **Step 1: Replace the verifier's Iron Law and Gate Function sections.**
+- [x] **Step 1: Replace the verifier's Iron Law and Gate Function sections.**
 
 ~~~markdown
 ## The Iron Law
@@ -404,7 +404,7 @@ risk, changed scope, failures, or required project gates. A focused check
 supports only its covered claim.
 ~~~
 
-- [ ] **Step 2: Reconcile affected examples and metadata.**
+- [x] **Step 2: Reconcile affected examples and metadata.**
 
 Use these exact substitutions/meanings; leave unrelated prose intact:
 
@@ -420,7 +420,7 @@ Use these exact substitutions/meanings; leave unrelated prose intact:
 
 Remove any remaining same-message/fresh-run prohibition inconsistent with this policy. Preserve evidence-before-claims and the requirement to independently inspect reports.
 
-- [ ] **Step 3: Change implementation reports and completion instructions.**
+- [x] **Step 3: Change implementation reports and completion instructions.**
 
 Replace implementer-prompt's “run the full suite once before committing” paragraph with:
 
@@ -452,7 +452,7 @@ validity, reruns, and reporting before committing or claiming completion.
 
 Keep its TDD, review, current-branch commit, and command identity.
 
-- [ ] **Step 4: Verify evidence dispositions.**
+- [x] **Step 4: Verify evidence dispositions.**
 
 Read edited files and record the next action, claim limits, and supporting passages:
 
@@ -465,7 +465,7 @@ Read edited files and record the next action, claim limits, and supporting passa
 
 Do not add tests that merely search for the new prose.
 
-- [ ] **Step 5: Record divergence and commit.**
+- [x] **Step 5: Record divergence and commit.**
 
 Replace verifier's `verbatim` changes with `applicable evidence reuse; risk-based check scope; inspectable evidence records`.
 Append `evidence records and proportionate checks in implementer prompt` to SDD and `applicable evidence and proportionate checks` to implement.
@@ -1083,3 +1083,8 @@ Record final four-concern review and verification evidence in the Execution reco
 - Task 1 independent review (`3363070..1ab183c`): Implementation correctness, Design validity, Evidence quality, and Scope and standards all Verified; no findings. Inspected exact additions/provenance and the ownership/supersession walkthroughs. Limit: documentation walkthroughs do not prove live agent compliance.
 
 - Task 2: readiness/design-review/task contracts implemented against Task 1 state `1ab183c` and agreement/execution baseline `3363070f1179622ec32c64b30d3176d26ec493da`. No-spec scenario: glossary, two accepted ADRs, agreed outcomes, and dependency evidence supply requirements and ownership; readiness can pass, a fresh design reviewer inspects original sources before dependent decomposition, and Decision sources plus numbered outcome criteria record the foundation. Unavailable-client scenario: preserve the boundary limitation, leave reconnect ownership/state-release detail open in a Provisional recovery task, require observed normal/failed/subsequent actual-client operations before refinement, and retain independent Ready work. Standalone task check: Task 2 brief plus supplied global constraints provides exact files/copy, C2/C3/C8, ADR 0004/0005, Task 1 dependency, scenario checks, expected outputs, and commit paths without the whole plan. These are documentation walkthroughs and do not establish live integration or agent compliance. Exact prompt/insertions matched; existing Ready example/manual handoff preserved; seven-column active membership/source paths passed; 11 verbatim imports matched pinned sources. README generation twice produced `8d62b1090c13cf52729285afd5c5992253e129e9`; refs reported `check-refs: clean`; diff checks passed. No shell scripts changed. Preserved Task 1 independent-review record in this commit.
+
+- Task 2 independent review (`1ab183c..4a6d4b1`): all four conclusions Verified; no findings. Reviewed readiness/design gates, exact reviewer prompt, task-local Ready/Provisional contracts, optional specs, and preserved author self-review/manual handoff. Limits remain instruction-level walkthroughs, not future harness or live integration behavior.
+
+
+- Task 3: shared evidence validity implemented against Task 2 `4a6d4b1` and agreement/execution baseline `3363070f1179622ec32c64b30d3176d26ec493da`; preserved Task 2 independent-review record. Four dispositions inspected in verifier Gate Function/Evidence Record and implementer/implement completion instructions: unchanged C1/state with inspectable output reuses across implementation, review, and completion (Iron Law/Gate 2–3), limited to that criterion; dirty relevant lockfile invalidates affected integration evidence and requires covering checks plus required gates (tested dirty state, dependency conditions, Gate 2–3); helper success cannot establish actual-client recovery, requiring boundary evidence or an unresolved criterion (focused-check scope/Gate 5); a vanished report with stable original output calls for recovery/inspection before rerun (stable reference/Gate 3–4). These are instruction walkthroughs, not runtime or harness-compliance tests. Self-review of baseline and pinned-source diffs confirmed only requested rewiring, metadata/examples, completion/report instructions; TDD RED/GREEN, review, invocation flags, and current-branch commit preserved. Seven-column provenance/membership/source paths and pinned SHAs valid; 10 remaining verbatim imports identical. README generated twice with identical hash `c7fd93b2a4d1f5a1011e765239c6ccf46b587d83`; refs output `check-refs: clean`; diff check exit 0. No shell scripts changed; updater-engine tests do not apply.

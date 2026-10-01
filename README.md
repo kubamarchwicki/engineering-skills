@@ -60,9 +60,9 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 | how | U | Router over the whole set | original | — |
 | grill-me | U | Interview to align before building | mattpocock `skills/productivity/grill-me` | verbatim |
 | grill-with-docs | U | Grill + GLOSSARY.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
-| implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate |
+| implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate; applicable evidence and proportionate checks |
 | writing-plans | U | Evidence-backed plans → docs/plans/ | superpowers `skills/writing-plans` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff; readiness and independent design review; ADR/glossary sources; outcome verification; ready/provisional slices; design-reviewer prompt |
-| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge |
+| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt |
 | using-git-worktrees | U | Optional isolation for heavy work | superpowers `skills/using-git-worktrees` | user-invoked |
 | handoff | U | Compact session → handoff doc | mattpocock `skills/productivity/handoff` | verbatim |
 | wait-what | U | Re-pitch an explanation that did not land | mattpocock `skills/productivity/wait-what` | verbatim |
@@ -72,7 +72,7 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 | tdd | M | Seams-based red-green loop | mattpocock `skills/engineering/tdd` | verbatim |
 | code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup |
 | receiving-code-review | M | Rigor when subagent review feedback arrives | superpowers `skills/receiving-code-review` | description rescoped |
-| verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | verbatim |
+| verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | applicable evidence reuse; risk-based check scope; inspectable evidence records |
 | systematic-debugging | M | 4-phase root-cause debugging | superpowers `skills/systematic-debugging` | refs → tdd, verification-before-completion |
 | dispatching-parallel-agents | M | Concurrent subagent workflows | superpowers `skills/dispatching-parallel-agents` | verbatim |
 | domain-modeling | M | Glossary + ADR discipline | mattpocock `skills/engineering/domain-modeling` | ADR supersession; glossary/ADR/plan responsibility split |
