@@ -1067,7 +1067,7 @@ Record final four-concern review and verification evidence in the Execution reco
 - Actual extractor/Git experiments support the boundary choices. Instruction walkthroughs remain implementation acceptance checks.
 - Existing reviewers/helper interfaces are retained; no second mutable contract or new distributed skill is introduced.
 - Local document links, all embedded Bash/Python syntax, and all five briefs extracted by both the existing extractor and the proposed guard were checked successfully. Reconstructing the prototype directly from this plan's code blocks passed all seven tests. The reference sweep reported `check-refs: clean`; temporary fixtures were removed.
-- This is a plan; execution requires the user's separate invocation.
+- Execution followed the user's separate invocation; completion evidence is recorded below.
 
 ## Execution record
 
@@ -1125,3 +1125,27 @@ Standalone context: synthetic header named ADR 0004/0005, C1/E1 and owner-A cons
 
 
 Task 5 self-review corrected diagram routes: addressed/deferred findings still pass acceptance/four-conclusion gate; pending consequential decisions wait; final evidence/gates precede cleanup. All seven task steps marked implemented; independent review remains controller-owned. No substantive unresolved implementation decision. Preserved agreed Task 4 record and explicit baseline hashes.
+
+### Final review and verification
+
+All five tasks are complete at implementation head `6caf15a6194d71ba2ae02c411f55f5305680f293`. Their commits, in order: `1ab183c`, `4a6d4b1`, `1d2c364`, `07fae81`, `6caf15a`. Task 5 independent review (`07fae81..6caf15a`) verified all four concerns with no findings. The final reviewers independently inspected the entire five-commit artifact from fixed Execution base `3363070f1179622ec32c64b30d3176d26ec493da`; no final fix wave was needed.
+
+| Final axis | Conclusion | Inspectable basis and limits |
+| --- | --- | --- |
+| Standards: Design validity | Verified | Existing skill owners, current ADR/plan authority, Ready context, evidence validity, consequential decision boundaries and blocking completion compose consistently. No extra framework or distributed command. |
+| Standards: Scope and standards | Verified | All 19 changed paths are authorized; import rewirings/provenance/generated README/router agree. Bash 3.2 contract, names, flags, pins, helpers, discovery links, Light topology and manual transitions preserved. No actionable smell or hard-standard finding. |
+| Spec: Implementation correctness | Verified | C1–C8 traced through the actual discovery/planning/dispatch/review/feedback/cap/cleanup instructions and executable extractor; no missing, extra or misunderstood agreed behavior. |
+| Spec: Evidence quality | Verified | Inspected actual seven-case extractor evidence, real disposable Git assertions, recovered import output and final fail-fast structural validator. Instruction-only ownership/cap cases and synthetic durability data are explicitly limited. |
+
+Final checks at `6caf15a`, with clean product working tree, local macOS Bash/awk/Python and unchanged source pins:
+
+- `/bin/bash -n skills/subagent-driven-development/scripts/task-brief`: exit 0, no output.
+- `python3 scripts/tests/test_task_brief.py -v`: exit 0; all seven named methods `ok`, `Ran 7 tests`, `OK`. Tests cover Ready context, Provisional rejection/stale output/recovery, malformed/duplicate statuses, nested backtick/tilde fences, legacy extraction, missing-task stale removal and plan/output protection.
+- `scripts/check-refs.sh`: exit 0, `check-refs: clean`.
+- Final Python structural validator: exit 0, `Provenance, source paths/pins, membership, 10 verbatim imports, helpers, links, flags and changed-path scope: valid`. It asserted seven columns; active directory membership; imported paths and both source HEAD/gitlink pins; fail-fast recursive `diff -r` equality for all ten remaining verbatim imports; baseline hashes for `review-package`/`sdd-workspace`; discovery link targets; invocation flags/names; authorized changed paths; plan/planning-skill document links.
+- `git diff --check 3363070f1179622ec32c64b30d3176d26ec493da HEAD` and `git diff --check`: exit 0, no output.
+- Task 5's double README generation remains applicable: both blob hashes `2c8bfc7642b0983b080d826c8b0a6bc8c192fdf4`, with no later README changes. No updater-engine changes; its unrelated regression fixtures were inapplicable.
+
+Source pins remained mattpocock `d81f3a183412e71a5b1e84ca21bc1a35eea03a60` and superpowers `8ca22dba9a94f28898bbce59f2537ff4d87c747d`. All narrowly rewired source differences were inspected against pinned imports and the recorded baseline; every intentional divergence is recorded in provenance.
+
+No unresolved or deferred finding remains. Evidence establishes extractor behavior, Git artifact/baseline/durability boundaries, repository integrity and instruction composition. Future harness compliance and actual-client recovery are not claimed. Documentation-only final recording does not change the tested implementation. These summaries preserve commands, tested state, results, decisions and limits after eligible scratch cleanup. Merge, sanity testing and branch/worktree cleanup remain user-owned.
