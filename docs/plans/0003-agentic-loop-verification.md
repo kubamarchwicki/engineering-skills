@@ -179,7 +179,7 @@ Expected: identical README hashes, `check-refs: clean`, only agreed paths commit
 - Consumes agreed outcomes, applicable glossary/ADRs, optional supplied spec, and source/experiment evidence.
 - Produces outcome/verification criteria, design-review disposition, and Ready/Provisional tasks with sufficient local context.
 
-- [ ] **Step 1: Insert readiness and design gates before File Structure.**
+- [x] **Step 1: Insert readiness and design gates before File Structure.**
 
 Change the description ending `before touching code` to `before production implementation`. Insert:
 
@@ -220,7 +220,7 @@ In Overview, use agreed requirements and decision sources where the prose assume
 
 Replace “This is where decomposition decisions get locked in.” with `Specify evidence-supported choices for Ready Slices; keep dependent choices Provisional until their named evidence arrives.`
 
-- [ ] **Step 2: Create the supporting reviewer prompt with this complete content.**
+- [x] **Step 2: Create the supporting reviewer prompt with this complete content.**
 
 ~~~markdown
 # Independent Design Reviewer
@@ -253,7 +253,7 @@ Return:
 4. What was verified and the limits of the review.
 ~~~
 
-- [ ] **Step 3: Update the plan and task contracts.**
+- [x] **Step 3: Update the plan and task contracts.**
 
 Replace the header's `**Spec:**` field with:
 
@@ -318,7 +318,7 @@ through the actual client boundary.
 
 Scope exact-step/signature requirements to Ready Slices. Preserve the existing Ready example.
 
-- [ ] **Step 4: Reconcile author self-review.**
+- [x] **Step 4: Reconcile author self-review.**
 
 Keep the author's own checklist. Apply these requirements to its existing entries:
 - Coverage: every agreed outcome/constraint and applicable decision source is accounted for.
@@ -329,7 +329,7 @@ Keep the author's own checklist. Apply these requirements to its existing entrie
 
 Replace “No need to re-review — just fix and move on.” with `Fix routine details inline; revisit the affected independent review if a correction changes a reviewed design choice or invalidates its assumption.` Keep the manual Execution Handoff.
 
-- [ ] **Step 5: Verify and commit.**
+- [x] **Step 5: Verify and commit.**
 
 Walk through:
 1. Glossary, two accepted ADRs, outcomes, and dependency evidence exist without a spec: readiness may pass, independent review runs, and plan sources/criteria are explicit.
@@ -1079,3 +1079,7 @@ Record final four-concern review and verification evidence in the Execution reco
 - Refinements: normalized the accidental leading `q` in this plan heading; the confirmed ADRs govern consequential decisions and blocking completion.
 
 - Task 1: implemented exact foundation and ADR-supersession additions. Reconnect scenario: investigate existing cleanup ownership, distinguish observable reconnect behavior from a manager proposal, retain consequential unknowns and withhold dependent detail. Ownership A→B scenario: evidence and recommendation require the user decision; a new numbered ADR supersedes the old decision with status linkage, preserving its body; glossary edits cannot authorize ownership. These are text-based scenario checks, not live integration evidence. Bare `grill-me` remains a direct grilling wrapper without mandatory heavy gates. README generation was idempotent (`144e1524e2ecfd7c0bd9131583c6fb5e0b504a03`); refs clean; diff check passed; seven-column membership/source-path validation passed; 11 verbatim imports matched pinned directories; removing exact additions reproduced baseline files. No shell scripts changed.
+
+- Task 1 independent review (`3363070..1ab183c`): Implementation correctness, Design validity, Evidence quality, and Scope and standards all Verified; no findings. Inspected exact additions/provenance and the ownership/supersession walkthroughs. Limit: documentation walkthroughs do not prove live agent compliance.
+
+- Task 2: readiness/design-review/task contracts implemented against Task 1 state `1ab183c` and agreement/execution baseline `3363070f1179622ec32c64b30d3176d26ec493da`. No-spec scenario: glossary, two accepted ADRs, agreed outcomes, and dependency evidence supply requirements and ownership; readiness can pass, a fresh design reviewer inspects original sources before dependent decomposition, and Decision sources plus numbered outcome criteria record the foundation. Unavailable-client scenario: preserve the boundary limitation, leave reconnect ownership/state-release detail open in a Provisional recovery task, require observed normal/failed/subsequent actual-client operations before refinement, and retain independent Ready work. Standalone task check: Task 2 brief plus supplied global constraints provides exact files/copy, C2/C3/C8, ADR 0004/0005, Task 1 dependency, scenario checks, expected outputs, and commit paths without the whole plan. These are documentation walkthroughs and do not establish live integration or agent compliance. Exact prompt/insertions matched; existing Ready example/manual handoff preserved; seven-column active membership/source paths passed; 11 verbatim imports matched pinned sources. README generation twice produced `8d62b1090c13cf52729285afd5c5992253e129e9`; refs reported `check-refs: clean`; diff checks passed. No shell scripts changed. Preserved Task 1 independent-review record in this commit.
