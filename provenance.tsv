@@ -1,10 +1,10 @@
 name	submodule	source_path	status	inv	role	changes
-how	-	-	original	U	Router over the whole set	—
+how	-	-	original	U	Router over the whole set	workflow descriptions for readiness, evidence, and four-concern review
 grill-me	mattpocock-skills	skills/productivity/grill-me	imported	U	Interview to align before building	verbatim
 grill-with-docs	mattpocock-skills	skills/engineering/grill-with-docs	imported	U	Grill + GLOSSARY.md/ADRs inline	verbatim
 implement	mattpocock-skills	skills/engineering/implement	imported	U	Light-track build	+ verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base
 writing-plans	superpowers	skills/writing-plans	imported	U	Evidence-backed plans → docs/plans/	user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff; readiness and independent design review; ADR/glossary sources; outcome verification; ready/provisional slices; design-reviewer prompt
-subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts
+subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts; committed agreement baseline; fixed execution review base; readiness-gated task extraction; per-task decision/evidence context; bounded consequential decisions; durable evidence and blocking completion gates
 using-git-worktrees	superpowers	skills/using-git-worktrees	imported	U	Optional isolation for heavy work	user-invoked
 handoff	mattpocock-skills	skills/productivity/handoff	imported	U	Compact session → handoff doc	verbatim
 wait-what	mattpocock-skills	skills/productivity/wait-what	imported	U	Re-pitch an explanation that did not land	verbatim

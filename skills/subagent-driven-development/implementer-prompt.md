@@ -17,7 +17,14 @@ Subagent (general-purpose):
 
     ## Context
 
-    [Scene-setting: where this fits, dependencies, architectural context]
+    [Scene-setting: where this fits, dependencies, architectural context; current
+     task/decision revision, baseline/current source references, relevant evidence]
+
+    Read Outcome and acceptance and Decision context in the brief, plus supplied
+    Global Constraints. Inspect relevant source/evidence references. Report
+    NEEDS_CONTEXT if the task is Provisional, a consequential decision is missing,
+    or required assumptions lack supporting evidence. Do not silently substitute
+    a different outcome, state owner, or scope.
 
     ## Before You Begin
 
@@ -138,6 +145,7 @@ Subagent (general-purpose):
     - **TDD Evidence** (if TDD was required for this task):
       - RED: command run, relevant failing output before implementation, and why the failure was expected
       - GREEN: command run and relevant passing output after implementation
+    - Current task/decision revision and invalidated evidence (with reasons)
     - Files changed
     - Self-review findings (if any)
     - Any issues or concerns

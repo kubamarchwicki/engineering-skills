@@ -666,7 +666,7 @@ git commit --only -m "feat: review design validity and evidence with the actual 
 - Agreement baseline identifies committed starting documents; Execution base is the fixed revision used for whole-branch review.
 - Existing implementer status values remain; Task 4 supplies four review conclusions.
 
-- [ ] **Step 1: Create the regression tests and observe failure on the current extractor.**
+- [x] **Step 1: Create the regression tests and observe failure on the current extractor.**
 
 Create `scripts/tests/test_task_brief.py` with this content:
 
@@ -786,7 +786,7 @@ python3 scripts/tests/test_task_brief.py -v
 
 Expected current failures: readiness rejection, invalid/duplicate metadata, nested fences, stale output, and output aliasing. Simple Ready and legacy extraction already work. These tests exercise the actual script through /bin/bash using only disposable directories.
 
-- [ ] **Step 2: Implement the tested guard while preserving the wrapper.**
+- [x] **Step 2: Implement the tested guard while preserving the wrapper.**
 
 Keep the current header, argument-count check, plan/output selection, and `sdd-workspace` invocation. After the plan-existence check insert:
 
@@ -870,7 +870,7 @@ python3 scripts/tests/test_task_brief.py -v
 
 Expected: syntax succeeds; all seven tests pass.
 
-- [ ] **Step 3: Replace SDD's top-level autonomous-ruling policy.**
+- [x] **Step 3: Replace SDD's top-level autonomous-ruling policy.**
 
 Replace the block from Continuous execution through the four-stop-conditions paragraph, before When to Use:
 
@@ -893,7 +893,7 @@ A retry cap ends repeated dispatch; it does not satisfy an unmet requirement.
 
 Change the Properties claim about no human involvement to `Continuous execution within agreed decisions`.
 
-- [ ] **Step 4: Add baseline/readiness gates to Setup and dispatch.**
+- [x] **Step 4: Add baseline/readiness gates to Setup and dispatch.**
 
 Replace the spec-authority paragraph in Setup with:
 
@@ -943,7 +943,7 @@ a different outcome, state owner, or scope.
 
 Add current task/decision revision and invalidated evidence to its report fields. Preserve no worker-spawned agents.
 
-- [ ] **Step 5: Reconcile every review, cap, and completion path.**
+- [x] **Step 5: Reconcile every review, cap, and completion path.**
 
 Update the Overview, Core principle, and Properties descriptions of task review to name the four concerns, matching the prompt and completion contract below.
 
@@ -983,7 +983,7 @@ Update process diagram nodes/edges, Example Workflow, and Common Rationalization
 - Remove conflicting “only four reasons”, “rule and continue”, “every path forward is a guess”, and parked-with-ruling completion exemptions in these paths.
 - Preserve batching, model selection, fix-agent reuse, caps, and unrelated upstream guidance.
 
-- [ ] **Step 6: Verify composed lifecycle scenarios.**
+- [x] **Step 6: Verify composed lifecycle scenarios.**
 
 Use edited repository instructions directly and record each decision/action with its source:
 
@@ -998,7 +998,7 @@ Use edited repository instructions directly and record each decision/action with
 
 Inspect a Ready brief from a synthetic plan with header-level decision/evidence references: its task must carry applicable references and concrete criteria, and the controller must supply binding constraints to both worker and reviewer.
 
-- [ ] **Step 7: Update the workflow map and finish the task.**
+- [x] **Step 7: Update the workflow map and finish the task.**
 
 In how's Heavy Track map, describe planning as `readiness and independent design review; observable Ready/Provisional slices in docs/plans/` and execution as `committed baseline; refine/execute Ready slices; four-concern reviews; applicable verification evidence; then STOP`. Preserve commands and the Light Track route.
 
@@ -1073,8 +1073,8 @@ Record final four-concern review and verification evidence in the Execution reco
 
 - Branch: `codex/agentic-loop-verification` in the existing checkout.
 - Starting state: `b5f8c61`; only this approved plan was untracked; no unrelated staged changes.
-- Agreement baseline: the focused plan commit immediately preceding Task 1; includes this plan and the glossary/ADRs inherited from `b5f8c61`.
-- Execution base: the same fixed plan baseline revision, resolved and recorded before Task 1.
+- Agreement baseline: `3363070f1179622ec32c64b30d3176d26ec493da`; includes this plan and the glossary/ADRs inherited from `b5f8c61`.
+- Execution base: `3363070f1179622ec32c64b30d3176d26ec493da`, fixed before Task 1 and retained for final review.
 - Preflight: five task consistency checks and all ten shared-file/interface pairs recorded in the plan workspace; no unresolved consequential choices.
 - Refinements: normalized the accidental leading `q` in this plan heading; the confirmed ADRs govern consequential decisions and blocking completion.
 
@@ -1093,3 +1093,35 @@ Record final four-concern review and verification evidence in the Execution reco
 
 
 - Task 4: actual tracked/untracked review and four-concern conclusions implemented against `1d2c364`, agreement/execution base `3363070`; preserved Task 3 independent-review record. Disposable `/private/tmp` Git fixture: committed-only BASE...HEAD empty, fixed-base tracked diff contains `+edited`, untracked enumeration contains `new.txt`, both actual contents inspected; cleanup confirmed. Four fixture conclusions Verified for correctness (both edits captured), design (existing Git primitives suffice), evidence (observed exit-0 diff/enumeration/contents), scope/standards (explicit two paths, temporary external fixture); limit: artifact collection only, no runtime agent compliance. No-spec walkthrough: ADR 0004/0005 and plan acceptance supply agreement to both Standards and Spec; missing recoverable acceptance is an Evidence gap, never a skipped reviewer. Mixed feedback walkthrough: investigate ownership A→B and present evidence/recommendation for user decision; block ownership-dependent work, permit independent typo, update affected tasks/tests and superseding ADR before resuming, without glossary change unless terms change. Names/flags, no reviewer subagents, smell baseline, calibration, TDD and Task 3 evidence gate preserved. Seven-column membership/source paths valid; 10 verbatim imports match pinned sources; narrowly rewired diffs inspected. README generation twice identical (`c219d44c5d2c486439594820d8c480702727ba3b`), refs `check-refs: clean`, diff check exit 0. No shell scripts changed; updater-engine checks inapplicable. Detailed evidence/output and limitations: task-4 report in the plan workspace.
+
+- Task 4 independent review (`1d2c364..07fae81`): all four conclusions Verified after an evidence-only follow-up. The retained initial log selected zero verbatim imports; the original corrected command/output was recovered without rerunning, listing all ten unchanged verbatim directories as identical with no mismatch output. The reviewer marked the evidence finding addressed. Working-tree artifact collection, four-concern reviewer inputs, and dependency-scoped feedback were verified; future harness/runtime compliance remains outside this evidence.
+- Dispatch refinement: Task 5 brief ends at the following global final-verification heading; its seven task steps remain verbatim, and the controller owns the retained global checks/review. This avoids sending earlier execution records as task requirements.
+
+
+### Task 5 execution evidence
+
+Task 5 acceptance evidence
+
+Tested state: `07fae81` plus Task 5 dirty extractor/tests, SDD/prompt, how, provenance, README, and plan. Agreement/Execution base remains `3363070f1179622ec32c64b30d3176d26ec493da`. Conditions: macOS `/bin/bash` and awk; Python subprocess tests use unique disposable TemporaryDirectories outside both pinned source worktrees.
+
+- RED: `python3 scripts/tests/test_task_brief.py -v`, exit 1: `Ran 7 tests`, `FAILED (failures=8)`. Five methods failed: fenced literals, invalid/duplicate status (four subcases), stale missing task, plan/output aliasing, Provisional rejection. Ready and legacy passed. Failures demonstrate prescribed gaps in the old script.
+- GREEN: same command exit 0: seven named test methods `ok`, `Ran 7 tests`, `OK`. Syntax `/bin/bash -n skills/subagent-driven-development/scripts/task-brief` exit 0. Supports C3 extractor behavior only; no broad Markdown parser claim.
+- `scripts/gen-readme-table.sh` twice, exit 0; both `git hash-object README.md` outputs `2c8bfc7642b0983b080d826c8b0a6bc8c192fdf4`. `scripts/check-refs.sh` exit 0, `check-refs: clean`; `git diff --check` exit 0.
+- Repository Python validator initially failed because it included the TSV header in active skill membership; corrected `/private/tmp/task5-repository-check.py` exit 0. Every row has seven columns, active directories match, imported paths exist. `diff -r` listed ten identical verbatim imports: grill-me, grill-with-docs, handoff, wait-what, improve-codebase-architecture, writing-for-agents, tdd, dispatching-parallel-agents, codebase-design, research. Both source SHAs and source worktree status unchanged. Helpers, Task 4 prompts, Light implement, all invocation frontmatter unchanged.
+- Exact test and guard content compared with brief, exit 0. Baseline/source diffs inspected. Model Selection, batching/waiting, original fix reuse/escalation blocks identical. Bash 3.2 syntax used; no updater-engine edits, so engine guard/no-op checks inapplicable.
+
+Task 5 lifecycle evidence
+
+`python3 /private/tmp/task5-lifecycle.py`, exit 0. TemporaryRepositories and scratch cleaned by TemporaryDirectory context exits. All Git/extractor subprocesses asserted exit 0.
+
+1. Setup/ADR 0004: staged unrelated file; `git commit --only -m agreement -- plan.md` committed agreed document only; `git diff --cached --name-only` remained `unrelated`. Recorded Agreement/Execution baseline before refinement.
+2. Setup/ADR 0005: evidence settled `load() -> str`, owner A and behavior unchanged. Updated Provisional to Ready before extraction, then exit 0; brief retained C1/ADR/E1, concrete save/restart/reload acceptance, interface and verification.
+3. Decisions/Setup/ADR 0005 instruction walkthrough: new owner requires user decision; affected work/dependants wait; independent Ready work may continue.
+4. Breaker/Complete instruction walkthrough: fifth-round acceptance failure stays unresolved/incomplete; no extra dispatch, no dependent continuation.
+5. Finish/Evidence Record: committed baseline, refinement, command/status/result/limit into plan; `git show HEAD:plan.md` recovered each after scratch directory disappeared.
+6. Final Review: direct main commits; fixed baseline-to-HEAD diff nonempty; `git merge-base main HEAD` equals HEAD, branch-tip diff empty. Fixed base therefore preserves implementation review range.
+
+Standalone context: synthetic header named ADR 0004/0005, C1/E1 and owner-A constraints. Task-local Decision context carried applicable ADR/C1/E1, concrete criteria/interfaces/verification into Ready brief; global text not copied. SDD dispatch and reviewer-input rules require controller to give binding constraints, baseline/current sources, decision revisions and evidence identically to worker/reviewer. Limits: this is extraction plus instruction composition; fixture `restart/reload PASS` illustrates durable record recovery, not actual client operation. Scenarios 3/4 and future harness compliance are not runtime evidence.
+
+
+Task 5 self-review corrected diagram routes: addressed/deferred findings still pass acceptance/four-conclusion gate; pending consequential decisions wait; final evidence/gates precede cleanup. All seven task steps marked implemented; independent review remains controller-owned. No substantive unresolved implementation decision. Preserved agreed Task 4 record and explicit baseline hashes.

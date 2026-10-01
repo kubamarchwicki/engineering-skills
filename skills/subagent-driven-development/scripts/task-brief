@@ -18,6 +18,10 @@ plan=$1
 n=$2
 [ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
 
+case "$n" in
+  ''|*[!0-9]*) echo "invalid task number: $n" >&2; exit 2 ;;
+esac
+
 if [ $# -eq 3 ]; then
   out=$3
 else
@@ -27,17 +31,63 @@ else
   out="$dir/task-${n}-brief.md"
 fi
 
-awk -v n="$n" '
-  /^```/ { infence = !infence }
-  !infence && /^#+[ \t]+Task[ \t]+[0-9]+/ {
-    intask = ($0 ~ ("^#+[ \t]+Task[ \t]+" n "([^0-9]|$)"))
-  }
-  intask { print }
-' "$plan" > "$out"
-
-if [ ! -s "$out" ]; then
-  echo "task ${n} not found in ${plan} (no heading matching 'Task ${n}')" >&2
-  exit 3
+if [ "$plan" -ef "$out" ]; then
+  echo "brief output must differ from the plan" >&2
+  exit 2
 fi
 
+tmp=$(mktemp "${out}.tmp.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+
+if awk -v n="$n" '
+  {
+    line = $0
+    sub(/^[ \t]*/, "", line)
+    mark = substr(line, 1, 1)
+    len = 0
+    if (mark == "\140" || mark == "~") {
+      while (substr(line, len + 1, 1) == mark) len++
+    }
+    if (fence_len) {
+      if (intask) print
+      if (mark == fence_mark && len >= fence_len &&
+          substr(line, len + 1) ~ /^[ \t]*$/) fence_len = 0
+      next
+    }
+    if (len >= 3) {
+      fence_mark = mark
+      fence_len = len
+      if (intask) print
+      next
+    }
+    if ($0 ~ /^#+[ \t]+Task[ \t]+[0-9]+/) {
+      intask = ($0 ~ ("^#+[ \t]+Task[ \t]+" n "([^0-9]|$)"))
+      if (intask) found++
+    }
+    if (intask) {
+      print
+      if ($0 ~ /^[ \t]*\*\*Status/) {
+        statuses++
+        if ($0 !~ /^\*\*Status:\*\*[ \t]+Ready[ \t]*$/) invalid = 1
+      }
+    }
+  }
+  END {
+    if (!found) {
+      print "task " n " not found" > "/dev/stderr"
+      exit 3
+    }
+    if (found != 1 || statuses > 1 || invalid) {
+      print "task " n " has provisional or invalid readiness metadata" > "/dev/stderr"
+      exit 4
+    }
+    # Legacy tasks without Status remain supported; the controller assesses readiness.
+  }
+' "$plan" > "$tmp"; then
+  mv "$tmp" "$out"
+else
+  rc=$?
+  rm -f "$out"
+  exit "$rc"
+fi
 echo "wrote ${out}: $(wc -l < "$out" | tr -d ' ') lines"

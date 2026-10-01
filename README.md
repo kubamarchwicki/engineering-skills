@@ -16,16 +16,18 @@ My personal agent skill set — a deliberate hybrid of [obra/superpowers](https:
 
 ```
 /grill-with-docs  →  [/using-git-worktrees]  →  /writing-plans  →  /subagent-driven-development
-                                                docs/plans/       per-task two-stage review,
-                                                                  whole-branch code-review,
-                                                                  verification, then STOP
+                                                docs/plans/       committed baseline,
+                                                                  Ready slices, four-concern review,
+                                                                  applicable evidence, then STOP
 ```
+
+Planning checks readiness and obtains independent design review, recording observable Ready/Provisional slices in `docs/plans/`. Execution records committed agreement and fixed review baselines, refines and executes Ready slices within agreed decisions, and uses four-concern task and whole-branch reviews plus applicable verification evidence before stopping.
 
 Lost? Type `/how`.
 
 ## Conventions
 
-- `GLOSSARY.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — optional specs; `docs/plans/NNNN-<feature-name>.md` — plans from `/writing-plans`. All created lazily.
+- `GLOSSARY.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — optional specs; `docs/plans/NNNN-<feature-name>.md` — plans from `/writing-plans`. Grilling records terminology and decisions; plans apply those decisions to outcomes, acceptance, Ready/Provisional slices, and durable evidence. Substantive decision changes use superseding ADRs. All created lazily.
 - Skill names are inherited from their source repos, unchanged.
 - Imported skills are verbatim except the rewirings listed below. The submodule SHAs pin exactly what each import forked from.
 - Guidance for writing and editing documents agents consume: `writing-for-agents`.
@@ -57,12 +59,12 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 <!-- provenance:begin -->
 | Skill | Inv. | Role | Source | Changes |
 |---|---|---|---|---|
-| how | U | Router over the whole set | original | — |
+| how | U | Router over the whole set | original | workflow descriptions for readiness, evidence, and four-concern review |
 | grill-me | U | Interview to align before building | mattpocock `skills/productivity/grill-me` | verbatim |
 | grill-with-docs | U | Grill + GLOSSARY.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
 | implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base |
 | writing-plans | U | Evidence-backed plans → docs/plans/ | superpowers `skills/writing-plans` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff; readiness and independent design review; ADR/glossary sources; outcome verification; ready/provisional slices; design-reviewer prompt |
-| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts |
+| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts; committed agreement baseline; fixed execution review base; readiness-gated task extraction; per-task decision/evidence context; bounded consequential decisions; durable evidence and blocking completion gates |
 | using-git-worktrees | U | Optional isolation for heavy work | superpowers `skills/using-git-worktrees` | user-invoked |
 | handoff | U | Compact session → handoff doc | mattpocock `skills/productivity/handoff` | verbatim |
 | wait-what | U | Re-pitch an explanation that did not land | mattpocock `skills/productivity/wait-what` | verbatim |
