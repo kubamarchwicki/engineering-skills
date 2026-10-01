@@ -22,6 +22,11 @@ Only include these when they add genuine value. Most ADRs won't need them.
 - **Considered Options**: only when the rejected alternatives are worth remembering
 - **Consequences**: only when non-obvious downstream effects need to be called out
 
+For a substantive replacement, the new ADR names `Supersedes: ADR-NNNN`;
+the old ADR gains `status: superseded by ADR-NNNN` frontmatter and retains
+its decision body. For example, ADR-0006 supersedes ADR-0002; ADR-0002 gains
+`status: superseded by ADR-0006`. In-place clarification preserves meaning.
+
 ## Numbering
 
 Scan `docs/adr/` for the highest existing number and increment by one.

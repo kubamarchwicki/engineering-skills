@@ -78,7 +78,7 @@ Execute Tasks 1–5 sequentially. Task 2 consumes Task 1; Task 3 defines evidenc
 - Consumes user intent and existing source/decision documents.
 - Produces observable outcomes, constraints, exclusions, acceptance criteria, cited facts, consequential assumptions, and explicit user decisions. Existing wrappers keep composing these skills.
 
-- [ ] **Step 1: Insert this before grilling's final “The session is done” paragraph.**
+- [x] **Step 1: Insert this before grilling's final “The session is done” paragraph.**
 
 ~~~markdown
 ## Establish the foundation
@@ -113,7 +113,7 @@ assumptions while allowing unaffected work to be planned.
 
 Keep the existing fact-finding delegation and final shared-understanding instructions.
 
-- [ ] **Step 2: Append this after domain-modeling's ADR criteria.**
+- [x] **Step 2: Append this after domain-modeling's ADR criteria.**
 
 ~~~markdown
 ### Preserve decisions as they change
@@ -139,7 +139,7 @@ its decision body. For example, ADR-0006 supersedes ADR-0002; ADR-0002 gains
 
 Retain the existing threshold for creating ADRs.
 
-- [ ] **Step 3: Verify two behavior scenarios from the edited repository files.**
+- [x] **Step 3: Verify two behavior scenarios from the edited repository files.**
 
 Record the next action and supporting passages:
 1. User proposes a reconnect manager; the client already reconnects, cleanup ownership is unknown. Investigate cleanup, separate outcome from wrapper proposal, and expose the consequential unknown.
@@ -147,7 +147,7 @@ Record the next action and supporting passages:
 
 Bare `grill-me` must not gain a mandatory heavy plan, committed baseline, or design-review stage.
 
-- [ ] **Step 4: Record provenance and commit.**
+- [x] **Step 4: Record provenance and commit.**
 
 Replace the existing `verbatim` value in these `changes` cells with the respective phrase:
 - grilling: `outcome and ownership investigation; bounded experiments; explicit consequential decisions`
@@ -1077,3 +1077,5 @@ Record final four-concern review and verification evidence in the Execution reco
 - Execution base: the same fixed plan baseline revision, resolved and recorded before Task 1.
 - Preflight: five task consistency checks and all ten shared-file/interface pairs recorded in the plan workspace; no unresolved consequential choices.
 - Refinements: normalized the accidental leading `q` in this plan heading; the confirmed ADRs govern consequential decisions and blocking completion.
+
+- Task 1: implemented exact foundation and ADR-supersession additions. Reconnect scenario: investigate existing cleanup ownership, distinguish observable reconnect behavior from a manager proposal, retain consequential unknowns and withhold dependent detail. Ownership A→B scenario: evidence and recommendation require the user decision; a new numbered ADR supersedes the old decision with status linkage, preserving its body; glossary edits cannot authorize ownership. These are text-based scenario checks, not live integration evidence. Bare `grill-me` remains a direct grilling wrapper without mandatory heavy gates. README generation was idempotent (`144e1524e2ecfd7c0bd9131583c6fb5e0b504a03`); refs clean; diff check passed; seven-column membership/source-path validation passed; 11 verbatim imports matched pinned directories; removing exact additions reproduced baseline files. No shell scripts changed.

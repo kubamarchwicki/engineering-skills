@@ -68,14 +68,14 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 | wait-what | U | Re-pitch an explanation that did not land | mattpocock `skills/productivity/wait-what` | verbatim |
 | improve-codebase-architecture | U | Deep-module sweep + report | mattpocock `skills/engineering/improve-codebase-architecture` | verbatim |
 | writing-for-agents | M | Guidance for documents agents consume | mattpocock `skills/productivity/writing-for-agents` | verbatim |
-| grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | verbatim |
+| grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | outcome and ownership investigation; bounded experiments; explicit consequential decisions |
 | tdd | M | Seams-based red-green loop | mattpocock `skills/engineering/tdd` | verbatim |
 | code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup |
 | receiving-code-review | M | Rigor when subagent review feedback arrives | superpowers `skills/receiving-code-review` | description rescoped |
 | verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | verbatim |
 | systematic-debugging | M | 4-phase root-cause debugging | superpowers `skills/systematic-debugging` | refs → tdd, verification-before-completion |
 | dispatching-parallel-agents | M | Concurrent subagent workflows | superpowers `skills/dispatching-parallel-agents` | verbatim |
-| domain-modeling | M | Glossary + ADR discipline | mattpocock `skills/engineering/domain-modeling` | verbatim |
+| domain-modeling | M | Glossary + ADR discipline | mattpocock `skills/engineering/domain-modeling` | ADR supersession; glossary/ADR/plan responsibility split |
 | codebase-design | M | Deep-module vocabulary | mattpocock `skills/engineering/codebase-design` | verbatim |
 | research | M | Cited findings → Markdown in repo | mattpocock `skills/engineering/research` | verbatim |
 <!-- provenance:end -->

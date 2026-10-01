@@ -10,14 +10,14 @@ handoff	mattpocock-skills	skills/productivity/handoff	imported	U	Compact session
 wait-what	mattpocock-skills	skills/productivity/wait-what	imported	U	Re-pitch an explanation that did not land	verbatim
 improve-codebase-architecture	mattpocock-skills	skills/engineering/improve-codebase-architecture	imported	U	Deep-module sweep + report	verbatim
 writing-for-agents	mattpocock-skills	skills/productivity/writing-for-agents	imported	M	Guidance for documents agents consume	verbatim
-grilling	mattpocock-skills	skills/productivity/grilling	imported	M	The reusable interview loop	verbatim
+grilling	mattpocock-skills	skills/productivity/grilling	imported	M	The reusable interview loop	outcome and ownership investigation; bounded experiments; explicit consequential decisions
 tdd	mattpocock-skills	skills/engineering/tdd	imported	M	Seams-based red-green loop	verbatim
 code-review	mattpocock-skills	skills/engineering/code-review	imported	M	Two-axis review (Standards + Spec)	tracker setup/spec lookup → local spec lookup
 receiving-code-review	superpowers	skills/receiving-code-review	imported	M	Rigor when subagent review feedback arrives	description rescoped
 verification-before-completion	superpowers	skills/verification-before-completion	imported	M	Universal completion gate	verbatim
 systematic-debugging	superpowers	skills/systematic-debugging	imported	M	4-phase root-cause debugging	refs → tdd, verification-before-completion
 dispatching-parallel-agents	superpowers	skills/dispatching-parallel-agents	imported	M	Concurrent subagent workflows	verbatim
-domain-modeling	mattpocock-skills	skills/engineering/domain-modeling	imported	M	Glossary + ADR discipline	verbatim
+domain-modeling	mattpocock-skills	skills/engineering/domain-modeling	imported	M	Glossary + ADR discipline	ADR supersession; glossary/ADR/plan responsibility split
 codebase-design	mattpocock-skills	skills/engineering/codebase-design	imported	M	Deep-module vocabulary	verbatim
 resolving-merge-conflicts	mattpocock-skills	skills/engineering/resolving-merge-conflicts	dropped	-	-	dropped: removed upstream at daa01d8; merge and commit remain user-owned
 research	mattpocock-skills	skills/engineering/research	imported	M	Cited findings → Markdown in repo	verbatim
