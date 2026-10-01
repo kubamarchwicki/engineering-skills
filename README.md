@@ -25,39 +25,41 @@ Lost? Type `/how`.
 
 ## Conventions
 
-- `CONTEXT.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — optional specs; `docs/plans/NNNN-<feature-name>.md` — plans from `/writing-plans`. All created lazily.
+- `GLOSSARY.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — optional specs; `docs/plans/NNNN-<feature-name>.md` — plans from `/writing-plans`. All created lazily.
 - Skill names are inherited from their source repos, unchanged.
 - Imported skills are verbatim except the rewirings listed below. The submodule SHAs pin exactly what each import forked from.
 - Guidance for writing and editing documents agents consume: `writing-for-agents`.
 
 ## Install
 
+From each consuming project's root, install its own set from the published GitHub repository:
+
 ```bash
-npx skills add ./skills --global --skill '*' --agent codex --agent claude-code --yes
+npx skills add https://github.com/kubamarchwicki/engineering-skills/tree/master/skills --skill '*' --agent codex --agent claude-code --yes
 ```
 
-Installs every skill in `skills/` for Codex and Claude Code. Re-run after adding, removing, or renaming a skill.
+This installs every distributed skill for Codex and Claude Code in that project. Projects do not share an installation. Re-run there after changes have been published to GitHub.
 
 ## Maintenance
 
 `provenance.tsv` is the single source of truth for the skill ↔ upstream mapping. The Reference table below is generated from it by `scripts/gen-readme-table.sh` (between the provenance markers) — edit the tsv, never the table.
 
-Upstream sync: `/update-from-upstream` in Claude or `$update-from-upstream` in Codex, backed by one canonical repo-local source (`skills-internal/update-from-upstream/`) exposed through `.claude/skills/` and `.agents/skills/` discovery symlinks. Claude's frontmatter and Codex's `agents/openai.yaml` both disable implicit invocation. The skill loads only in this workspace and is never part of the globally installed set. It runs only in a linked Git worktree because a global installation may reference the primary checkout. If invoked from the primary checkout, it names `/using-git-worktrees` then `/update-from-upstream` for Claude, or `$using-git-worktrees` then `$update-from-upstream` for Codex, and stops before creating or auto-chaining the worktree.
+Upstream sync: `/update-from-upstream` in Claude or `$update-from-upstream` in Codex, backed by one canonical repo-local source (`skills-internal/update-from-upstream/`) exposed through `.claude/skills/` and `.agents/skills/` discovery symlinks. Claude's frontmatter and Codex's `agents/openai.yaml` both disable implicit invocation. The skill loads only in this repository and is excluded from the distributed `skills/` path. It runs in the primary checkout or an optional linked worktree.
 
-Inside the maintenance worktree, the skill runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through clean merges and grills every conflict, attention item, new upstream skill, deletion, and rename one at a time. A suspected rename is an explicit human-in-the-loop stop: it explains the evidence and waits for me to reconcile the affected skill directory and provenance entry manually before inspecting my fix and continuing. It records the decisions, completes the repository checks, bumps only moved pins, stages the agreed result only after all checks pass, and stops. It never commits, pushes, merges, or updates the real global installation.
+The skill runs `scripts/update-from-upstream.sh` — a three-way merge of every imported skill, base = the pinned submodule SHA — then walks through clean merges and grills every conflict, attention item, new upstream skill, deletion, and rename one at a time. A suspected rename is an explicit human-in-the-loop stop: it explains the evidence and waits for me to reconcile the affected skill directory and provenance entry manually before inspecting my fix and continuing. It records the decisions, completes the repository checks, bumps only moved pins, stages the agreed result only after all checks pass, and stops. It never commits, pushes, merges, or updates consuming projects.
 
-After I commit and merge the staged sync, any membership change is handed back to the primary checkout: run the `npx skills add` command above there, then restart already-running harness sessions because they retain their old skill snapshot. I own the commit, merge, sanity testing, primary-checkout installation, and maintenance-worktree cleanup.
+After I publish the sync to GitHub, each project can refresh its own installation with the command above. Already-running harness sessions retain their old skill snapshot until restarted. I own the commit, publication, sanity testing, and any merge or worktree cleanup.
 
 ## Reference
 
-U = user-invoked (slash only) · M = model-invoked (fires on its own)
+U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 
 <!-- provenance:begin -->
 | Skill | Inv. | Role | Source | Changes |
 |---|---|---|---|---|
 | how | U | Router over the whole set | original | — |
 | grill-me | U | Interview to align before building | mattpocock `skills/productivity/grill-me` | verbatim |
-| grill-with-docs | U | Grill + CONTEXT.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
+| grill-with-docs | U | Grill + GLOSSARY.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
 | implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate |
 | writing-plans | U | Exhaustive plan → `docs/plans/` | superpowers `skills/writing-plans` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff |
 | subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge |
@@ -75,7 +77,6 @@ U = user-invoked (slash only) · M = model-invoked (fires on its own)
 | dispatching-parallel-agents | M | Concurrent subagent workflows | superpowers `skills/dispatching-parallel-agents` | verbatim |
 | domain-modeling | M | Glossary + ADR discipline | mattpocock `skills/engineering/domain-modeling` | verbatim |
 | codebase-design | M | Deep-module vocabulary | mattpocock `skills/engineering/codebase-design` | verbatim |
-| resolving-merge-conflicts | M | Conflict resolution by intent | mattpocock `skills/engineering/resolving-merge-conflicts` | verbatim |
 | research | M | Cited findings → Markdown in repo | mattpocock `skills/engineering/research` | verbatim |
 <!-- provenance:end -->
 

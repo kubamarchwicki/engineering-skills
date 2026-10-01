@@ -2,14 +2,14 @@
 
 ## Purpose and sources of truth
 
-This GitHub repository is the source of truth for `engineering-skills`, a curated personal set of 22 agent skills imported from the pinned `mattpocock-skills/` and `superpowers/` submodules, with a small, explicitly documented set of local rewirings. Each consuming project installs its own copy from GitHub.
+This GitHub repository is the source of truth for `engineering-skills`, a curated personal set of agent skills imported from the pinned `mattpocock-skills/` and `superpowers/` submodules, with a small, explicitly documented set of local rewirings. Each consuming project installs its own copy from GitHub.
 
 Before changing the repository, read the relevant plan completely:
 
 1. `docs/plans/0001-bootstrap-engineering-skills.md` builds and installs the initial set.
 2. `docs/plans/0002-upstream-update-mechanism.md` adds provenance-driven upstream maintenance and may run only after plan 0001's prerequisites are present and committed.
 
-`docs/2026-07-13-engineering-skills-handoff.md` is historical context. The two implementation plans are newer and more specific, so they win if wording or state differs. Do not re-litigate decisions already recorded in these documents.
+`docs/2026-07-13-engineering-skills-handoff.md` and the two implementation plans record the original build. For current behavior, follow this file and `provenance.tsv` when their installation, worktree, or glossary conventions differ from those historical documents. Do not re-litigate decisions already recorded in these documents.
 
 Determine the current phase from the working tree rather than assuming a plan is complete. For example, `skills/.empty` with no root `README.md` means the bootstrap has not yet run.
 
@@ -23,7 +23,7 @@ Preserve these decisions in every skill, script, and document:
 - Every stage boundary is a manual gear shift. Name the next command and stop; never auto-chain stages.
 - Never auto-merge. After review and verification, stop. The user owns merging, sanity testing, and worktree cleanup.
 - There is no session-start bootstrap hook and no plugin or marketplace packaging. From each consuming project, install the set with `npx skills add https://github.com/kubamarchwicki/engineering-skills/tree/master/skills --skill '*' --agent codex --agent claude-code --yes`.
-- Artifact paths are fixed: `CONTEXT.md` at the repository root, `docs/adr/`, `docs/specs/`, and numbered plans at `docs/plans/NNNN-<feature-name>.md`.
+- Artifact paths are fixed: `GLOSSARY.md` at the repository root, `docs/adr/`, `docs/specs/`, and numbered plans at `docs/plans/NNNN-<feature-name>.md`.
 - Keep inherited skill names unchanged. `how` is the only original distributed skill and is the router for the set.
 
 When a decision is genuinely needed, investigate facts first, then ask in plain prose one question at a time and lead with a recommendation. Do not use a multiple-choice question widget.
