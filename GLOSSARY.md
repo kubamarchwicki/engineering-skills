@@ -24,6 +24,18 @@ _Avoid_: Phase, step
 An explicit user invocation that advances work from one Stage to the next. A skill may name the next gear but never shifts on the user's behalf.
 _Avoid_: Auto-chain, automatic handoff
 
+**Readiness Check**:
+The assessment at the start of planning that determines whether agreed outcomes and evidence about existing contracts and ownership are sufficient for task decomposition.
+
+**Slice**:
+A unit of planned work that demonstrates a complete observable behavior across relevant boundaries.
+
+**Ready Slice**:
+A Slice whose files, interfaces, tests, and expected behavior are concrete enough for implementation and supported by evidence.
+
+**Provisional Slice**:
+A Slice with an agreed outcome and dependencies whose implementation details await a named finding from investigation or earlier work.
+
 **Branch Ready**:
 The state reached after the agreed work, review, and verification are complete but before merge, sanity testing, or cleanup. Those final actions remain with the user.
 _Avoid_: Done, merged
