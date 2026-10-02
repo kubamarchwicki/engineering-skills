@@ -32,6 +32,21 @@ Lost? Type `/how`.
 - Imported skills are verbatim except the rewirings listed below. The submodule SHAs pin exactly what each import forked from.
 - Guidance for writing and editing documents agents consume: `writing-for-agents`.
 
+## Drift from the original skills
+
+The main evolution is toward **validating assumptions before implementation, preserving decisions, and tying completion to observable evidence**.
+
+| Area | How it evolved |
+| --- | --- |
+| **Grilling and domain modeling** | Grilling now establishes measurable outcomes, acceptance criteria, and state ownership. It permits bounded integration experiments. Changed architectural decisions get superseding ADRs, preserving their history. |
+| **Planning** | writing-plans (skills/writing-plans/SKILL.md:23) adds readiness checks and mandatory independent design review. Tasks become **Ready** or **Provisional**, with explicit evidence needed to unblock provisional work. A separate spec is optional. |
+| **Heavy execution** | subagent-driven-development (skills/subagent-driven-development/SKILL.md:93) records committed agreement and execution baselines, checks readiness before dispatch, and preserves decisions and evidence beyond scratch cleanup. Retry limits no longer permit accepting unresolved blocking failures. |
+| **Review** | code-review (skills/code-review/SKILL.md:6) retains two reviewers but covers four concerns: correctness, design validity, evidence quality, and scope/standards. Working-tree review explicitly includes untracked files. |
+| **Review feedback** | Feedback is classified into defects, assumptions, requirements, dependency capabilities, and preferences. Uncertainty blocks dependent work; independent work can continue. |
+| **Verification** | verification-before-completion (skills/verification-before-completion/SKILL.md:14) replaces “rerun in this message” with **applicable evidence**. Reuse requires inspectable output, tested state, relevant conditions, and clear limits. |
+| **Light execution** | `implement` records its starting revision and reviews the actual working-tree changes before committing. Verification becomes proportional to risk and project requirements. |
+| **Parallel delegation and routing** | Parallel work gains explicit dependency and shared-resource checks. `/how` reflects the new workflow while preserving the two tracks and manual stage transitions. |
+
 ## Install
 
 From each consuming project's root, install its own set from the published GitHub repository:
