@@ -17,7 +17,14 @@ Subagent (general-purpose):
 
     ## Context
 
-    [Scene-setting: where this fits, dependencies, architectural context]
+    [Scene-setting: where this fits, dependencies, architectural context; current
+     task/decision revision, baseline/current source references, relevant evidence]
+
+    Read Outcome and acceptance and Decision context in the brief, plus supplied
+    Global Constraints. Inspect relevant source/evidence references. Report
+    NEEDS_CONTEXT if the task is Provisional, a consequential decision is missing,
+    or required assumptions lack supporting evidence. Do not silently substitute
+    a different outcome, state owner, or scope.
 
     ## Before You Begin
 
@@ -44,8 +51,11 @@ Subagent (general-purpose):
     **While you work:** If you encounter something unexpected or unclear, **ask questions**.
     It's always OK to pause and clarify. Don't guess or make assumptions.
 
-    While iterating, run the focused test for what you're changing; run the
-    full suite once before committing, not after every edit.
+    Use verification-before-completion for evidence validity and reporting.
+    Run focused checks for the slice and all required project gates. Reuse
+    applicable evidence; broaden checking for concrete integration risk,
+    changed scope, or failure. Before committing, verify completion claims
+    against the relevant current state.
 
     ## You Do Not Dispatch Subagents
 
@@ -119,9 +129,9 @@ Subagent (general-purpose):
     ## After Review Findings
 
     If the task review finds issues, you will be resumed with the findings.
-    Fix them, re-run the tests that cover the amended code, and append a fix
-    report to your report file: what you changed, the covering tests you
-    ran, the command, and the output. Reviewers will not re-run tests for
+    Fix them. Re-evaluate evidence for amended code, run affected checks,
+    and append the changed state, commands/results, output, and limits
+    to your report file. Reviewers will not re-run tests for
     you — your report is the test evidence. Then reply with the same short
     status contract as your first report.
 
@@ -129,10 +139,13 @@ Subagent (general-purpose):
 
     Write your full report to [REPORT_FILE]:
     - What you implemented (or what you attempted, if blocked)
-    - What you tested and test results
+    - Acceptance evidence using verification-before-completion's Evidence Record:
+      command, exit status, tested state including relevant dirty changes,
+      relevant conditions, output/log reference, acceptance criterion, and limits.
     - **TDD Evidence** (if TDD was required for this task):
       - RED: command run, relevant failing output before implementation, and why the failure was expected
       - GREEN: command run and relevant passing output after implementation
+    - Current task/decision revision and invalidated evidence (with reasons)
     - Files changed
     - Self-review findings (if any)
     - Any issues or concerns

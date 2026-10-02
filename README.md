@@ -16,19 +16,36 @@ My personal agent skill set — a deliberate hybrid of [obra/superpowers](https:
 
 ```
 /grill-with-docs  →  [/using-git-worktrees]  →  /writing-plans  →  /subagent-driven-development
-                                                docs/plans/       per-task two-stage review,
-                                                                  whole-branch code-review,
-                                                                  verification, then STOP
+                                                docs/plans/       committed baseline,
+                                                                  Ready slices, four-concern review,
+                                                                  applicable evidence, then STOP
 ```
+
+Planning checks readiness and obtains independent design review, recording observable Ready/Provisional slices in `docs/plans/`. Execution records committed agreement and fixed review baselines, refines and executes Ready slices within agreed decisions, and uses four-concern task and whole-branch reviews plus applicable verification evidence before stopping.
 
 Lost? Type `/how`.
 
 ## Conventions
 
-- `GLOSSARY.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — optional specs; `docs/plans/NNNN-<feature-name>.md` — plans from `/writing-plans`. All created lazily.
+- `GLOSSARY.md` (repo root) — domain glossary; `docs/adr/` — decisions; `docs/specs/` — optional specs; `docs/plans/NNNN-<feature-name>.md` — plans from `/writing-plans`. Grilling records terminology and decisions; plans apply those decisions to outcomes, acceptance, Ready/Provisional slices, and durable evidence. Substantive decision changes use superseding ADRs. All created lazily.
 - Skill names are inherited from their source repos, unchanged.
 - Imported skills are verbatim except the rewirings listed below. The submodule SHAs pin exactly what each import forked from.
 - Guidance for writing and editing documents agents consume: `writing-for-agents`.
+
+## Drift from the original skills
+
+The main evolution is toward **validating assumptions before implementation, preserving decisions, and tying completion to observable evidence**.
+
+| Area | How it evolved |
+| --- | --- |
+| **Grilling and domain modeling** | Grilling now establishes measurable outcomes, acceptance criteria, and state ownership. It permits bounded integration experiments. Changed architectural decisions get superseding ADRs, preserving their history. |
+| **Planning** | writing-plans (skills/writing-plans/SKILL.md:23) adds readiness checks and mandatory independent design review. Tasks become **Ready** or **Provisional**, with explicit evidence needed to unblock provisional work. A separate spec is optional. |
+| **Heavy execution** | subagent-driven-development (skills/subagent-driven-development/SKILL.md:93) records committed agreement and execution baselines, checks readiness before dispatch, and preserves decisions and evidence beyond scratch cleanup. Retry limits no longer permit accepting unresolved blocking failures. |
+| **Review** | code-review (skills/code-review/SKILL.md:6) retains two reviewers but covers four concerns: correctness, design validity, evidence quality, and scope/standards. Working-tree review explicitly includes untracked files. |
+| **Review feedback** | Feedback is classified into defects, assumptions, requirements, dependency capabilities, and preferences. Uncertainty blocks dependent work; independent work can continue. |
+| **Verification** | verification-before-completion (skills/verification-before-completion/SKILL.md:14) replaces “rerun in this message” with **applicable evidence**. Reuse requires inspectable output, tested state, relevant conditions, and clear limits. |
+| **Light execution** | `implement` records its starting revision and reviews the actual working-tree changes before committing. Verification becomes proportional to risk and project requirements. |
+| **Parallel delegation and routing** | Parallel work gains explicit dependency and shared-resource checks. `/how` reflects the new workflow while preserving the two tracks and manual stage transitions. |
 
 ## Install
 
@@ -57,25 +74,25 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 <!-- provenance:begin -->
 | Skill | Inv. | Role | Source | Changes |
 |---|---|---|---|---|
-| how | U | Router over the whole set | original | — |
+| how | U | Router over the whole set | original | workflow descriptions for readiness, evidence, and four-concern review |
 | grill-me | U | Interview to align before building | mattpocock `skills/productivity/grill-me` | verbatim |
 | grill-with-docs | U | Grill + GLOSSARY.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
-| implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate |
-| writing-plans | U | Exhaustive plan → `docs/plans/` | superpowers `skills/writing-plans` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff |
-| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge |
+| implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base |
+| writing-plans | U | Evidence-backed plans → docs/plans/ | superpowers `skills/writing-plans` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff; readiness and independent design review; ADR/glossary sources; outcome verification; ready/provisional slices; design-reviewer prompt; ordered planning procedure; required plan-format reference; consolidated task contract |
+| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts; committed agreement baseline; fixed execution review base; readiness-gated task extraction; per-task decision/evidence context; bounded consequential decisions; durable evidence and blocking completion gates; authoritative controller procedure; branch-triggered recovery and fix-loop references; disclosed workflow example |
 | using-git-worktrees | U | Optional isolation for heavy work | superpowers `skills/using-git-worktrees` | user-invoked |
 | handoff | U | Compact session → handoff doc | mattpocock `skills/productivity/handoff` | verbatim |
 | wait-what | U | Re-pitch an explanation that did not land | mattpocock `skills/productivity/wait-what` | verbatim |
 | improve-codebase-architecture | U | Deep-module sweep + report | mattpocock `skills/engineering/improve-codebase-architecture` | verbatim |
 | writing-for-agents | M | Guidance for documents agents consume | mattpocock `skills/productivity/writing-for-agents` | verbatim |
-| grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | verbatim |
+| grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | outcome and ownership investigation; bounded experiments; explicit consequential decisions |
 | tdd | M | Seams-based red-green loop | mattpocock `skills/engineering/tdd` | verbatim |
-| code-review | M | Two-axis review (Standards + Spec) | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup |
-| receiving-code-review | M | Rigor when subagent review feedback arrives | superpowers `skills/receiving-code-review` | description rescoped |
-| verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | verbatim |
+| code-review | M | Two reviewers covering correctness, design, evidence, and standards | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup; four concerns across existing reviewers; ADR/plan agreement sources; working-tree and untracked review |
+| receiving-code-review | M | Rigor when subagent review feedback arrives | superpowers `skills/receiving-code-review` | description rescoped; feedback classification; dependency-scoped decisions; durable updates; consolidated feedback procedure and factual-response policy; branch-triggered examples and inline-reply reference |
+| verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | applicable evidence reuse; risk-based check scope; inspectable evidence records |
 | systematic-debugging | M | 4-phase root-cause debugging | superpowers `skills/systematic-debugging` | refs → tdd, verification-before-completion |
-| dispatching-parallel-agents | M | Concurrent subagent workflows | superpowers `skills/dispatching-parallel-agents` | verbatim |
-| domain-modeling | M | Glossary + ADR discipline | mattpocock `skills/engineering/domain-modeling` | verbatim |
+| dispatching-parallel-agents | M | Concurrent subagent workflows | superpowers `skills/dispatching-parallel-agents` | independence and shared-resource checklist; isolated outcome-based briefs; concurrency-slot dispatch; disclosed examples; applicable integration verification; manual stage boundary |
+| domain-modeling | M | Glossary + ADR discipline | mattpocock `skills/engineering/domain-modeling` | ADR supersession; glossary/ADR/plan responsibility split |
 | codebase-design | M | Deep-module vocabulary | mattpocock `skills/engineering/codebase-design` | verbatim |
 | research | M | Cited findings → Markdown in repo | mattpocock `skills/engineering/research` | verbatim |
 <!-- provenance:end -->

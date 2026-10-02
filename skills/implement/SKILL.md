@@ -6,12 +6,18 @@ disable-model-invocation: true
 
 Implement the work described by the user in the spec or tickets.
 
+Record the starting Git revision and existing working-tree changes. Preserve
+unrelated work. For code-review supply this fixed revision, working-tree mode,
+relevant task paths including untracked files, and the agreed outcomes and
+decision sources.
+
 Use /tdd where possible, at pre-agreed seams.
 
-Run typechecking regularly, single test files regularly, and the full test suite once at the end.
+Use /code-review on that working-tree change before committing. Resolve
+findings and verify that the reviewed state still matches the change committed.
 
-Once done, use /code-review to review the work.
-
-Before committing, use the verification-before-completion skill: run the verification commands (tests, typecheck) and confirm their output before claiming the work complete.
+Use focused tests and typechecking appropriate to the change and satisfy
+required project gates. Apply verification-before-completion for evidence
+validity, reruns, and reporting before committing or claiming completion.
 
 Commit your work to the current branch.

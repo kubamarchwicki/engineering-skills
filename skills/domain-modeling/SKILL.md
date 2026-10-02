@@ -72,3 +72,14 @@ Only offer to create an ADR when all three are true:
 3. **The result of a real trade-off**: there were genuine alternatives and you picked one for specific reasons
 
 If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
+
+### Preserve decisions as they change
+
+A substantive change to an accepted ADR decision gets a new numbered ADR
+explicitly superseding it. Preserve the old decision body and add status
+metadata linking to its replacement. Clarifications preserving meaning may
+be edited in place.
+
+Keep GLOSSARY.md focused on terminology. The numbered implementation plan
+contains concrete outcomes, acceptance checks, slices, and evidence derived
+from grilling and linked to applicable ADRs. A separate living spec is optional.

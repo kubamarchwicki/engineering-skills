@@ -25,6 +25,10 @@ Subagent (general-purpose):
 
     [FINDINGS]
 
+    Prior four conclusions and their sources/limits: [PRIOR_CONCLUSIONS]
+    Outcome/acceptance, decisions, constraints, and baseline/current references:
+    [AGREEMENT_CONTEXT]
+
     ## The Fix
 
     Read the implementer's report (fix reports are appended at the end):
@@ -58,13 +62,17 @@ Subagent (general-purpose):
     Inspect the fix diff for new problems the fix itself introduced. Do NOT
     re-review code the fix did not touch: if you notice an issue entirely
     outside the fix diff, report it under Out-of-Scope Observations — it
-    does not block this task and does not extend the loop. A broad
+    is routed to the controller. Consequential or blocking discoveries enter
+    the controller's dependency gate before affected work resumes. A broad
     whole-branch review happens after all tasks are complete.
 
     ## Tests
 
-    The implementer re-ran the tests covering the amended code and appended
-    the results to the report file. Treat the report as unverified claims:
+    Use verification-before-completion's shared validity rule: reuse evidence
+    while it supports the claim for relevant code, dependencies, configuration,
+    and environment; changed inputs invalidate affected conclusions. The
+    implementer appended Evidence Records for covering checks or applicable
+    reused results to the report file. Treat the report as unverified claims:
     confirm the fix report names the covering tests and shows their output,
     and verify the claims against the diff. Do not re-run the suite to
     confirm their report. Run a test only when reading the code raises a
@@ -84,6 +92,14 @@ Subagent (general-purpose):
       evidence. "Attempted" is not addressed: the specific defect must no
       longer exist.
 
+    ### Four Conclusions
+
+    Report Implementation correctness, Design validity, Evidence quality, and
+    Scope and standards each as `unchanged and still applicable`, `reassessed`,
+    or `unresolved`. For reassessed conclusions give Verified | Findings |
+    Evidence gap with changed-state evidence, sources, and limits. Explain
+    applicability for retained conclusions; route gaps to the controller.
+
     ### New Breakage in the Fix Diff
 
     Anything the fix itself broke or introduced, with severity
@@ -91,8 +107,9 @@ Subagent (general-purpose):
 
     ### Out-of-Scope Observations
 
-    Issues you noticed entirely outside the fix diff. Non-blocking; the
-    controller ledgers these for the final review. "None" if none.
+    Issues noticed outside the fix diff, with consequence and recommended
+    disposition. Route consequential/blocking discoveries to the controller's
+    dependency gate; independent settled work may continue. "None" if none.
 
     ### Verdict
 
@@ -106,10 +123,13 @@ Subagent (general-purpose):
 - `[BRIEF_FILE]` — the task brief file (same file the implementer worked from)
 - `[FINDINGS]` — the Critical/Important findings and spec gaps from the
   previous review, copied verbatim, one per bullet
+- `[PRIOR_CONCLUSIONS]` — the previous four conclusions with sources/limits
+- `[AGREEMENT_CONTEXT]` — applicable agreement and baseline/current references
 - `[REPORT_FILE]` — the implementer's report file (fix reports appended)
 - `[FIX_BASE_SHA]` — the head the previous review saw
 - `[HEAD_SHA]` — current commit
 - `[DIFF_FILE]` — the path `bash scripts/review-package PLAN_FILE FIX_BASE HEAD` printed
 
 **Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED),
-new breakage in the fix diff, out-of-scope observations, and a round verdict.
+four conclusion dispositions, new breakage in the fix diff, out-of-scope
+observations, and a round verdict.
