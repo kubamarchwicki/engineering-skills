@@ -11,9 +11,9 @@ unrelated work. For code-review supply this fixed revision, working-tree mode,
 relevant task paths including untracked files, and the agreed outcomes and
 decision sources.
 
-Use /tdd where possible, at pre-agreed seams.
+Call the Skill tool with "tdd" where possible, at pre-agreed seams.
 
-Use /code-review on that working-tree change before committing. Resolve
+Call the Skill tool with "code-review" on that working-tree change before committing. Resolve
 findings and verify that the reviewed state still matches the change committed.
 
 Use focused tests and typechecking appropriate to the change and satisfy

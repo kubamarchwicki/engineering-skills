@@ -1,11 +1,11 @@
 name	submodule	source_path	status	inv	role	changes
-how	-	-	original	U	Router over the whole set	workflow descriptions for readiness, evidence, and four-concern review
 grill-me	mattpocock-skills	skills/productivity/grill-me	imported	U	Interview to align before building	verbatim
 grill-with-docs	mattpocock-skills	skills/engineering/grill-with-docs	imported	U	Grill + GLOSSARY.md/ADRs inline	verbatim
-implement	mattpocock-skills	skills/engineering/implement	imported	U	Light-track build	+ verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base
+implement	mattpocock-skills	skills/engineering/implement	imported	U	Light-track build	+ verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base; omit upstream tracker-fetch requirement
 writing-plans	superpowers	skills/writing-plans	imported	U	Evidence-backed plans → docs/plans/	user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff; readiness and independent design review; ADR/glossary sources; outcome verification; ready/provisional slices; design-reviewer prompt; ordered planning procedure; required plan-format reference; consolidated task contract
 subagent-driven-development	superpowers	skills/subagent-driven-development	imported	U	Heavy-track execution engine	user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts; committed agreement baseline; fixed execution review base; readiness-gated task extraction; per-task decision/evidence context; bounded consequential decisions; durable evidence and blocking completion gates; authoritative controller procedure; branch-triggered recovery and fix-loop references; disclosed workflow example
 using-git-worktrees	superpowers	skills/using-git-worktrees	imported	U	Optional isolation for heavy work	user-invoked
+wayfinder	mattpocock-skills	skills/engineering/wayfinder	imported	U	Multi-session discovery map before either track	tracker operations → local map and decision files under `docs/specs/<effort>/`; local status, claim, dependency, and resolution conventions; glossary/ADR canonical links; planning-only scope; bounded inline prototypes; local research notes with controller-owned map updates; coordinated concurrent file edits; preserve decision history; manual track choice and handoff
 handoff	mattpocock-skills	skills/productivity/handoff	imported	U	Compact session → handoff doc	verbatim
 wait-what	mattpocock-skills	skills/productivity/wait-what	imported	U	Re-pitch an explanation that did not land	verbatim
 improve-codebase-architecture	mattpocock-skills	skills/engineering/improve-codebase-architecture	imported	U	Deep-module sweep + report	verbatim
@@ -34,11 +34,12 @@ implement-spec	mattpocock-skills	skills/in-progress/implement-spec	dropped	-	-	d
 retro	mattpocock-skills	skills/in-progress/retro	dropped	-	-	dropped: in-progress workflow outside the curated tracks
 pr	mattpocock-skills	skills/engineering/pr	dropped	-	-	dropped: user handles PR bodies manually
 to-questionnaire	mattpocock-skills	skills/productivity/to-questionnaire	dropped	-	-	dropped: outside the curated engineering tracks
-ask-matt	mattpocock-skills	skills/engineering/ask-matt	dropped	-	-	dropped: replaced by how
+ask-matt	mattpocock-skills	skills/engineering/ask-matt	dropped	-	-	dropped: router not needed
 diagnosing-bugs	mattpocock-skills	skills/engineering/diagnosing-bugs	dropped	-	-	dropped: replaced by systematic-debugging
 prototype	mattpocock-skills	skills/engineering/prototype	dropped	-	-	dropped: not needed
 setup-matt-pocock-skills	mattpocock-skills	skills/engineering/setup-matt-pocock-skills	dropped	-	-	dropped: no tracker setup needed
 to-tickets	mattpocock-skills	skills/engineering/to-tickets	dropped	-	-	dropped: no issue tracker
 triage	mattpocock-skills	skills/engineering/triage	dropped	-	-	dropped: no issue tracker
-wayfinder	mattpocock-skills	skills/engineering/wayfinder	dropped	-	-	dropped: not needed
 teach	mattpocock-skills	skills/productivity/teach	dropped	-	-	dropped: not needed
+chief-of-staff	mattpocock-skills	skills/in-progress/chief-of-staff	dropped	-	-	dropped: long-running coordinator outside the curated tracks; proactive environment changes conflict with bounded scope
+how	-	-	dropped	-	-	dropped: user does not use the router

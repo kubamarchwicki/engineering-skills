@@ -23,7 +23,7 @@ My personal agent skill set — a deliberate hybrid of [obra/superpowers](https:
 
 Planning checks readiness and obtains independent design review, recording observable Ready/Provisional slices in `docs/plans/`. Execution records committed agreement and fixed review baselines, refines and executes Ready slices within agreed decisions, and uses four-concern task and whole-branch reviews plus applicable verification evidence before stopping.
 
-Lost? Type `/how`.
+For an effort too large for one session, optionally start with `$wayfinder` in Codex or `/wayfinder` in Claude. It keeps a local decision map and dependency-linked decision files under `docs/specs/<effort>/`, works one decision per session (research may run in parallel), and stops at the handoff to your chosen track.
 
 ## Conventions
 
@@ -45,7 +45,7 @@ The main evolution is toward **validating assumptions before implementation, pre
 | **Review feedback** | Feedback is classified into defects, assumptions, requirements, dependency capabilities, and preferences. Uncertainty blocks dependent work; independent work can continue. |
 | **Verification** | verification-before-completion (skills/verification-before-completion/SKILL.md:14) replaces “rerun in this message” with **applicable evidence**. Reuse requires inspectable output, tested state, relevant conditions, and clear limits. |
 | **Light execution** | `implement` records its starting revision and reviews the actual working-tree changes before committing. Verification becomes proportional to risk and project requirements. |
-| **Parallel delegation and routing** | Parallel work gains explicit dependency and shared-resource checks. `/how` reflects the new workflow while preserving the two tracks and manual stage transitions. |
+| **Parallel delegation** | Parallel work gains explicit dependency and shared-resource checks. |
 
 ## Install
 
@@ -74,13 +74,13 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 <!-- provenance:begin -->
 | Skill | Inv. | Role | Source | Changes |
 |---|---|---|---|---|
-| how | U | Router over the whole set | original | workflow descriptions for readiness, evidence, and four-concern review |
 | grill-me | U | Interview to align before building | mattpocock `skills/productivity/grill-me` | verbatim |
 | grill-with-docs | U | Grill + GLOSSARY.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
-| implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base |
+| implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base; omit upstream tracker-fetch requirement |
 | writing-plans | U | Evidence-backed plans → docs/plans/ | superpowers `skills/writing-plans` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff; readiness and independent design review; ADR/glossary sources; outcome verification; ready/provisional slices; design-reviewer prompt; ordered planning procedure; required plan-format reference; consolidated task contract |
 | subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts; committed agreement baseline; fixed execution review base; readiness-gated task extraction; per-task decision/evidence context; bounded consequential decisions; durable evidence and blocking completion gates; authoritative controller procedure; branch-triggered recovery and fix-loop references; disclosed workflow example |
 | using-git-worktrees | U | Optional isolation for heavy work | superpowers `skills/using-git-worktrees` | user-invoked |
+| wayfinder | U | Multi-session discovery map before either track | mattpocock `skills/engineering/wayfinder` | tracker operations → local map and decision files under `docs/specs/<effort>/`; local status, claim, dependency, and resolution conventions; glossary/ADR canonical links; planning-only scope; bounded inline prototypes; local research notes with controller-owned map updates; coordinated concurrent file edits; preserve decision history; manual track choice and handoff |
 | handoff | U | Compact session → handoff doc | mattpocock `skills/productivity/handoff` | verbatim |
 | wait-what | U | Re-pitch an explanation that did not land | mattpocock `skills/productivity/wait-what` | verbatim |
 | improve-codebase-architecture | U | Deep-module sweep + report | mattpocock `skills/engineering/improve-codebase-architecture` | verbatim |

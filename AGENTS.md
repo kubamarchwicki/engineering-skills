@@ -24,7 +24,7 @@ Preserve these decisions in every skill, script, and document:
 - Never auto-merge. After review and verification, stop. The user owns merging, sanity testing, and worktree cleanup.
 - There is no session-start bootstrap hook and no plugin or marketplace packaging. From each consuming project, install the set with `npx skills add https://github.com/kubamarchwicki/engineering-skills/tree/master/skills --skill '*' --agent codex --agent claude-code --yes`.
 - Artifact paths are fixed: `GLOSSARY.md` at the repository root, `docs/adr/`, `docs/specs/`, and numbered plans at `docs/plans/NNNN-<feature-name>.md`.
-- Keep inherited skill names unchanged. `how` is the only original distributed skill and is the router for the set.
+- Keep inherited skill names unchanged. The README documents the available tracks and commands.
 
 When a decision is genuinely needed, investigate facts first, then ask in plain prose one question at a time and lead with a recommendation. Do not use a multiple-choice question widget.
 
@@ -45,7 +45,7 @@ Imported content is verbatim by default. Make only the frontmatter changes, refe
 - Preserve deliberate upstream wording, including Superpowers' “your human partner” language.
 - Treat an expected occurrence-count or old-text mismatch in a plan as a stop signal. Inspect the pinned source and repository state; do not approximate the replacement.
 - User-invoked skills have `disable-model-invocation: true`; model-invoked skills do not.
-- When adding, removing, renaming, or rerouting a user-reachable skill, keep the `/how` map, provenance data, README, and installed set consistent.
+- When adding, removing, renaming, or rerouting a user-reachable skill, keep the README track map, provenance data, and installed set consistent.
 - Do not reintroduce dropped skill names, `superpowers:` prefixes, tracker-based flows, or `docs/superpowers/` paths. Run the reference sweep after relevant changes.
 
 ## Executing the plans
