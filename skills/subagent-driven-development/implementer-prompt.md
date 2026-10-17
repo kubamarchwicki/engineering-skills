@@ -39,8 +39,14 @@ Subagent (general-purpose):
     ## Your Job
 
     Once you're clear on requirements:
-    1. Implement exactly what the task specifies
-    2. Write tests (following TDD if task says to)
+    1. Call the Skill tool with "tdd" before implementation (or read and follow
+       its SKILL.md if the harness has no Skill tool). This is required for
+       every task and review fix, even when the task does not mention TDD.
+    2. Implement exactly what the task specifies using the skill's red → green
+       loop at pre-agreed seams. If seam agreement is missing, report
+       NEEDS_CONTEXT before behavioral implementation. For work that adds or
+       changes no testable behavior, such as prose-only edits, record why the
+       loop does not apply and run the task's applicable checks.
     3. Verify implementation works
     4. Commit your work
     5. Self-review (see below)
@@ -120,7 +126,7 @@ Subagent (general-purpose):
 
     **Testing:**
     - Do tests actually verify behavior (not just mock behavior)?
-    - Did I follow TDD if required?
+    - Did I invoke `tdd` and record the required TDD Evidence (see Report Format)?
     - Are tests comprehensive?
     - Is the test output pristine (no stray warnings or noise)?
 
@@ -142,9 +148,12 @@ Subagent (general-purpose):
     - Acceptance evidence using verification-before-completion's Evidence Record:
       command, exit status, tested state including relevant dirty changes,
       relevant conditions, output/log reference, acceptance criterion, and limits.
-    - **TDD Evidence** (if TDD was required for this task):
+    - **TDD Evidence** (required for every task and review fix):
+      - Skill invoked; agreed seams or why this task adds or changes no testable behavior
       - RED: command run, relevant failing output before implementation, and why the failure was expected
       - GREEN: command run and relevant passing output after implementation
+      - For work that adds or changes no testable behavior, mark RED/GREEN not
+        applicable and cite the applicable checks instead.
     - Current task/decision revision and invalidated evidence (with reasons)
     - Files changed
     - Self-review findings (if any)

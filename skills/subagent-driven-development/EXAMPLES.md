@@ -128,6 +128,7 @@ You: "The agreed ADR specifies user level (~/.config/superpowers/hooks/).
 If ownership were undecided, affected work would wait for the user decision."
 
 Implementer: [Later]
+  - Invoked tdd at the agreed command-line seam; recorded RED/GREEN evidence
   - Implemented install-hook command
   - Added tests, 5/5 passing
   - Self-review: Found I missed --force flag, added it
@@ -144,6 +145,7 @@ Task 2: Recovery modes
 [Require extraction exit 0; dispatch with the same constraints/decision/evidence context]
 
 Implementer: [No questions]
+  - Invoked tdd at the agreed recovery seam; recorded RED/GREEN evidence
   - Added verify/repair modes
   - 8/8 tests passing
   - Committed
@@ -168,7 +170,7 @@ Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
 ...
 
 [After all tasks]
-[Run review-package PLAN_FILE EXECUTION_BASE HEAD; dispatch a final whole-branch reviewer applying the code-review skill (Standards + Spec), most capable model]
+[Run review-package PLAN_FILE EXECUTION_BASE HEAD; controller invokes code-review with that fixed base and package; Standards + Spec reviewers use the most capable model]
 Final reviewers: four conclusions supported by agreement/evidence; no blocking gap.
 
 [If findings remain: one fix dispatch, one scoped re-review; blockers stay incomplete]

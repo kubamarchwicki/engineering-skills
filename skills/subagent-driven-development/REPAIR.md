@@ -20,7 +20,9 @@ Before the loop starts, two routes leave it immediately:
   changes before affected work resumes.
 
 Everything else enters the loop. A fix round is one fix dispatch plus one
-scoped re-review. Five rounds maximum per task:
+scoped re-review. Use [implementer-prompt.md](implementer-prompt.md) for fix
+dispatches, including its required `tdd` invocation and TDD Evidence report.
+Five rounds maximum per task:
 
 **Rounds 1-3 — resume the original implementer.** Send it the open findings
 verbatim. Its context is intact: it knows the task, the code, and its own

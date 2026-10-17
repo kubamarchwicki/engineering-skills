@@ -79,8 +79,10 @@ Subagent (general-purpose):
     Use verification-before-completion to assess Evidence Records: criterion,
     claim scope, tested state including dirty changes, output, conditions, and
     limits. Reuse evidence only while applicable; changed relevant inputs
-    invalidate affected conclusions. The implementer reports applicable runs
-    and TDD evidence when required. Do not re-run the suite to confirm their
+    invalidate affected conclusions. Check that the report records `tdd`
+    invocation, plus RED/GREEN results at agreed seams or a justified
+    non-applicability reason with applicable checks. Missing evidence is an
+    Evidence gap. Do not re-run the suite to confirm their
     report. Run a test only when reading the code raises a specific doubt
     that no existing run answers — and then a focused test, never a
     package-wide suite, race detector run, or repeated/high-count loop. If

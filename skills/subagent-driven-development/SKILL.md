@@ -167,7 +167,10 @@ and fix-round diffs need it.
 - Record the implementer's agent identity from the dispatch result —
   fix-loop rounds 1-3 resume this agent.
 
-Template: [implementer-prompt.md](implementer-prompt.md)
+Use [implementer-prompt.md](implementer-prompt.md) for every implementation
+and fix dispatch. Its `tdd` skill invocation is mandatory even when the task
+does not mention TDD. Supply the pre-agreed test seams; resolve missing seam
+agreement with your human partner before behavioral implementation begins.
 
 ### 3. Handle the report
 
@@ -270,9 +273,12 @@ steps 2–6 for remaining Ready tasks; unresolved work stays visible.
 ### 7. Review the whole branch
 
 After all tasks are complete, generate a package from the fixed Execution
-base. Dispatch on the most capable
-available model, applying `code-review` for its Standards and Spec axes. Both
-final reviewers receive applicable agreement, decision/source revisions,
+base. The controller MUST call the Skill tool with "code-review" (or read and
+follow its SKILL.md if the harness has no Skill tool), supplying that fixed
+revision and the whole-branch review package. Run its Standards and Spec
+reviewers on the most capable available model. Per-task reviews do not replace
+this required skill invocation. Both final reviewers receive applicable
+agreement, decision/source revisions,
 acceptance evidence, and unresolved/deferred findings from the durable plan.
 Require four supported conclusions: implementation correctness, design validity,
 evidence quality, and scope and standards.
