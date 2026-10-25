@@ -1,0 +1,24 @@
+name: Upstream update needed
+
+on:
+  schedule:
+    # Daily at 07:23 UTC, away from the busy start of the hour.
+    - cron: '23 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-upstream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+          persist-credentials: false
+      - name: Check submodule pins, cleanliness, and upstream heads
+        env:
+          GIT_TERMINAL_PROMPT: '0'
+        run: bash scripts/check-upstream.sh
