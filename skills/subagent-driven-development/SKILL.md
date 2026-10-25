@@ -272,14 +272,20 @@ steps 2–6 for remaining Ready tasks; unresolved work stays visible.
 
 ### 7. Review the whole branch
 
-After all tasks are complete, generate a package from the fixed Execution
-base. The controller MUST call the Skill tool with "code-review" (or read and
+After all tasks are complete, the controller MUST invoke `test-audit` (or read
+and follow its SKILL.md if the harness has no Skill tool) from the fixed Execution
+base. Record its scope, findings, dispositions, and proof in the plan. Route
+blocking findings through the affected task's repair workflow; refresh affected
+audit evidence after repairs. Proceed only when tasks and audit gates are satisfied.
+
+Then generate a package from the fixed Execution base including audit repairs.
+The controller MUST call the Skill tool with "code-review" (or read and
 follow its SKILL.md if the harness has no Skill tool), supplying that fixed
 revision and the whole-branch review package. Run its Standards and Spec
 reviewers on the most capable available model. Per-task reviews do not replace
 this required skill invocation. Both final reviewers receive applicable
 agreement, decision/source revisions,
-acceptance evidence, and unresolved/deferred findings from the durable plan.
+acceptance evidence, the test-audit report, and unresolved/deferred findings from the durable plan.
 Require four supported conclusions: implementation correctness, design validity,
 evidence quality, and scope and standards.
 
@@ -300,6 +306,7 @@ Before scratch cleanup, maintain this section in the plan:
 - Task refinements: [task, decision/source revision, finding, disposition, reason]
 - Acceptance evidence: [criterion, command, exit status, tested state including
   relevant dirty changes, relevant conditions, output/stable reference, limits]
+- Test audit: [scope, audited state, retained proof, findings/dispositions, limits]
 - Review conclusions: [four concerns, evidence, unresolved/deferred findings]
 ```
 

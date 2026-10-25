@@ -13,6 +13,10 @@ decision sources.
 
 Call the Skill tool with "tdd" where possible, at pre-agreed seams.
 
+Before final review, invoke `test-audit` (read and follow its SKILL.md if no
+Skill tool is available) on the change from the recorded starting revision.
+Resolve blocking audit findings and supply the audit report to code-review.
+
 Call the Skill tool with "code-review" on that working-tree change before committing. Resolve
 findings and verify that the reviewed state still matches the change committed.
 

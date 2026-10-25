@@ -19,15 +19,15 @@ Run this maintenance workflow from the `engineering-skills` checkout, either the
 
 Initialize this checkout's pinned submodules before invoking the updater:
 
-    git submodule update --init --recursive mattpocock-skills superpowers
+    git submodule update --init --recursive mattpocock-skills superpowers openclaw
 
-For each submodule, compare `git -C <submodule> rev-parse HEAD` with `git rev-parse HEAD:<submodule>` and require an exact match. If initialization fails or either SHA differs from its recorded gitlink, stop and report the mismatch; do not fetch or merge.
+For each submodule, compare `git -C <submodule> rev-parse HEAD` with `git rev-parse HEAD:<submodule>` and require an exact match. If initialization fails or any SHA differs from its recorded gitlink, stop and report the mismatch; do not fetch or merge.
 
 ## 2. Mechanical merge
 
-Run `scripts/update-from-upstream.sh` from the repo root. It fetches both submodules and three-way-merges every imported skill (base = pinned submodule SHA, ours = the `skills/` copy, theirs = upstream HEAD) into the working tree, uncommitted. Its report lines: `ok`/`=` (merged/unchanged), `CONFLICT:` (markers left in the file), `+`/`-`/`!` (file added/deleted/needs attention), `ATTENTION` (source path gone: rename or deletion), `NEW-CANDIDATE:` (upstream skill we've never seen), `ERROR:` (operational/binary merge failure; local file preserved), `SUMMARY:` (totals).
+Run `scripts/update-from-upstream.sh` from the repo root. It fetches all three submodules and three-way-merges every imported skill (base = pinned submodule SHA, ours = the `skills/` copy, theirs = upstream HEAD) into the working tree, uncommitted. Its report lines: `ok`/`=` (merged/unchanged), `CONFLICT:` (markers left in the file), `+`/`-`/`!` (file added/deleted/needs attention), `ATTENTION` (source path gone: rename or deletion), `NEW-CANDIDATE:` (upstream skill we've never seen), `ERROR:` (operational/binary merge failure; local file preserved), `SUMMARY:` (totals).
 
-If it aborts on a dirty working tree, stop and tell the user. If it exits nonzero after reporting `ERROR:`, stop and tell the user; do not enter the walk-through or close-out until the error is resolved. If both submodules report `up to date`, say so and stop — there is nothing to walk through.
+If it aborts on a dirty working tree, stop and tell the user. If it exits nonzero after reporting `ERROR:`, stop and tell the user; do not enter the walk-through or close-out until the error is resolved. If all three submodules report `up to date`, say so and stop — there is nothing to walk through.
 
 ## 3. Understand before narrating
 

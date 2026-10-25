@@ -4,3 +4,6 @@
 [submodule "superpowers"]
 	path = superpowers
 	url = git@github.com:obra/superpowers.git
+[submodule "openclaw"]
+	path = openclaw
+	url = https://github.com/openclaw/openclaw.git

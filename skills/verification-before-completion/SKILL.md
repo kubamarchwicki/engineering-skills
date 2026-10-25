@@ -48,6 +48,14 @@ Run focused checks during development. Broaden verification for integration
 risk, changed scope, failures, or required project gates. A focused check
 supports only its covered claim.
 
+## Final test audit
+
+Before final code-review in an implementation workflow, use `test-audit` on
+the change from the recorded base. Pass its findings, dispositions, and proof
+to the reviewers. At completion, verify that the audit still covers the current
+tests and behavior; refresh affected evidence after review fixes. Reuse an
+applicable audit report. A no-applicable-tests result must name the inspected scope.
+
 ## Common Failures
 
 | Claim | Requires | Not Sufficient |

@@ -1,6 +1,6 @@
 # engineering-skills
 
-My personal agent skill set — a deliberate hybrid of [obra/superpowers](https://github.com/obra/superpowers) and [mattpocock/skills](https://github.com/mattpocock/skills), designed 2026-07-13. Design record: `docs/plans/0001-bootstrap-engineering-skills.md` and the grilling session behind it.
+My personal agent skill set — a deliberate hybrid of [obra/superpowers](https://github.com/obra/superpowers) and [mattpocock/skills](https://github.com/mattpocock/skills), with test auditing from [openclaw/openclaw](https://github.com/openclaw/openclaw). Designed 2026-07-13. Design record: `docs/plans/0001-bootstrap-engineering-skills.md` and the grilling session behind it.
 
 **The contract:** two tracks, manual gear shifts. I pick the track; skills never decide for me. No session-start bootstrap, no auto-chaining, and nothing ever merges automatically — verification runs, then the system stops and the branch is mine.
 
@@ -9,7 +9,7 @@ My personal agent skill set — a deliberate hybrid of [obra/superpowers](https:
 **Light** — small changes, single issues, inline on the current branch:
 
 ```
-/grill-me  →  /implement   (tdd at agreed seams → code-review → verification-before-completion → commit)
+/grill-me  →  /implement   (tdd at agreed seams → test-audit → code-review → verification-before-completion → commit)
 ```
 
 **Heavy** — features and multi-step work:
@@ -17,11 +17,11 @@ My personal agent skill set — a deliberate hybrid of [obra/superpowers](https:
 ```
 /grill-with-docs  →  [/using-git-worktrees]  →  /writing-plans  →  /subagent-driven-development
                                                 docs/plans/       committed baseline,
-                                                                  Ready slices, four-concern review,
+                                                                  Ready slices, test-audit, four-concern review,
                                                                   applicable evidence, then STOP
 ```
 
-Planning checks readiness and obtains independent design review, recording observable Ready/Provisional slices in `docs/plans/`. Execution records committed agreement and fixed review baselines, refines and executes Ready slices within agreed decisions, and uses four-concern task and whole-branch reviews plus applicable verification evidence before stopping. Implementers must invoke `tdd` at pre-agreed seams; the controller must invoke `code-review` for the final whole-branch review.
+Planning checks readiness and obtains independent design review, recording observable Ready/Provisional slices in `docs/plans/`. Execution records committed agreement and fixed review baselines, refines and executes Ready slices within agreed decisions, and uses four-concern task and whole-branch reviews plus applicable verification evidence before stopping. Implementers must invoke `tdd` at pre-agreed seams; the controller must invoke `test-audit` before `code-review` for the final whole-branch review. Both tracks pass audit findings and retained test proof into final review, refreshing affected evidence after repairs. The audit stays within the change's scope; whole-subsystem pruning requires an explicit request.
 
 For an effort too large for one session, optionally start with `$wayfinder` in Codex or `/wayfinder` in Claude. It keeps a local decision map and dependency-linked decision files under `docs/specs/<effort>/`, works one decision per session (research may run in parallel), and stops at the handoff to your chosen track.
 
@@ -76,9 +76,9 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 |---|---|---|---|---|
 | grill-me | U | Interview to align before building | mattpocock `skills/productivity/grill-me` | verbatim |
 | grill-with-docs | U | Grill + GLOSSARY.md/ADRs inline | mattpocock `skills/engineering/grill-with-docs` | verbatim |
-| implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base; omit upstream tracker-fetch requirement |
+| implement | U | Light-track build | mattpocock `skills/engineering/implement` | + verification-before-completion gate; applicable evidence and proportionate checks; working-tree review from recorded base; omit upstream tracker-fetch requirement; test-audit before final code-review with audit evidence |
 | writing-plans | U | Evidence-backed plans → docs/plans/ | superpowers `skills/writing-plans` | user-invoked; optional worktree; docs/plans path; grilling refs; SDD-only handoff; readiness and independent design review; ADR/glossary sources; outcome verification; ready/provisional slices; design-reviewer prompt; ordered planning procedure; required plan-format reference; consolidated task contract |
-| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts; committed agreement baseline; fixed execution review base; readiness-gated task extraction; per-task decision/evidence context; bounded consequential decisions; durable evidence and blocking completion gates; authoritative controller procedure; branch-triggered recovery and fix-loop references; disclosed workflow example; mandatory tdd invocation and evidence for task/fix implementers; mandatory controller code-review invocation |
+| subagent-driven-development | U | Heavy-track execution engine | superpowers `skills/subagent-driven-development` | user-invoked; optional worktree; no alternate executor; docs/plans examples; code-review axes; verification gate; stop-before-merge; evidence records and proportionate checks in implementer prompt; four-concern task and scoped re-review prompts; committed agreement baseline; fixed execution review base; readiness-gated task extraction; per-task decision/evidence context; bounded consequential decisions; durable evidence and blocking completion gates; authoritative controller procedure; branch-triggered recovery and fix-loop references; disclosed workflow example; mandatory tdd invocation and evidence for task/fix implementers; mandatory controller code-review invocation; test-audit gate before final whole-branch review; durable audit evidence and scoped refresh after repairs; audit workflow illustrations |
 | using-git-worktrees | U | Optional isolation for heavy work | superpowers `skills/using-git-worktrees` | user-invoked |
 | wayfinder | U | Multi-session discovery map before either track | mattpocock `skills/engineering/wayfinder` | tracker operations → local map and decision files under `docs/specs/<effort>/`; local status, claim, dependency, and resolution conventions; glossary/ADR canonical links; planning-only scope; bounded inline prototypes; local research notes with controller-owned map updates; coordinated concurrent file edits; preserve decision history; manual track choice and handoff |
 | handoff | U | Compact session → handoff doc | mattpocock `skills/productivity/handoff` | verbatim |
@@ -87,9 +87,10 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 | writing-for-agents | M | Guidance for documents agents consume | mattpocock `skills/productivity/writing-for-agents` | verbatim |
 | grilling | M | The reusable interview loop | mattpocock `skills/productivity/grilling` | outcome and ownership investigation; bounded experiments; explicit consequential decisions |
 | tdd | M | Seams-based red-green loop | mattpocock `skills/engineering/tdd` | verbatim |
-| code-review | M | Two reviewers covering correctness, design, evidence, and standards | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup; four concerns across existing reviewers; ADR/plan agreement sources; working-tree and untracked review |
+| test-audit | M | Test quality audit before final review | openclaw `.agents/skills/test-audit` | boundary guide → tdd; proof policy → verification-before-completion; project-specific test/dead-code gates; autoreview → caller-owned code-review; scoped final audit and evidence refresh; campaign integration remains user-owned |
+| code-review | M | Two reviewers covering correctness, design, evidence, and standards | mattpocock `skills/engineering/code-review` | tracker setup/spec lookup → local spec lookup; four concerns across existing reviewers; ADR/plan agreement sources; working-tree and untracked review; final implementation review consumes applicable test-audit evidence |
 | receiving-code-review | M | Rigor when subagent review feedback arrives | superpowers `skills/receiving-code-review` | description rescoped; feedback classification; dependency-scoped decisions; durable updates; consolidated feedback procedure and factual-response policy; branch-triggered examples and inline-reply reference |
-| verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | applicable evidence reuse; risk-based check scope; inspectable evidence records |
+| verification-before-completion | M | Universal completion gate | superpowers `skills/verification-before-completion` | applicable evidence reuse; risk-based check scope; inspectable evidence records; final test-audit before review; validate audit evidence after repairs |
 | systematic-debugging | M | 4-phase root-cause debugging | superpowers `skills/systematic-debugging` | refs → tdd, verification-before-completion |
 | dispatching-parallel-agents | M | Concurrent subagent workflows | superpowers `skills/dispatching-parallel-agents` | independence and shared-resource checklist; isolated outcome-based briefs; concurrency-slot dispatch; disclosed examples; applicable integration verification; manual stage boundary |
 | domain-modeling | M | Glossary + ADR discipline | mattpocock `skills/engineering/domain-modeling` | ADR supersession; glossary/ADR/plan responsibility split |
@@ -99,7 +100,7 @@ U = user-invoked (explicit command) · M = model-invoked (fires on its own)
 
 ## Sources
 
-`superpowers/` and `mattpocock-skills/` are git submodules pinning the exact upstream commits these skills were imported from. Diff any skill against its source to see the full delta:
+`superpowers/`, `mattpocock-skills/`, and `openclaw/` are git submodules pinning the exact upstream commits these skills were imported from. Diff any skill against its source to see the full delta:
 
 ```bash
 diff -r superpowers/skills/writing-plans skills/writing-plans

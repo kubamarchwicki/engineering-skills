@@ -16,20 +16,22 @@ cd "$REPO"
 
 TO_MATTPOCOCK=""
 TO_SUPERPOWERS=""
+TO_OPENCLAW=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --to)
       case "${2:-}" in
         mattpocock-skills=*) TO_MATTPOCOCK="${2#*=}" ;;
         superpowers=*)       TO_SUPERPOWERS="${2#*=}" ;;
-        *) echo "usage: $0 [--to <mattpocock-skills|superpowers>=<committish>]..." >&2; exit 2 ;;
+        openclaw=*)          TO_OPENCLAW="${2#*=}" ;;
+        *) echo "usage: $0 [--to <mattpocock-skills|superpowers|openclaw>=<committish>]..." >&2; exit 2 ;;
       esac
       shift 2 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
 
-SUBMODULE_INIT_COMMAND="git submodule update --init --recursive mattpocock-skills superpowers"
+SUBMODULE_INIT_COMMAND="git submodule update --init --recursive mattpocock-skills superpowers openclaw"
 validate_submodule_worktree() {
   local submodule_path="$1" expected_top_level actual_top_level actual_top_level_canonical
   expected_top_level="$(cd "$REPO/$submodule_path" 2>/dev/null && pwd -P || true)"
@@ -47,6 +49,7 @@ validate_submodule_worktree() {
 
 validate_submodule_worktree mattpocock-skills
 validate_submodule_worktree superpowers
+validate_submodule_worktree openclaw
 
 if [ -n "$(git status --porcelain skills/ provenance.tsv)" ]; then
   echo "ABORT: skills/ or provenance.tsv has uncommitted changes - commit or restore first" >&2
@@ -427,6 +430,7 @@ merge_submodule() {
 
 merge_submodule mattpocock-skills "$TO_MATTPOCOCK"
 merge_submodule superpowers "$TO_SUPERPOWERS"
+merge_submodule openclaw "$TO_OPENCLAW"
 
 echo
 echo "SUMMARY: conflicts=$total_conflicts attention=$total_attention new-candidates=$total_candidates"

@@ -54,6 +54,7 @@ digraph process {
 
     "Setup: committed baselines, readiness, constraints, pre-flight review" [shape=box];
     "More tasks remain?" [shape=diamond];
+    "Run test-audit; resolve blockers through task repair; preserve audit evidence" [shape=box];
     "Final review from fixed Execution base with agreement/evidence" [shape=box];
     "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" [shape=box];
     "Preserve durable evidence; assess gates; clean eligible scratch" [shape=box];
@@ -84,7 +85,8 @@ digraph process {
     "Record evidenced rejection or non-blocking deferral" -> "Acceptance and all four conclusions supported?";
     "Append completion to ledger, mark todo complete" -> "More tasks remain?";
     "More tasks remain?" -> "Setup: committed baselines, readiness, constraints, pre-flight review" [label="yes"];
-    "More tasks remain?" -> "Final review from fixed Execution base with agreement/evidence" [label="no"];
+    "More tasks remain?" -> "Run test-audit; resolve blockers through task repair; preserve audit evidence" [label="no"];
+    "Run test-audit; resolve blockers through task repair; preserve audit evidence" -> "Final review from fixed Execution base with agreement/evidence" [label="audit gates satisfied"];
     "Final review from fixed Execution base with agreement/evidence" -> "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals";
     "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" -> "Unresolved: block affected work; obtain consequential decision" [label="blocking gap"];
     "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" -> "Preserve durable evidence; assess gates; clean eligible scratch" [label="acceptance and four conclusions supported"];
@@ -170,10 +172,11 @@ Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
 ...
 
 [After all tasks]
+[Invoke test-audit from fixed Execution base; repair blockers and preserve current audit evidence]
 [Run review-package PLAN_FILE EXECUTION_BASE HEAD; controller invokes code-review with that fixed base and package; Standards + Spec reviewers use the most capable model]
 Final reviewers: four conclusions supported by agreement/evidence; no blocking gap.
 
-[If findings remain: one fix dispatch, one scoped re-review; blockers stay incomplete]
+[If findings remain: one fix dispatch, refresh affected test-audit evidence, one scoped re-review; blockers stay incomplete]
 
 [Commit durable plan decisions/evidence before deleting their only scratch source]
 [Apply verification-before-completion; assess all accepted outcomes and required gates]

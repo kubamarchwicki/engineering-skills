@@ -74,6 +74,11 @@ Issue both sub-agent calls together, in the foreground, and aggregate the report
 
 Give both reviewers the same actual change artifact, agreement and constraints, baseline/current references when available, and Evidence Records. Include the selected mode, resolved fixed point, task paths, reviewed state, and committed-mode commit list when applicable.
 
+For final implementation review, include the preceding `test-audit` report.
+Check that its scope and tested state cover this change, including any audit
+repairs. Missing or stale audit evidence is an Evidence gap for the controller
+to resolve before completion; reviewers do not launch a recursive audit/review.
+
 Give Standards the standards sources and the full smell baseline from step 3; preserve repo overrides and the distinction between standards and heuristics.
 
 Standards reviewer:
