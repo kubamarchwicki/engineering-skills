@@ -18,7 +18,7 @@ jobs:
         with:
           submodules: true
           persist-credentials: false
-      - name: Check submodule pins, cleanliness, and upstream heads
+      - name: Check submodule pins, cleanliness, and imported skill changes
         env:
           GIT_TERMINAL_PROMPT: '0'
         run: bash scripts/check-upstream.sh
