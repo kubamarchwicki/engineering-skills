@@ -4,11 +4,11 @@ Required when any of the four review concerns has a blocking finding: a
 Critical/Important issue or a controller-confirmed real gap. Apply this
 procedure for task repairs and breaker adjudication. For final review, use
 its evidence, scoped re-review, and disposition rules with the one-wave cap
-in SKILL.md; the five-round task schedule does not apply.
+in [final-review.md](final-review.md); the five-round task schedule does not apply.
 
 Before the loop starts, two routes leave it immediately:
 
-- Record Minor findings in the progress ledger as you go
+- Record Minor findings in the progress ledger and durable plan as you go
   (`Task <N>: minor (deferred): <one-liner>`), and point the final
   whole-branch review at that list so it can triage which must be fixed
   before merge. Defer only findings that do not invalidate accepted outcomes. A roll-up nobody reads is a silent discard. Minor findings
@@ -20,7 +20,7 @@ Before the loop starts, two routes leave it immediately:
   changes before affected work resumes.
 
 Everything else enters the loop. A fix round is one fix dispatch plus one
-scoped re-review. Use [implementer-prompt.md](implementer-prompt.md) for fix
+scoped re-review. Use [implementer-prompt.md](../implementer-prompt.md) for fix
 dispatches, including its required `tdd` invocation and TDD Evidence report.
 Five rounds maximum per task:
 
@@ -31,7 +31,7 @@ dispatch a fresh implementer carrying the brief path, the report-file path,
 and the findings — the report file is the persistent memory either way.
 
 **Rounds 4-5 — dispatch a fresh implementer on a more capable model** (per
-Model Selection), with the brief path, the report-file path, the open
+SKILL.md's Model Selection), with the brief path, the report-file path, the open
 findings, and this framing: "A prior implementer attempted this task
 [N] times; you own it now. Read the report file for what was tried." A loop
 that survives three resumes usually means the implementer cannot see its
@@ -48,7 +48,7 @@ affected `test-audit` evidence before scoped re-review and include it in the rep
 
 **The re-review is scoped.** Run `bash scripts/review-package PLAN_FILE FIX_BASE HEAD`
 where FIX_BASE is the head the previous review saw, and dispatch
-[re-review-prompt.md](re-review-prompt.md) with the findings list, the
+[re-review-prompt.md](../re-review-prompt.md) with the findings list, the
 brief, the report file, and the printed diff path. The re-reviewer verdicts
 each finding ADDRESSED or NOT ADDRESSED and flags new breakage in the fix
 diff only, reassessing the affected four conclusions. New Critical/Important

@@ -1,7 +1,8 @@
 # Workflow illustrations
 
-The numbered sequence in [SKILL.md](SKILL.md) is authoritative. Consult these
-illustrations when you need a diagram or a worked example of that sequence.
+The numbered sequence in [SKILL.md](SKILL.md) and its required references are
+authoritative. Consult these illustrations when you need a diagram or a worked
+example of that sequence.
 
 ## When to Use
 

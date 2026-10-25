@@ -12,8 +12,9 @@ isolated task context; subagents never inherit your session history. Use for
 mostly independent tasks; without a plan or with tightly coupled tasks, use
 manual execution or grill first.
 
-The numbered sequence below is authoritative. For diagrams or a worked
-example, consult [EXAMPLES.md](EXAMPLES.md).
+The numbered sequence below and its required references are authoritative.
+Read each reference when its stated condition applies. For diagrams or a
+worked example, consult [EXAMPLES.md](EXAMPLES.md).
 
 **Narration:** between tool calls, narrate at most one short line — the ledger
 and tool results carry the record.
@@ -33,11 +34,11 @@ repeated dispatch; it does not satisfy an unmet requirement.
 
 ## Dispatch rules
 
-Batch small independent edits of the same kind into one brief listing every
-file and change; review the batch as one unit. Use separate dispatches when
-work needs its own judgment, tests, or review surface. Never dispatch multiple
-implementation subagents in parallel. Workers never spawn helpers or reviewers;
-the controller supplies each review seat.
+**Batching:** when the plan lists small independent edits of the same kind,
+read [references/batching.md](references/batching.md) before dispatch.
+
+Never dispatch multiple implementation subagents in parallel. Workers never
+spawn helpers or reviewers; the controller supplies each review seat.
 
 Hand artifacts over as files. Every dispatch contains only its task, relevant
 interfaces/decisions, and Global Constraints; accumulated session history stays
@@ -81,14 +82,11 @@ Track progress in a ledger, not only todos. Run this skill's
 `<repo-root>/.superpowers/sdd/` directory owns this plan's ledger, briefs,
 reports, and packages. Another plan's workspace is never yours to read or write.
 
-Check `<workspace>/progress.md` first; create it only when absent, with first line
-`# SDD ledger — plan: <plan file path>`. For a matching identity,
-`Task <N>: complete` means DONE: never re-dispatch it. Resume at the first
-incomplete task; a last fix-round line resumes at the next round. Leave a
-mismatched ledger or old flat `.superpowers/sdd/progress.md` alone.
-**Recovery:** after compaction, resumed execution, identity mismatch, or scratch
-loss, you MUST read [RECOVERY.md](RECOVERY.md) before dispatch. Trust the ledger
-and git history; `git clean -fdx` destroys this scratch workspace.
+Check `<workspace>/progress.md` first. If it exists, or after compaction,
+resumed execution, identity mismatch, or scratch loss, you MUST read
+[references/resuming.md](references/resuming.md) before dispatch.
+Create the ledger only when absent, with first line
+`# SDD ledger — plan: <plan file path>`.
 
 Read the plan's outcomes, verification criteria, Global Constraints, and
 decision sources: applicable glossary/ADRs and any optional spec. Resolve
@@ -118,25 +116,9 @@ relevant assumptions/evidence, exact interfaces, and verification steps.
 Supply applicable Global Constraints with the brief. Legacy tasks without
 Status require the same readiness assessment and context.
 
-Before dispatching Task 1, scan the plan once for conflicts, writing down
-what you checked as you check it:
-
-- tasks that contradict each other or the plan's Global Constraints
-- anything the plan explicitly mandates that the review rubric treats as a
-  defect (a test that asserts nothing, verbatim duplication of a logic block)
-
-The scan's output is a table, not a verdict. One row for every pair of tasks
-that share a file or an interface: the two tasks, what one produces against
-what the other consumes, and what you found. One row for every task: whether
-its own text agrees with itself — the tests it specifies against the code it
-specifies, the files it creates against the files it later touches. "The scan
-is clean" without those rows is not a scan you ran.
-
-Write the table to the ledger and record Provisional interfaces as unresolved
-dependencies. Investigate each finding; update routine inconsistencies in the
-plan, and obtain the user decision for consequential conflicts before affected
-work proceeds. Dispatch only semantically Ready tasks. The review loop remains
-the net for conflicts that only emerge from implementation.
+Before dispatching Task 1, read
+[references/preflight.md](references/preflight.md) and run its conflict scan.
+Resolve consequential findings before affected work proceeds.
 
 ### 2. Dispatch the implementer
 
@@ -178,17 +160,9 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 
 **DONE:** Proceed to task review.
 
-**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
-
-**NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
-
-**BLOCKED:** The implementer cannot complete the task. Assess the blocker:
-1. If it's a context problem, provide more context and re-dispatch with the same model
-2. If the task requires more reasoning, re-dispatch with a more capable model
-3. If the task is too large, break it into smaller pieces
-4. If the plan itself is wrong, classify and investigate the defect; update routine details or obtain the consequential user decision before redispatch. Record the disposition in the plan and ledger.
-
-**Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
+**Any other status** (DONE_WITH_CONCERNS, NEEDS_CONTEXT, BLOCKED): read
+[references/handling-reports.md](references/handling-reports.md) and follow
+it, every time you get one.
 
 If the implementer asks questions — before starting or mid-task — answer
 clearly and completely, provide additional context if needed, and don't
@@ -226,39 +200,23 @@ needed.
   loop. If the prompt you are writing contains "do not flag," "don't treat X
   as a defect," "at most Minor," or "the plan chose" — stop: you are
   pre-judging, usually to spare yourself a review loop.
-The task reviewer may report "⚠️ Cannot verify from diff" items — requirements
-that live in unchanged code or span tasks. These do not block the rest of the
-review, but you must resolve each one yourself before marking the task
-complete: you hold the plan and cross-task context the reviewer
-lacks. If you confirm an item is a real gap, treat it as a blocking finding
-in the affected review concern — it enters the fix loop with the other findings.
+
+If the reviewer reports "⚠️ Cannot verify from diff" items, read
+[references/cannot-verify.md](references/cannot-verify.md) and resolve each
+item before marking the task complete.
 
 Template: [task-reviewer-prompt.md](task-reviewer-prompt.md)
 
 ### 5. Repair blocking findings
 
 A blocking finding in any of the four concerns — a Critical/Important issue or
-a controller-confirmed real gap — triggers repair. Before a task repair, final
-repair wave, or adjudication of residual findings, you MUST read
-[REPAIR.md](REPAIR.md) and follow its evidence and scoped re-review procedure.
+a controller-confirmed real gap — triggers repair. Before every task fix round,
+final repair wave, or adjudication of residual findings, you MUST read
+[references/fix-loop.md](references/fix-loop.md) and follow it. Read it again
+before each round; do not rely on memory after compaction.
 
-A task has at most five rounds, each one fix dispatch plus one scoped re-review.
-Rounds 1–3 resume the original implementer (fresh only if the harness cannot
-resume); rounds 4–5 use a fresh implementer at least one model tier higher.
-Record each round in the ledger. The controller never fixes code itself.
-
-Record Minor findings in the ledger and durable plan for final-review triage;
-defer only non-blocking items that leave accepted outcomes valid. Investigate
-plan-mandated or plan-conflicting findings under receiving-code-review; update
-routine details or obtain consequential user decisions before affected work
-resumes. A ruling cannot override agreed outcomes or ADRs.
-
-After round 5, stop dispatching and adjudicate every open finding: reject
-unsupported findings with inspectable evidence and both sides recorded; defer
-real non-blocking findings with reason, evidence, and limits; preserve real
-blocking findings as unresolved. Record dispositions in the plan and ledger.
-Blocked tasks and dependants remain incomplete; unrelated Ready work may
-continue. Caps never waive acceptance, and findings never disappear silently.
+A retry cap ends dispatch, never acceptance requirements. Unresolved blocking
+findings leave affected work and its dependants incomplete.
 
 ### 6. Complete the task
 
@@ -272,54 +230,14 @@ steps 2–6 for remaining Ready tasks; unresolved work stays visible.
 
 ### 7. Review the whole branch
 
-After all tasks are complete, the controller MUST invoke `test-audit` (or read
-and follow its SKILL.md if the harness has no Skill tool) from the fixed Execution
-base. Record its scope, findings, dispositions, and proof in the plan. Route
-blocking findings through the affected task's repair workflow; refresh affected
-audit evidence after repairs. Proceed only when tasks and audit gates are satisfied.
-
-Then generate a package from the fixed Execution base including audit repairs.
-The controller MUST call the Skill tool with "code-review" (or read and
-follow its SKILL.md if the harness has no Skill tool), supplying that fixed
-revision and the whole-branch review package. Run its Standards and Spec
-reviewers on the most capable available model. Per-task reviews do not replace
-this required skill invocation. Both final reviewers receive applicable
-agreement, decision/source revisions,
-acceptance evidence, the test-audit report, and unresolved/deferred findings from the durable plan.
-Require four supported conclusions: implementation correctness, design validity,
-evidence quality, and scope and standards.
-
-If findings remain, follow [REPAIR.md](REPAIR.md): dispatch ONE fix subagent with
-the complete findings list and run exactly one scoped re-review of that wave
-using FIX_BASE. Apply the breaker dispositions to residual findings. There is
-no second fix wave; real blocking findings mean incomplete work. Report
-unresolved work and consequential decisions to your human partner.
+After all tasks are complete, read
+[references/final-review.md](references/final-review.md) and follow its
+test-audit, whole-branch code-review, and scoped repair procedure from the
+fixed Execution base.
 
 ### 8. Preserve evidence, assess gates, and stop
 
-Before scratch cleanup, maintain this section in the plan:
-
-```markdown
-## Execution record
-- Agreement baseline: [revision and document paths]
-- Execution base: [fixed revision]
-- Task refinements: [task, decision/source revision, finding, disposition, reason]
-- Acceptance evidence: [criterion, command, exit status, tested state including
-  relevant dirty changes, relevant conditions, output/stable reference, limits]
-- Test audit: [scope, audited state, retained proof, findings/dispositions, limits]
-- Review conclusions: [four concerns, evidence, unresolved/deferred findings]
-```
-
-Preserve relevant output or sufficient inspectable summaries; links to
-soon-deleted scratch are insufficient. Preserve additional logs where the
-claim needs them. Commit agreed plan/evidence updates during task/fix
-bookkeeping before deleting their only scratch source. Substantive decisions
-follow ADR supersession. After scratch loss, recover from committed documents
-and durable evidence, using git history and recorded baselines.
-
-Apply verification-before-completion and assess accepted outcomes and required
-gates against current applicable evidence before cleanup. Branch Ready requires
-supported accepted outcomes and all required gates with no blocking gap.
-Only then delete eligible scratch for this plan, leaving sibling workspaces
-alone. Report actual completion, deferred limits, and unresolved work, and stop.
-Merging, sanity testing, and Git-worktree cleanup belong to your human partner.
+Follow [the finish procedure](references/final-review.md#preserve-evidence-assess-gates-and-stop)
+before cleanup or reporting completion. Preserve durable evidence, apply
+verification-before-completion, and stop. Merging, sanity testing, and
+Git-worktree cleanup belong to your human partner.

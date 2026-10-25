@@ -1,4 +1,4 @@
-# Recovery
+# Resuming and Recovery
 
 Required after compaction, a resumed execution, ledger identity mismatch, or
 scratch loss. Use the ledger and git history rather than recollection.
