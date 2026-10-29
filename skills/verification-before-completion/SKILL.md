@@ -48,13 +48,14 @@ Run focused checks during development. Broaden verification for integration
 risk, changed scope, failures, or required project gates. A focused check
 supports only its covered claim.
 
-## Final test audit
+## Final implementation reviews
 
-Before final code-review in an implementation workflow, use `test-audit` on
-the change from the recorded base. Pass its findings, dispositions, and proof
-to the reviewers. At completion, verify that the audit still covers the current
-tests and behavior; refresh affected evidence after review fixes. Reuse an
-applicable audit report. A no-applicable-tests result must name the inspected scope.
+For final verification in an implementation workflow, read
+[FINAL-REVIEWS.md](FINAL-REVIEWS.md) and require applicable test-audit,
+Thermos security/correctness, and Thermos code-quality reports before the
+caller's final code-review. If these gates already ran, validate their scope
+and tested state and refresh only affected evidence after repairs. Report
+missing or stale evidence as an incomplete gate.
 
 ## Common Failures
 

@@ -2,7 +2,7 @@
 
 ## Purpose and sources of truth
 
-This GitHub repository is the source of truth for `engineering-skills`, a curated personal set of agent skills imported from the pinned `mattpocock-skills/`, `superpowers/`, and `openclaw/` submodules, with a small, explicitly documented set of local rewirings. Each consuming project installs its own copy from GitHub.
+This GitHub repository is the source of truth for `engineering-skills`, a curated personal set of agent skills imported from the pinned `mattpocock-skills/`, `superpowers/`, `openclaw/`, and `cursor-plugins/` submodules, with a small, explicitly documented set of local rewirings. Each consuming project installs its own copy from GitHub.
 
 Before changing the repository, read the relevant plan completely:
 
@@ -22,7 +22,7 @@ Preserve these decisions in every skill, script, and document:
   - Heavy: `/grill-with-docs` -> optional `/using-git-worktrees` -> `/writing-plans` -> `/subagent-driven-development`.
 - Every stage boundary is a manual gear shift. Name the next command and stop; never auto-chain stages.
 - Never auto-merge. After review and verification, stop. The user owns merging, sanity testing, and worktree cleanup.
-- Both execution tracks run `test-audit` as part of final verification before final `code-review`, preserving applicable audit evidence through any review repairs.
+- Both execution tracks run `test-audit`, `thermo-nuclear-review` (security/correctness), and `thermo-nuclear-code-quality-review` as final-verification gates before the existing final `code-review`. Preserve their reports and dispositions and refresh affected evidence after repairs. The shared procedure is `skills/verification-before-completion/FINAL-REVIEWS.md`.
 - There is no session-start bootstrap hook and no plugin or marketplace packaging. From each consuming project, install the set with `npx skills add https://github.com/kubamarchwicki/engineering-skills/tree/master/skills --skill '*' --agent codex --agent claude-code --yes`.
 - Artifact paths are fixed: `GLOSSARY.md` at the repository root, `docs/adr/`, `docs/specs/`, and numbered plans at `docs/plans/NNNN-<feature-name>.md`.
 - Keep inherited skill names unchanged. The README documents the available tracks and commands.
@@ -32,7 +32,7 @@ When a decision is genuinely needed, investigate facts first, then ask in plain 
 ## Repository layout and ownership
 
 - `skills/` is a flat directory: one directory per distributed skill.
-- `mattpocock-skills/`, `superpowers/`, and `openclaw/` are pinned upstream source submodules. Treat them as read-only inputs. Never edit files, create branches, or make commits inside them; updater regression fixtures must use purpose-built synthetic repositories outside these submodule worktrees.
+- `mattpocock-skills/`, `superpowers/`, `openclaw/`, and `cursor-plugins/` are pinned upstream source submodules. Treat them as read-only inputs. Never edit files, create branches, or make commits inside them; updater regression fixtures must use purpose-built synthetic repositories outside these submodule worktrees.
 - Copy an imported skill's entire directory, including `agents/`, scripts, and reference files. Do not prune files.
 - `skills-internal/update-from-upstream/` is the canonical repo-local maintenance automation. `.claude/skills/update-from-upstream` and `.agents/skills/update-from-upstream` are discovery symlinks to it for Claude and Codex respectively. Preserve `disable-model-invocation: true` in `SKILL.md` for Claude and `policy.allow_implicit_invocation: false` in `agents/openai.yaml` for Codex. The canonical directory must not be copied into the distributed `skills/` path.
 - `provenance.tsv`, once introduced by plan 0002, is the single source of truth for skill membership, upstream paths, invocation type, role, and local changes.
@@ -75,11 +75,13 @@ Repository scripts target macOS `/bin/bash` 3.2:
 
 Use `/update-from-upstream` in Claude or `$update-from-upstream` in Codex for an upstream sync after plan 0002 exists. Its workflow is intentionally split:
 
-1. Run the workflow from this repository's primary checkout or an optional linked worktree. Initialize the pinned submodules and verify their checked-out SHAs match the gitlinks in `HEAD` before fetching or merging. The merge engine checks that all three submodules are initialized and that `skills/` and `provenance.tsv` are clean.
+1. Run the workflow from this repository's primary checkout or an optional linked worktree. Initialize the pinned submodules and verify their checked-out SHAs match the gitlinks in `HEAD` before fetching or merging. The merge engine checks that all four submodules are initialized and that `skills/` and `provenance.tsv` are clean.
 2. `scripts/update-from-upstream.sh` performs a three-way merge: base is the submodule SHA pinned in the repository's `HEAD`, ours is `skills/<name>`, and theirs is the selected upstream commit.
 3. Inspect upstream commit history to understand intent, then narrate clean merges and resolve conflicts, attention items, new candidates, deletions, or renames with the user one decision at a time.
 4. Record every membership or divergence decision in `provenance.tsv`, regenerate the README, run all applicable verification, and bump only the relevant submodule pins.
 5. Stage the agreed result and stop. Suggest a commit message, but do not commit or push; the sync commit belongs to the user.
+
+Cursor imports and new-candidate discovery are scoped to `cursor-plugins/thermos/skills/`; other Cursor plugins are outside this set. The two Thermos review skills are model-invoked by final-verification gates; keep their review bodies verbatim and the existing `code-review` unchanged.
 
 OpenClaw skills are dropped by default unless the user explicitly retains them; `test-audit` is retained. Record newly encountered OpenClaw candidates as dropped in `provenance.tsv` without asking individually.
 

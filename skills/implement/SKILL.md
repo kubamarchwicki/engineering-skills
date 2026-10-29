@@ -13,9 +13,11 @@ decision sources.
 
 Call the Skill tool with "tdd" where possible, at pre-agreed seams.
 
-Before final review, invoke `test-audit` (read and follow its SKILL.md if no
-Skill tool is available) on the change from the recorded starting revision.
-Resolve blocking audit findings and supply the audit report to code-review.
+Before final code-review, read and follow
+[the final-review gates](../verification-before-completion/FINAL-REVIEWS.md)
+from the recorded starting revision in working-tree mode, including untracked
+task files. Complete test-audit and both Thermos reviews, resolve blocking
+findings, and supply their reports and dispositions to code-review.
 
 Call the Skill tool with "code-review" on that working-tree change before committing. Resolve
 findings and verify that the reviewed state still matches the change committed.

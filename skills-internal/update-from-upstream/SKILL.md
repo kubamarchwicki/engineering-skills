@@ -10,7 +10,7 @@ You are running the upstream sync for this repo. The mechanical merge is a scrip
 - Ask in plain prose, one question at a time, always leading with your recommended answer. Never use the AskUserQuestion widget.
 - Never commit, never push, never do more than the close-out lists. The commit belongs to the user.
 - Treat the pinned upstream submodule worktrees as read-only: never edit files, create branches, or make commits inside them. Mutable regression fixtures must use purpose-built synthetic repositories elsewhere.
-- Report, never act, on set membership: adopting or dropping a skill happens only on the user's explicit say-so.
+- Report, never act, on set membership unless an existing user policy authorizes it. OpenClaw candidates default to dropped except explicitly retained skills (`test-audit`); record those drops without individual questions. Cursor discovery is limited to `thermos/skills/`; other plugins are outside this set.
 - Name user-invoked skills in the active harness's form: `/skill-name` for Claude and `$skill-name` for Codex.
 
 ## 1. Verify checkout and pinned submodules
@@ -19,15 +19,15 @@ Run this maintenance workflow from the `engineering-skills` checkout, either the
 
 Initialize this checkout's pinned submodules before invoking the updater:
 
-    git submodule update --init --recursive mattpocock-skills superpowers openclaw
+    git submodule update --init --recursive mattpocock-skills superpowers openclaw cursor-plugins
 
 For each submodule, compare `git -C <submodule> rev-parse HEAD` with `git rev-parse HEAD:<submodule>` and require an exact match. If initialization fails or any SHA differs from its recorded gitlink, stop and report the mismatch; do not fetch or merge.
 
 ## 2. Mechanical merge
 
-Run `scripts/update-from-upstream.sh` from the repo root. It fetches all three submodules and three-way-merges every imported skill (base = pinned submodule SHA, ours = the `skills/` copy, theirs = upstream HEAD) into the working tree, uncommitted. Its report lines: `ok`/`=` (merged/unchanged), `CONFLICT:` (markers left in the file), `+`/`-`/`!` (file added/deleted/needs attention), `ATTENTION` (source path gone: rename or deletion), `NEW-CANDIDATE:` (upstream skill we've never seen), `ERROR:` (operational/binary merge failure; local file preserved), `SUMMARY:` (totals).
+Run `scripts/update-from-upstream.sh` from the repo root. It fetches all four submodules and three-way-merges every imported skill (base = pinned submodule SHA, ours = the `skills/` copy, theirs = upstream HEAD) into the working tree, uncommitted. Its report lines: `ok`/`=` (merged/unchanged), `CONFLICT:` (markers left in the file), `+`/`-`/`!` (file added/deleted/needs attention), `ATTENTION` (source path gone: rename or deletion), `NEW-CANDIDATE:` (upstream skill we've never seen), `ERROR:` (operational/binary merge failure; local file preserved), `SUMMARY:` (totals).
 
-If it aborts on a dirty working tree, stop and tell the user. If it exits nonzero after reporting `ERROR:`, stop and tell the user; do not enter the walk-through or close-out until the error is resolved. If all three submodules report `up to date`, say so and stop — there is nothing to walk through.
+If it aborts on a dirty working tree, stop and tell the user. If it exits nonzero after reporting `ERROR:`, stop and tell the user; do not enter the walk-through or close-out until the error is resolved. If all four submodules report `up to date`, say so and stop — there is nothing to walk through.
 
 ## 3. Understand before narrating
 

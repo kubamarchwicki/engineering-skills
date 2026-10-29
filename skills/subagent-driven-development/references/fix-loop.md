@@ -43,8 +43,9 @@ applicable results, and appends covering Evidence Records (tested state,
 commands, exit status, conditions, inspectable output, criteria, and limits)
 to the report. Confirm this evidence before dispatching scoped re-review.
 Name affected checks in the fix message; broaden only for concrete risk.
-For final-review repairs that change tests or tested behavior, refresh the
-affected `test-audit` evidence before scoped re-review and include it in the report.
+For final-review repairs, refresh affected test-audit and Thermos evidence
+under [the final-review gates](../../verification-before-completion/FINAL-REVIEWS.md)
+before scoped re-review and include the reports and dispositions.
 
 **The re-review is scoped.** Run `bash scripts/review-package PLAN_FILE FIX_BASE HEAD`
 where FIX_BASE is the head the previous review saw, and dispatch

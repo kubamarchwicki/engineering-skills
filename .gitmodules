@@ -7,3 +7,6 @@
 [submodule "openclaw"]
 	path = openclaw
 	url = https://github.com/openclaw/openclaw.git
+[submodule "cursor-plugins"]
+	path = cursor-plugins
+	url = https://github.com/cursor/plugins.git

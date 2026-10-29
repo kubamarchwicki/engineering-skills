@@ -17,6 +17,7 @@ cd "$REPO"
 TO_MATTPOCOCK=""
 TO_SUPERPOWERS=""
 TO_OPENCLAW=""
+TO_CURSOR=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --to)
@@ -24,14 +25,15 @@ while [ $# -gt 0 ]; do
         mattpocock-skills=*) TO_MATTPOCOCK="${2#*=}" ;;
         superpowers=*)       TO_SUPERPOWERS="${2#*=}" ;;
         openclaw=*)          TO_OPENCLAW="${2#*=}" ;;
-        *) echo "usage: $0 [--to <mattpocock-skills|superpowers|openclaw>=<committish>]..." >&2; exit 2 ;;
+        cursor-plugins=*)    TO_CURSOR="${2#*=}" ;;
+        *) echo "usage: $0 [--to <mattpocock-skills|superpowers|openclaw|cursor-plugins>=<committish>]..." >&2; exit 2 ;;
       esac
       shift 2 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
 
-SUBMODULE_INIT_COMMAND="git submodule update --init --recursive mattpocock-skills superpowers openclaw"
+SUBMODULE_INIT_COMMAND="git submodule update --init --recursive mattpocock-skills superpowers openclaw cursor-plugins"
 validate_submodule_worktree() {
   local submodule_path="$1" expected_top_level actual_top_level actual_top_level_canonical
   expected_top_level="$(cd "$REPO/$submodule_path" 2>/dev/null && pwd -P || true)"
@@ -50,6 +52,7 @@ validate_submodule_worktree() {
 validate_submodule_worktree mattpocock-skills
 validate_submodule_worktree superpowers
 validate_submodule_worktree openclaw
+validate_submodule_worktree cursor-plugins
 
 if [ -n "$(git status --porcelain skills/ provenance.tsv)" ]; then
   echo "ABORT: skills/ or provenance.tsv has uncommitted changes - commit or restore first" >&2
@@ -415,8 +418,11 @@ merge_submodule() {
   # manifest (any status) nor present anywhere at base. Category moves of
   # never-imported skills therefore stay quiet.
   local manifest_names base_skill_names candidate_directory candidate_name candidate_description
+  local candidate_scope="."
+  # This source supplies Thermos only, not the entire Cursor plugin catalog.
+  if [ "$submodule_path" = "cursor-plugins" ]; then candidate_scope="thermos/skills"; fi
   manifest_names="$(awk -F'\t' 'NR>1 {print $1}' "$TSV")"
-  base_skill_names="$(git -C "$submodule_path" ls-tree -r --name-only "$base_commit" | awk -F/ '/\/SKILL\.md$/ {print $(NF-1)}' | sort -u)"
+  base_skill_names="$(git -C "$submodule_path" ls-tree -r --name-only "$base_commit" -- "$candidate_scope" | awk -F/ '/\/SKILL\.md$/ {print $(NF-1)}' | sort -u)"
   while IFS= read -r candidate_directory; do
     [ -n "$candidate_directory" ] || continue
     candidate_name="${candidate_directory##*/}"
@@ -425,12 +431,13 @@ merge_submodule() {
     candidate_description="$(git -C "$submodule_path" show "$target_commit:$candidate_directory/SKILL.md" | awk '/^description:/ {sub(/^description: */, ""); print; exit}')"
     echo "   NEW-CANDIDATE: $candidate_directory - $candidate_description"
     total_candidates=$((total_candidates+1))
-  done < <(git -C "$submodule_path" ls-tree -r --name-only "$target_commit" | grep '/SKILL\.md$' | sed 's|/SKILL\.md$||' || true)
+  done < <(git -C "$submodule_path" ls-tree -r --name-only "$target_commit" -- "$candidate_scope" | grep '/SKILL\.md$' | sed 's|/SKILL\.md$||' || true)
 }
 
 merge_submodule mattpocock-skills "$TO_MATTPOCOCK"
 merge_submodule superpowers "$TO_SUPERPOWERS"
 merge_submodule openclaw "$TO_OPENCLAW"
+merge_submodule cursor-plugins "$TO_CURSOR"
 
 echo
 echo "SUMMARY: conflicts=$total_conflicts attention=$total_attention new-candidates=$total_candidates"

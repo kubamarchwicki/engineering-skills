@@ -3,11 +3,12 @@
 Part of subagent-driven-development. Every task in the plan is
 complete.
 
-After all tasks are complete, the controller MUST invoke `test-audit` (or read
-and follow its SKILL.md if the harness has no Skill tool) from the fixed Execution
-base. Record its scope, findings, dispositions, and proof in the plan. Route
-blocking findings through the affected task's repair workflow; refresh affected
-audit evidence after repairs. Proceed only when tasks and audit gates are satisfied.
+After all tasks are complete, the controller MUST read and follow
+[the final-review gates](../../verification-before-completion/FINAL-REVIEWS.md)
+from the fixed Execution base. Complete test-audit and both Thermos reviews,
+record their scope, reviewed state, findings, dispositions, proof, and limits
+in the plan, and route blocking findings through the existing repair workflow.
+Proceed only when tasks and all three gates are satisfied.
 
 Then generate a package from the fixed Execution base including audit repairs.
 The controller MUST call the Skill tool with "code-review" (or read and
@@ -16,7 +17,8 @@ revision and the whole-branch review package. Run its Standards and Spec
 reviewers on the most capable available model. Per-task reviews do not replace
 this required skill invocation. Both final reviewers receive applicable
 agreement, decision/source revisions,
-acceptance evidence, the test-audit report, and unresolved/deferred findings from the durable plan.
+acceptance evidence, the test-audit and both Thermos reports with dispositions,
+and unresolved/deferred findings from the durable plan.
 Require four supported conclusions: implementation correctness, design validity,
 evidence quality, and scope and standards.
 
@@ -38,6 +40,7 @@ Before scratch cleanup, maintain this section in the plan:
 - Acceptance evidence: [criterion, command, exit status, tested state including
   relevant dirty changes, relevant conditions, output/stable reference, limits]
 - Test audit: [scope, audited state, retained proof, findings/dispositions, limits]
+- Thermos reviews: [each pass, scope, reviewed state, findings/dispositions, evidence, limits]
 - Review conclusions: [four concerns, evidence, unresolved/deferred findings]
 ```
 

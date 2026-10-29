@@ -232,7 +232,7 @@ steps 2–6 for remaining Ready tasks; unresolved work stays visible.
 
 After all tasks are complete, read
 [references/final-review.md](references/final-review.md) and follow its
-test-audit, whole-branch code-review, and scoped repair procedure from the
+test-audit, both Thermos passes, whole-branch code-review, and scoped repair procedure from the
 fixed Execution base.
 
 ### 8. Preserve evidence, assess gates, and stop
