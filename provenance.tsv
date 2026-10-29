@@ -13,7 +13,7 @@ writing-for-agents	mattpocock-skills	skills/productivity/writing-for-agents	impo
 grilling	mattpocock-skills	skills/productivity/grilling	imported	M	The reusable interview loop	outcome and ownership investigation; bounded experiments; explicit consequential decisions
 tdd	mattpocock-skills	skills/engineering/tdd	imported	M	Seams-based red-green loop	verbatim
 test-audit	openclaw	.agents/skills/test-audit	imported	M	Test quality audit before final review	boundary guide → tdd; proof policy → verification-before-completion; project-specific test/dead-code gates; autoreview → caller-owned code-review; scoped final audit and evidence refresh; campaign integration remains user-owned
-code-review	mattpocock-skills	skills/engineering/code-review	imported	M	Two reviewers covering correctness, design, evidence, and standards	tracker setup/spec lookup → local spec lookup; four concerns across existing reviewers; ADR/plan agreement sources; working-tree and untracked review; final implementation review consumes applicable test-audit evidence
+code-review	mattpocock-skills	skills/engineering/code-review	imported	M	Two reviewers covering correctness, design, evidence, and standards	tracker setup/spec lookup → local spec lookup; four concerns across existing reviewers; ADR/plan agreement sources; working-tree and untracked review; final implementation review consumes applicable test-audit evidence; user-selected reviewer sentence
 receiving-code-review	superpowers	skills/receiving-code-review	imported	M	Rigor when subagent review feedback arrives	description rescoped; feedback classification; dependency-scoped decisions; durable updates; consolidated feedback procedure and factual-response policy; branch-triggered examples and inline-reply reference
 verification-before-completion	superpowers	skills/verification-before-completion	imported	M	Universal completion gate	applicable evidence reuse; risk-based check scope; inspectable evidence records; final test-audit before review; validate audit evidence after repairs
 systematic-debugging	superpowers	skills/systematic-debugging	imported	M	4-phase root-cause debugging	refs → tdd, verification-before-completion
@@ -44,3 +44,13 @@ triage	mattpocock-skills	skills/engineering/triage	dropped	-	-	dropped: no issue
 teach	mattpocock-skills	skills/productivity/teach	dropped	-	-	dropped: not needed
 chief-of-staff	mattpocock-skills	skills/in-progress/chief-of-staff	dropped	-	-	dropped: long-running coordinator outside the curated tracks; proactive environment changes conflict with bounded scope
 how	-	-	dropped	-	-	dropped: user does not use the router
+knowledge-automation	openclaw	extensions/knowledge/skills/knowledge-automation	dropped	-	-	dropped: OpenClaw Knowledge scheduling and private-vault delegation outside the curated engineering tracks
+knowledge-capture	openclaw	extensions/knowledge/skills/knowledge-capture	dropped	-	-	dropped: OpenClaw Knowledge memory capture outside the curated engineering tracks
+knowledge-claim-consolidation	openclaw	extensions/knowledge/skills/knowledge-claim-consolidation	dropped	-	-	dropped: user policy excludes OpenClaw skills unless explicitly retained
+knowledge-correct	openclaw	extensions/knowledge/skills/knowledge-correct	dropped	-	-	dropped: user policy excludes OpenClaw skills unless explicitly retained
+knowledge-entities	openclaw	extensions/knowledge/skills/knowledge-entities	dropped	-	-	dropped: user policy excludes OpenClaw skills unless explicitly retained
+knowledge-ingest	openclaw	extensions/knowledge/skills/knowledge-ingest	dropped	-	-	dropped: user policy excludes OpenClaw skills unless explicitly retained
+knowledge-meeting-ingest	openclaw	extensions/knowledge/skills/knowledge-meeting-ingest	dropped	-	-	dropped: user policy excludes OpenClaw skills unless explicitly retained
+knowledge-recall	openclaw	extensions/knowledge/skills/knowledge-recall	dropped	-	-	dropped: user policy excludes OpenClaw skills unless explicitly retained
+knowledge-source-ingest	openclaw	extensions/knowledge/skills/knowledge-source-ingest	dropped	-	-	dropped: user policy excludes OpenClaw skills unless explicitly retained
+create-template	openclaw	skills/create-template	dropped	-	-	dropped: user policy excludes OpenClaw skills unless explicitly retained

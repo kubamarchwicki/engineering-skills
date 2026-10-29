@@ -81,7 +81,9 @@ Use `/update-from-upstream` in Claude or `$update-from-upstream` in Codex for an
 4. Record every membership or divergence decision in `provenance.tsv`, regenerate the README, run all applicable verification, and bump only the relevant submodule pins.
 5. Stage the agreed result and stop. Suggest a commit message, but do not commit or push; the sync commit belongs to the user.
 
-Never automatically adopt or drop a skill. Never push changes upstream. A rejected clean upstream change is permanent divergence after the pin advances, so record it in the manifest's `changes` column.
+OpenClaw skills are dropped by default unless the user explicitly retains them; `test-audit` is retained. Record newly encountered OpenClaw candidates as dropped in `provenance.tsv` without asking individually.
+
+For other upstreams, never automatically adopt or drop a skill. Never push changes upstream. A rejected clean upstream change is permanent divergence after the pin advances, so record it in the manifest's `changes` column.
 
 After the user publishes the sync to GitHub, each consuming project may refresh its own installation from the `skills/` path. Already-running harness sessions retain their previous skill snapshot until restarted.
 

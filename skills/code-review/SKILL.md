@@ -8,7 +8,7 @@ Review the actual change against its agreement across four concerns:
 - **Standards**: Design validity and Scope and standards.
 - **Spec**: Implementation correctness and Evidence quality.
 
-Both reviewers run as **parallel sub-agents**, then this skill presents their separate conclusions.
+Both reviewers run as parallel sub-agents with a fresh-context sentence, then this skill presents their separate conclusions.
 
 ## Process
 
